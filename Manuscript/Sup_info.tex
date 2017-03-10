@@ -1,0 +1,340 @@
+ \documentclass[11pt,a4paper,onecolumn]{article}
+% \documentclass[options]{class}
+% Example: \documentclass[11pt,twoside,a4paper]{article} 10 pt is by default.
+
+\setlength{\columnsep}{1cm}
+ 
+
+\usepackage[T1]{fontenc}       % Use modern font encodings
+% \usepackage[version=3]{mhchem} % Formula subscripts using \ce{}
+\usepackage{graphicx}
+\usepackage[a4paper,top=2cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+% \usepackage{authblk} % For affiliation. This package is not preinstalled.
+\graphicspath{{./sup_info/}}
+\newcommand*\commentauthor[1]{\textbf{{\textit{#1}}}}
+\newcommand*\me[1]{\ensuremath{\bar{#1}\,}}
+\newcommand*\chem[1]{\ensuremath{\mathrm{#1}}}
+
+\newcommand*{\affaddr}[1]{#1} % No op here. Customize it for different styles.
+\newcommand*{\affmark}[1][*]{\textsuperscript{#1}}
+\newcommand*{\email}[1]{\texttt{#1}} % These three commands are for author affilations.
+
+\linespread{1.3} % Line spacing. 1.3 means one-and-a-half spacing.
+
+\begin{document}
+
+\author{
+Weichun Zhang, Mart\'in Caldarola, Biswajit Pradhan, Michel Orrit\\\affaddr{Huygens-Kamerlingh Onnes Laboratory, Leiden University, 2300 RA Leiden, Netherlands}\\\email{orrit@physics.leidenuniv.nl}
+}
+
+\date{\vspace{1ex}} % Exclude date in the title.
+%\affiliation
+ %\affil{Huygens-Kamerlingh Onnes Laboratory, Leiden University, 2300 RA Leiden, Netherlands} % This is only useful for authblk package.
+ %\email{orrit@leidenuniv.nl}
+\title{\textbf{Gold nanorod-enhanced fluorescence enables single-molecule electrochemistry of Methylene Blue}\\ \vspace{3ex} Supplementary Information \vspace{3ex}}
+\maketitle
+\tableofcontents
+\pagebreak
+%%
+% Order from text. 
+% 1) Experimental setup and sample preparation
+% 2) model with nernst equation the ensemble response.
+% 3) binning time: AC
+%
+%%%
+\section{Experimental setup}
+
+\subsection{Combined electrochemical-optical measurements}
+
+The optical setup for fluorescence microscopy was described previously \cite{Pradhan2016EFCS}. Briefly, fluorescence images and single-molecule fluorescence intensity trajectories were recorded using a home-built sample-scanning confocal microscope, %mounted in an inverted commercial microscope (Zeiss Axiovert), 
+equipped with an oil immersion objective (100\(\times\), NA=1.4, Zeiss), an avalanche photodiode (APD, SPCM-AQR-14, PerkinElmer) and time-correlated single-photon counting (TCSPC) electronics (Timeharp 200, PicoQuant). A 635 nm pulsed laser (LDH-P-C-635B, PicoQuant) was used for exciting the dye. %and the subsequent electrochemistry-coupled fluorescence measurements.
+A 532 nm Nd:YAG laser % I got this from Biswajit's paper.
+ was used to measure the photoluminescence spectra of AuNRs, which closely resemble their scattering spectra \cite{Mustafa_NRQY}. These photoluminescence spectra were used to confirm that the nanostructure in use was an individual nanorod, which has a well-defined near-field intensity distribution.
+% The spectra were used for checking single nanorods, since single nanorods emit luminescence with narrow line width and Lorentzian spectral shape. Approximately 90\% of the identified bright spots were measured to be single nanorods while the others stemmed from aggregates of nanorods. For SM measurements, we are only interested in molecules in the vicinity of single AuNRs, whose electromagnetic near-field is well-defined. WZ
+
+All electrochemical experiments were carried out in a specially-designed electrochemical cell that fits the microscope. It has a gold wire connected to the gold film on the glass coverslip as the working electrode, a saturated calomel electrode as the reference electrode, a platinum wire coil as the counter electrode (see Figure 2a in the main text) and is controlled by a potentiostat
+%an electrochemical analyzer
+ (CHI832B, CH Instrument). The working solution was 100 $\mu$M phenazine ethosulfate (PES, Santa Cruz Biotechnology) dissolved in a KCl-HCl buffer (pH=2.0, 50 mM KCl). The solution (5 mL) was inside a Teflon tube and supported by the glass sample.
+
+\subsection{Controlling the redox potential} 
+We used the potentiostat and PES (mid-point potential $E_0$ = 67 mV \textit{vs}. saturated calomel electrode at pH=2) as an electron mediator to control the redox potential around Methylene Blue molecules. PES in the oxidized state (PES$_\mathrm{ox}$) may receive electrons from the electrode and get reduced to PES$_\mathrm{red}$. MB molecules studied in the experiment were very close (within 40 $\mu$m) to the working electrode (which is the gold film) \cite{bard2000ecbook}. In this close vicinity of the working electrode, the redox potential is controlled by the concentration ratio of [PES$_\mathrm{ox}]$/[PES$_\mathrm{red}]$, which in turn is determined by the electrical potential applied on the gold film \textit{via} the Nernst equation. In this way, through the redox equilibrium between PES and MB, the redox potential around MB was controlled by the potential applied to the working electrode.
+
+Since the establishment of the redox potential relies on the diffusion of the electron mediator, the actual redox potential sensed by an MB molecule is dependent on the time after an external electrical potential is applied as well as on its distance to the working electrode. In our experiments, we waited long enough time (at least 2 minutes) after applying a new potential and measured only molecules close to (within 40 $\mu$m) the edge of the gold film electrode. In this way, the measured molecules were in a redox potential which is close enough to the electrical potential applied to the gold working electrode.
+% For refering to the two figures separately without combining them into one figure.
+%\begin{figure}[ht]
+%\begin{center}
+%\subfloat[]{\label{fig:pes1}
+  %\includegraphics[width=0.4\textwidth,keepaspectratio]{PES_concentration_profile.eps}
+%\subfloat[]{\label{fig:pes2}
+	%\includegraphics[width=0.4\textwidth,keepaspectratio]{PES_concentration_profile.eps}
+%\end{center}
+%\caption{\label{fig:pes}
+%\protect\subref*{fig:pes1}) Some interesting
+%data; \protect\subref*{fig:pes2}) And the
+%same data again, but now in .eps format.}
+%\end{figure}
+\begin{figure}
+  \centering
+  \includegraphics[width=1\columnwidth,keepaspectratio]{PES_concentration_profile_and_potential_error.eps}
+	\makeatletter
+	\renewcommand{\fnum@figure}{\figurename~S\thefigure}
+	\makeatother
+  \caption{Control of the redox potential relies on the diffusion of the electron mediator. a) Calculated concentration evolution at positions with different distances to the electrode (10 $\mu$m, 20 $\mu$m, 40 $\mu$m and 80 $\mu$m) after the mid-point potential is applied at \textit{t} = 0 to a solution of PES$_\mathrm{ox}$. The arrows indicate increasing distance. The concentrations of oxidized (red) and reduced (blue) PES are scaled by the original concentration of PES$_\mathrm{ox}$. b) Calculated error of redox potential compared to the applied potential at different distances away from the electrode (10 $\mu$m, 20 $\mu$m, 40 $\mu$m and 80 $\mu$m) after the mid-point potential is applied at \textit{t} = 0. The arrow indicates increasing distance. The diffusion coefficient of PES in the aqueous buffer is assumed to be $5\times10^{-6} \mathrm{cm}^{2}/\mathrm{s}$ in the calculations.
+	}
+  \label{fg:pes_principle}
+\end{figure}
+% Exported from Matlab. Linewidth is 2.8 and the fontsize is 18.
+To test this idea more quantitatively, we assumed that the mid-point potential of PES (67 mV) is applied to a solution of PES$_\mathrm{ox}$ at $t=0$. PES$_\mathrm{ox}$ will be reduced on the electrode surface and the concentration ratio of [PES$_\mathrm{ox}]$/[PES$_\mathrm{red}]$ on the electrode surface will immediately be 1. We calculated the time evolution of [PES$_\mathrm{ox}$] (red) and [PES$_\mathrm{red}$] (blue) near the working electrode using a linear diffusion model \cite{bard2000ecbook} (Figure S\ref{fg:pes_principle}a). We see that [PES$_\mathrm{ox}$] decreases while [PES$_\mathrm{red}$] increases because [PES$_\mathrm{red}$] generated on the electrode surface diffuses into the solution. [PES$_\mathrm{ox}]$/[PES$_\mathrm{red}]$ is approaching 1 over time, namely, the local redox potential is approaching 67 mV. Moreover, the local redox potential at closer distance to the electrode surface goes faster to the applied potential. We further estimated the error of the local redox potential compared to the applied potential (Figure S\ref{fg:pes_principle}b) using
+\begin{equation}
+\Delta E = \frac{59.2\ \mathrm{mV}}{2}\log_{10}\frac{\mathrm{[PES_{ox}]}}{\mathrm{[PES_{red}]}},
+\label{eq:pes_potential_error}
+\end{equation}
+since 2 electrons are involved in the redox reaction.
+Figure S\ref{fg:pes_principle}b shows, for instance, that 100 s after the potential is applied, the redox potential 40 $\mu$m away from the electrode is only 2.60 mV higher than the applied potential. Therefore in our experiment we used the applied potential as the redox potential around the MB molecules.
+
+
+\section{Sample preparation}
+
+\textbf{Gold nanorod immobilization.} The average dimension of the gold nanorods (AuNRs) was 40 nm \(\times\) 81 nm according to the manufacturer (Nanoseedz). The concentration of hexadecyl-trimethyl-ammonium bromide (CTAB) in the nanorod suspension was reduced by centrifugation and resuspension in Milli-Q water to less than 10 $\mu$M to ensure successful immobilization. Number 1 glass coverslips (Menzel-Gl{\"a}ser, \(\phi\)=25 mm) were used for all immobilizations. The coverslips were sonicated in water (20 min) and ethanol (20 min). They were then dried with a clean nitrogen flow and cleaned with ultraviolet-ozone cleaner (model 42-220, Jelight) for 30 minutes for the next step or stored in ethanol. AuNRs were immobilized on the coverslip by spin-coating from the water suspension. After that, the remaining CTAB was removed by rinsing with MilliQ water and treating with UV/Ozone for 30 minutes. The AuNRs are well isolated on the slide with a density of \(\sim\)10 nanorods per 100 \(\mu\)m\textsuperscript{2}. Approximately 90\% of the identified bright spots were measured to be single nanorods while the others stemmed from aggregates of nanorods. For SM measurements, we were only interested in molecules in the vicinity of single AuNRs, whose electromagnetic near-field is well-defined.
+
+\textbf{Gold nanorod coating.} It was found experimentally that bare AuNRs were not stable during electrochemical measurements, as is evidenced by the spectral change of the AuNRs (Figure S\ref{fg:NR_coating}a). A few seconds after the electrochemical potential was changed the photoluminescence (PL) spectrum of the AuNR shifted and the PL brightness decreased. These changes were irreversible. This issue might be the consequence of dissolution by phenazine ethosulfate when the potential is changed. Similar irreversible particle reshaping phenomena in electrochemistry experiments were reported by previous researchers. \cite{Hoener2016JPCC,Byers2014} In order to protect the AuNRs, saturated aliphatic chains were compactly functionalized on them so that they are isolated from the ambient solution (see the inset of Figure S\ref{fg:NR_coating}b). Experimentally, the coverslips with AuNRs were treated with a 10 mM 1-undecanethiol (\chem{CH_3(CH_2)_{10}SH}, Sigma-Aldrich) solution in 2-propanol (Sigma-Aldrich) overnight at room temperature. The slides were then rinsed extensively with 2-propanol and dried with nitrogen. Once the AuNRs were coated in this manner, we did not observe any etching or reshaping throughout our experiments (see Figure S\ref{fg:NR_coating}b).
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1\columnwidth,keepaspectratio]{Figure_S2_NR_coating_protected_vs_bare.eps}
+	\makeatletter
+	\renewcommand{\fnum@figure}{\figurename~S\thefigure}
+	\makeatother
+  \caption{ a) The PL spectra of a single bare AuNR (shown schematically in the inset) at different electrochemical potentials. The spectral changes took place within a few seconds after a new potential was applied. b) The PL spectra of a coated AuNR (shown schematically in the inset, not to scale) at different electrochemical potentials. No significant spectral changes of AuNRs could be observed after passivation.
+	}
+  \label{fg:NR_coating}
+\end{figure}
+% Figure a is exported from Matlab. The fontsize is 14. The data were from 20160623, NR6.
+% Figure b is from ChemDraw. Linewidth = 0.03 in and fontsize = 14.
+% Rewrote the x and y labels using inkscape. fontsize = 22. 2016-12-20
+
+
+\textbf{Silanization of the coverslips.} The coverslips with coated AuNRs were then immersed for 30 minutes with gentle stirring in a methanol solution containing 1\% (3-Aminopropyl)triethoxysilane (APTES, Sigma-Aldrich) and 5\% glacial acetic acid. Thereafter, the silanized slides were washed thoroughly with methanol and ethanol and dried with a nitrogen flow \cite{Gupta2014JACS}. If not immediately used for the next step, they were stored inside a desiccator to maintain the activity of the amine groups. 
+
+\textbf{Gold film sputtering.} A small piece of clean glass slide (a few mm) was put at the center of every coverslip before any film was sputtered. A 2-nm-thick adhesion layer of molybdenum-germanium (MoGe) film was deposited onto the coverslips by magnetron sputtering (Z-400 system, Leybold). A 30-nm-thick gold film was immediately sputtered onto the slides in the same system. The thicknesses were estimated from the deposition rates (5.5 nm/min for MoGe and 15.2 nm/min for Au in a <6 \(\times\) 10\textsuperscript{-6} mbar Argon environment) and times. Afterwards, the slides were taken out of the sputtering system and the small glass pieces were blown away. There were no MoGe or Au films in the area blocked by the tiny glass. Amine groups in this area were still exposed and active for immobilizing MB molecules. 
+
+\textbf{Immobilization of MB molecules.} Next the coverslip was placed into a circular sample holder. 1 mL solution of 300 nM MB with a N-Hydroxysuccinimide ester (NHS-ester) substituent (ATTO-TEC GmbH) in 0.1 M phosphate buffer (pH = 7.6) was applied to the coverslip. NHS-ester reacts readily with the amine groups on the coverslip to form stable amide bonds, and MB molecules thus are immobilized (depicted in Figure S\ref{fg:mb_immobilization}). In order to accurately control the surface density of MB molecules the immobilization process was monitored \textit{in situ}. Experimentally, the coverslip was mounted on the confocal setup and the surface close to the gold film was imaged every few minutes with the 635-nm laser. The intensity of the laser was kept low (\(\sim\)5 W/cm\textsuperscript{2}) to minimize photobleaching. % 7.2 nW, consider a confocal 1/e^2 radius of 300 nm, we get 2.5 W/cm^2 (2016-04-08); if we use the central intensity we get 5 W/cm^2. 
+The effective confocal volume of the optical setup was measured in a separate experiment to be 0.3 fL. % See lab journal 2016-04-08.
+With this information the count rate from an individual MB molecule was obtained by measuring the brightness of a MB NHS-ester solution of known concentration. The number of molecules per unit area was then estimated by dividing the brightness of the immobilized MB molecules by the count rate per molecule, assuming that the brightness of MB molecules doesn't change upon binding to the glass surface. The target molecular density is such that there is on average 1 molecule in the near-field of a AuNR. The area of the near-field in the plane of the substrate was estimated to be 40 nm\(\times\)20 nm\(\times\)2 = 1600 nm\textsuperscript{2} considering the dimension of the AuNR. One molecule in this area corresponds to 177 molecules in the diffraction limited confocal area (\(\sim\)300 nm in radius). In practice, some AuNRs might have more than 1 molecules nearby but we only considered single molecules indicated by clear two-level blinking. Once the desired number of molecules is obtained, the reaction was terminated by removing the solution of MB NHS-ester. The slide was then washed several times with HCl-KCl buffer (pH = 2.0) and immediately used for electrochemistry-coupled single-molecule measurements.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1\columnwidth,keepaspectratio]{APTES_on_slide_bind_to_bond_MB2_on_slide.eps}
+	\makeatletter
+	\renewcommand{\fnum@figure}{\figurename~S\thefigure}
+	\makeatother
+  \caption{MB with a NHS-ester substituent is reacted with APTES silanized on the slide resulting in a covalent amide bond formation.
+	}
+  \label{fg:mb_immobilization}
+\end{figure}
+
+\section{Modeling the ensemble response to the potential}
+In this section we model the fluorescence response of an ensemble of \(\sim\)260 molecules in the focal area to the potential.
+The mean intensity $I_m$ emitted by each molecule over several switching cycles can be calculated as 
+\begin{equation}
+I_m=\left< I(t)\right>_t=B+I_{on}^{SM}\frac{\me{t}_{on}}{\me{t}_{on}+\me{t}_{off}}\,,
+\label{eq:Im}
+\end{equation}
+where $\left< I(t)\right>_t$ indicates time average, $B$ is the background intensity ($200$ counts s$^{-1}$), $I_{on}^{SM}$ is the on-intensity for one molecule and $\me{t}_{on}$ and $\me{t}_{off}$ are the mean on- and off-times, respectively.
+Since the blinking comes from the redox reaction of MB, the ratio of on- and off-times can be expressed using the Nerst equation
+\begin{equation}
+\frac{\me{t}_{off}}{\me{t}_{on}}= \exp\left(\frac{E_0-V}{\alpha}\right)\,,
+\label{eq:nerst}
+\end{equation}
+where $V$ is the applied potential, $E_0$ the mid-point potential and $\alpha=\frac{k_BT}{ne}\approx 13$ mV. 
+
+If we assume a probability density function (PDF) $g(\zeta)$ for mid-point potentials and that all the molecules contribute with the same intensity, we can estimate the ensemble intensity distribution summing all the contributions from each single-molecule $I_m$ weighted by this distribution:
+\begin{equation}
+\left< I_m\right>_{e}(V)=B + I_{on} \int \frac{g(\zeta)}{1+\exp(\frac{\zeta-V}{\alpha})} \mbox{d}\zeta\,,
+\label{eq:ensemble-average}
+\end{equation}
+where $\left< I_m\right>_{e}$ indicates ensemble averaging, $B$ is the background signal and $I_{on}=N_{molec}I_{on}^{SM}$.
+The simplest model would be to have a single mid-point potential value, $\me{E}_0$, in which case the PDF is a delta function $\delta(\zeta-\me{E}_0)$. We fitted this simple model to our experimental data (Figure 2b in the main text) and obtained $\me{E}_0=51 \pm 4$ mV.
+
+%shown in green in Figure S\ref{fg:SM_mid} a), together with the experimental data (red circles).
+
+%For further modeling we proposed a single and a double Gaussian distribution for $E_0$ and integrated numerically equation (\ref{eq:ensemble-average}) for the measured values of $V$ and minimized the $\chi^2$ using the experimental errors as weights to find the distribution $g(\zeta)$ that fits better our experimental data. The resulting fits to the data and corresponding distributions are shown in Figure S\ref{fg:SM_mid} a) and b), respectively. We note that 
+%
+%
+%In Figure S\ref{fg:SM_mid} b) we show the PDF for the fitted Gaussian distribution (black line) and the PDF estimated from the SM data (blue line). The fitted distribution has a lower mean value and a broad distribution while the SM data shows a smaller width and a higher mean value. However, the SM data is not incompatible with the ensemble distribution that model our data.
+
+
+\section{Blinking time scales}
+
+% \commentauthor{HERE we need to discuss the times scales for blinking, showing an AC to show that Triplet is in the us range and redox-induced in ms.}
+% (I found that I don't have data good enough to demonstrate this issue. The short component in ACF is not noisy to do bi-exp fitting because of the short length of the time traces for a same molecule under different potentials. WZ)
+
+In order to extract the characteristic times associated with the fluorescence emission of SMs we calculated the autocorrelation function and found two components with clearly separated time scales as shown in Figure S\ref{fg:ACF}.
+% The on and off time both follow an exponential distribution (see supplementary information for the details of this analysis) with an average on time $\me{t}_{on} = 19.1 \pm 0.5$ ms and an average off time $\me{t}_{off} = 19.8 \pm 0.5$ ms, which is in agreement with the expected result.
+% It is important to note that this redox-induced blinking is not the only blinking mechanism present in the experiment. 
+The short component ($\tau_s = 135.9 \pm 21.5$ $\mu$s) may be attributed to blinking from the triplet state as it is close to the reported triplet lifetime of MB. \cite{Murovhandbook} %\cite{tuite1993new}. Indeed, the  lifetime obtained is $410 \pm 70$ $\mu$s, in agreement with the reported value for MB.\cite{mills1999photobleaching} %\commentauthor{Could it be attributed to molecular rotation?}
+The long component ($\tau_L = 20.3 \pm 4.6$ ms) is attributed to redox-induced blinking since the order of magnitude of this component is in the range expected for the redox reaction of MB.\cite{kinetics_ascorbic,kinetics_ferro}
+ The well separated time scales allowed us to work with 1ms-binned time traces to study only the redox-induced intensity fluctuations.
+%Moreover, we calculated the mean on and off times (see supplementary information for the details on the analysis) and obtained $\me{t}_{on}= 130\pm 10$, $\me{t}_{off}= 90\pm 8$, which indicates that the redox potential for this particular molecule is higher than the applied value, $80$ mV. 
+%We will focus next in the long component of the ACF, since it corresponds to redox-induced mechanisms, as confirmed below.
+% Data NR1_120mV_FCS_20160822. No background correction is used.
+% eps file exported from matlab. Linewidth = 2.8 points and fontsize = 18.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.7\columnwidth,keepaspectratio]{SM_autocorrelation.eps}
+	\makeatletter
+	\renewcommand{\fnum@figure}{\figurename~S\thefigure}
+	\makeatother
+  \caption{Autocorrelation traces (blue dots) measured on a AuNR-enhanced MB molecule at 120 mV with biexponential fit (red curve). The distinct short and long correlation times correspond to blinking from the triplet state and redox-induced blinking, respectively.
+	}
+  \label{fg:ACF}
+\end{figure}
+% From SM_autocorrelations.m. Data: NR1_120mV_FCS_20160822.dat
+
+
+\section{Histogram of SM mid-point potentials}
+
+In Figure S\ref{fg:E0_histogram} we show the histogram of mid-point potentials for single molecules. By modeling the distribution with a Gaussian shape we get a central value of $\left<E_0^{SM}\right>=78.3 \pm 0.1$ mV and a dispersion of $\sigma^{SM}=(21.1 \pm 0.1)$ mV.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.7\columnwidth,keepaspectratio]{SM_E0_histogram_numbers.eps}
+	\makeatletter
+	\renewcommand{\fnum@figure}{\figurename~S\thefigure}
+	\makeatother
+  \caption{Histogram of mid-point potentials for $22$ single molecules with the estimated probability distribution function with a Gaussian shape (blue solid curve).
+	}
+  \label{fg:E0_histogram}
+\end{figure}
+
+
+\section{Dependence of the electrochemical reaction on the laser intensity}
+
+
+\subsection{Intensity dependence of a small ensemble} 
+To gain more insight into the dependence of MB's redox properties on laser intensity, we carried out the same ensemble measurement as shown in Figure 2b in the main text with different excitation intensities. 
+Ensemble-averaged mid-point potentials ($\bar{E_0}$) were obtained for each case and plotted against laser intensity in Figure S\ref{fg:ensem_power_dep}. 
+Likewise, the figure shows that generally higher $\bar{E_0}$ values are observed if higher laser intensities were used. When the intensity is decreased, %below 2.55 W/cm$^2$, 
+the intensity dependence of $\bar{E_0}$ reaches a plateau, where the redox state of molecules is independent of the excitation laser intensity. 
+%$E_0$ measured in this regime 
+For a more quantitative analysis we fitted the data with a saturation curve, $\bar{E_0}(I) = E_0^{dark}+C\frac{I/I_s}{1+I/I_s}$, where $C$ is a proportionality constant, $Is$ the saturation value and $E_0^{dark}$ the mid-point potential in the absence of light. It is unclear to us why the two points at high intensities strongly deviate from the fit, unless this is a consequence of fast photobleaching at high intensities.  
+
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.7\columnwidth,keepaspectratio]{E0_power_dependence_ensemble.eps}
+	\makeatletter
+	\renewcommand{\fnum@figure}{\figurename~S\thefigure}
+	\makeatother
+  \caption{The average mid-point potential ($\bar{E_0}$) for a small ensemble depends on the laser intensity that is used for measuring. 
+	The blue is a fit according to a saturation behavior as described in the text. %Photobleaching starts to dominate if very high intensity is used, making the last two points deviate from the fitting.
+	}
+  \label{fg:ensem_power_dep}
+\end{figure}
+% Data from 2016-10-06. The averaged brightnesses from the exported images were used. The highest point was used as the brightness of the on state.
+% plo_ensemble_mid_point_vs_intensity.m
+% Average counts from the exported images for area 2 were used.
+
+\subsection{Intensity dependence of single molecules} 
+Fluorescence emission from AuNR-enhanced single MB molecules was recorded with different excitation intensities under a fixed potential of 80 mV. %The middle point potentials in each cases were obtained by using the dwell times in the on- and off-states and equation(?) in the main text.
+Three time traces from an example molecule shown in Figure S\ref{fg:SM_power_dep}a clearly evidence the dependence of oxidation/reduction dynamics on the excitation intensity. Investigation of more SMs reveals that AuNR-enhanced molecules show higher mid-point potentials under excitation of higher intensity. %(Every molecule should be compared with itself. Different molecules are not comparable.)
+The intensity dependence of the measured mid-point potential is possibly a consequence of photo-induced reduction taking place in the triplet state of MB, since MB can be photo-excited to the long-lived triplet state ($\tau_\mathrm{T} = 450  \mu s$) with high probability (triplet quantum yield $\phi_\mathrm{T} = 0.52$) \cite{Murovhandbook}. This hypothesis is supported by Figure S\ref{fg:SM_power_dep}b, which shows that the reduction rate ($\bar{t}_{on}^{-1}$) of SMs is increased by increasing the excitation intensity. The oxidation rate ($\bar{t}_{off}^{-1}$), on the other hand, is independent of laser intensity as \textit{leuco}-MB does not absorb visible light. Consequently, measured mid-point potentials of SMs are positively correlated with the laser intensity. Therefore, the on- and off-time analysis of SM fluorescence of MB overestimates the local redox potential. % because of the absorption of the probing light by the molecules.
+%MB has been demonstrated to be photochemically active the reduction of MB could be catalyzed by the light field confined by the AuNR. This is supported by Figure S\ref{fg:SM_power_dep}b, which shows that the reducing rate $k_\mathrm{off} (=\tau_\mathrm{on}^{-1})$ of the molecule is accelerated by increasing the excitation intensity while the oxidizing rate $k_\mathrm{on} (=\tau_\mathrm{off}^{-1})$ is basically not affected by light. This general trend was observed for all 15 molecules investigated.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1\textwidth,keepaspectratio]{SM_power_dependence_combined.eps}
+	\makeatletter
+	\renewcommand{\fnum@figure}{\figurename~S\thefigure}
+	\makeatother
+  \caption{a) Fluorescence time traces recorded on the same molecule under 80 mV excited with different laser intensities. The molecule behaves differently at different excitation intensities. The red curves indicate the identified on/off state transitions. b) Reduction rates ($\bar{t}_{on}^{-1}$) of four different single molecules (distinguished by different colors) under 80 mV at different laser intensities. We see a general correlation between higher reduction rate and higher intensity. Molecule 4 shown in yellow is less light-sensitive and corresponds to the molecule presented in a).
+	}
+  \label{fg:SM_power_dep}
+\end{figure}
+% Data from from 2016-09-14. The time traces were binned to 5 ms and analyzed with STaSI. 49% power was considered as 22.6 nW. NR13.
+% The y axis of figure b is written in inkscape because if I use latex as the interpreter the font cannot be arial. The fontsize in inkscape is 22.
+% The text in inkscape is slightly different from that of matlab so I deleted the xlabels and y labels in both figures and rewrote with inkscape. WZ.
+% The power and E0 in each figure have a font size of 16 in inkscape.
+
+%\begin{figure}
+  %\includegraphics[width=0.9\columnwidth,keepaspectratio]{SM_E0_to_ensemble.eps}
+		%\makeatletter
+	%\renewcommand{\fnum@figure}{\figurename~S\thefigure}
+	%\makeatother
+  %\caption{a) Experimental data on ensemble average intensity for different potentials (red squares). The black line is the fit from the Gaussian distribution of $E_0$ and the green curve shows the expected intensity for a single $E_0$ for all molecules. The blue line is the obtained intensity for the distribution estimated from SM data. b) The bar plot shows the SM measured probability density function (PDF) and the Gaussian estimate (blue), while the black curve shows the PDF corresponding to the best fit of the ensemble average data.}
+  %\label{fg:SM_mid}
+%\end{figure}
+
+\section{Fluorescence enhancement analysis}
+
+The AuNR antenna in the vicinity of a MB molecule leads to fluorescence enhancement by two main mechanisms, excitation enhancement and emission enhancement. The former one arises from the high concentration of electric field at the tips of the nanorod. When a molecule is placed inside this hot spot, the local intensity can be as high as 300 times the input laser intensity, leading to an increased excitation rate. The latter enhancement mechanism is related to the change in the radiative and nonradiative decay rates of the molecule and depends on the distance, position, and orientation of the molecular dipole moment with respect to the local field around the AuNR and on the spectral overlap between the emitter and the nanorod \cite{khatua2014resonant}. We chose our AuNR sample to maximaze the overlap with the emission of MB. Regarding the dipolar orientation, due to the flexibility of the bonds that attach the MB molecules to the glass substrate, the molecules may be in rotational diffusion at the end of their tether. The expected time scale for that diffusion is in the nanosecond range which is faster than any other process of interest here, so we may be observing an average of all the posible orientations. However, such process would not affect the reported values for the electrochemical quantities.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1\textwidth,keepaspectratio]{EF_and_lifetime.eps}
+	\makeatletter
+	\renewcommand{\fnum@figure}{\figurename~S\thefigure}
+	\makeatother
+  \caption{a) Total enhancement factor histogram for the 22 single molecules presented in Figure S\ref{fg:E0_histogram}. b) Lifetime curves for a small ensemble of unenhanced MB molecules, with a lifetime of $673$ ps (open circles) and SM lifetimes for different EC potentials noted in the legend (dots). The enhanced lifetime remained at $360$ ps regardless the applied EC potential.
+	}
+  \label{fg:EF_and_lifetime}
+\end{figure}
+
+Figure \ref{fg:EF_and_lifetime}a) shows a histogram of the total enhancement factor obtained from the SM time traces measured for this work. The enhancement factors vary from 200 to 600, a reasonable set of values for the nanorods we are using. We attribute the dispersion in values to the stochastic positioning of the molecules in the vincitiy of the nanorod as well as the molecular orientation. Figure \ref{fg:EF_and_lifetime}b) shows the comparison of the lifetime for unenhanced MB molecules and the enhanced SM data for different applied EC potentials, where a reduction in lifetime of $\approx 1.9$ was measured. Notably, the lifetime is not influenced by the applied EC potential. 
+
+
+\section{Scatter plots}
+
+From our experimental data we can also extract information about correlations between the relevant parameters of the system. Firstly we look for correlations between the SM mid-point potential and the fluorescence enhancement factor. The scatter plot in Figure S\ref{fg:EF_vs_E0} shows a positive correlation between these quantities, which is consistent with our interpretation of the high average mid-point potential for single molecules due to the near-field laser field. Using the data in Figure S\ref{fg:ensem_power_dep} and the observed value $\left<E_0^{SM}\right>=78.3$ we may estimate the average intensity felt by the molecules in the near field around $100$ W cm$^{-2}$, which is a reasonable expectation value.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1\textwidth,keepaspectratio]{EF_vs_E0_with_histograms.eps}
+	\makeatletter
+	\renewcommand{\fnum@figure}{\figurename~S\thefigure}
+	\makeatother
+  \caption{Enhancement factor as function of measured mid-point potential at single-molecule level. Each dot in the scatter plot corresponds to one molecule. The histograms for each quantity are also shown.
+	}
+  \label{fg:EF_vs_E0}
+\end{figure}
+
+Secondly, we look for correlations between the mid-point potential and the enhanced fluorescence lifetime. The natural lifetime of a small ensemble MB molecules was measured to be $673$ ps and due to the presence of the nanorod this lifetime is reduced. Figure S\ref{fg:lifetime_vs_E0} shows the scatter plot of the measured lifetime for each single molecule presented in the paper as a function of the mid-point potential. Also a histogram of lifetimes is shown. In this case no clear correlation is found between these two parameters suggesting that the electrochemical properties are not affected by a change in the population of the excited state of MB.  
+
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1\textwidth,keepaspectratio]{lifetime_vs_E0_with_histogram.eps}
+	\makeatletter
+	\renewcommand{\fnum@figure}{\figurename~S\thefigure}
+	\makeatother
+  \caption{Single-molecule fluorescence lifetime as function of measured mid-point potential. Each dot in the scatter plot corresponds to one molecule. No clear correlation is observed. 
+	}
+  \label{fg:lifetime_vs_E0}
+\end{figure}
+
+
+Finally, we correlated the single-molecule lifetime and the enhancement factors measured, as shown in the scatter plot from Figure S\ref{fg:lifetime_vs_EF}. As it was previously shown some degree of correlation is found since higher total enhancement factors are achieved when the lifetime reduction is stronger \cite{khatua2014resonant}. 
+
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.66\textwidth,keepaspectratio]{lifetime_vs_EF.eps}
+	\makeatletter
+	\renewcommand{\fnum@figure}{\figurename~S\thefigure}
+	\makeatother
+  \caption{Single-molecule fluorescence lifetime vs enhancement factor. Each dot in the scatter plot corresponds to one molecule and some correlation is found between these quantities, as expected. The open dot corresponds to the unenhanced lifetime, shown for reference. 
+	}
+  \label{fg:lifetime_vs_EF}
+\end{figure}
+
+
+
+
+
+\pagebreak
+\bibliographystyle{ieeetr} % If I use acm style, the bib doens't start from [1]. For a list of bibliography styles, see https://www.sharelatex.com/learn/Bibtex_bibliography_styles
+\bibliography{MB-bib-sup}
+
+
+\end{document}
