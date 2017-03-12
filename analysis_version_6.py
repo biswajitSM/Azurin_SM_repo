@@ -37,6 +37,7 @@ for i in list(range(1,32)):
     sheet4.write(i+1,0,i)
 
 
+
 def T_off_average(f_datn, f_emplot):
 
     #expt data
@@ -182,7 +183,7 @@ def histograms(titel, pot, pointnumbers, specific_potential, rnge_on, rnge_off, 
                         os.chdir(homedir1)
             
             
-            
+    os.chdir('..')       
     sheet1.write(0,1,int(specific_potential))
     sheet2.write(0,1,int(specific_potential)) 
     
@@ -199,19 +200,35 @@ def histograms(titel, pot, pointnumbers, specific_potential, rnge_on, rnge_off, 
     df_off_shifted_x.drop(df3_off.shape[0] - x_shift,inplace = True)
   
     
-    
+    def single_exp(x_values, constant1,constant2):
+        return(constant1*exp(-constant2*x_values))
+
+    def double_exp(x_values, constant3, constant4, constant5, constant6):
+        return(constant3*exp(-constant4*x_values) - constant5*exp(-constant6*x_values))
+                     
     fig1 = plt.figure(figsize=(12,10))
-    ax1 = fig1.add_subplot(2,1,1)
-    ax1.set_xlabel(r'$\tau_{on}$')
-    ax1.set_ylabel('#')
-    hist(df3, range=(0,max_his_on),bins=bins_on)
-    ax1.set_title('ON time %s-Azu %smV' %(proteins, specific_potential))
-    ax2 = fig1.add_subplot(2,1,2)
-    hist(df3_off, range=(0,max_his_off),bins=bins_off)
-    ax2.set_title('OFF time %s-Azu %smV' %(proteins, specific_potential))
-    ax2.set_xlabel(r'$\tau_{off}$')
-    ax2.set_ylabel('#')
-    fig1.savefig("histograms_{i}mV.png".format(i=specific_potential))   
+    plt.xlabel(r'$\tau_{on}$')
+    plt.ylabel('#')
+    n,bins_on1,patches = hist(df3, range=(0,max_his_on),bins=bins_on)
+    bin_centers_on = bins_on1[:-1] + 0.5 * (bins_on1[1:] - bins_on1[:-1])    
+    popt_single, pcov_single = curve_fit(single_exp, bin_centers_on, n, p0 = [1, 1])
+    plt.plot(bin_centers_on, single_exp(bin_centers_on, *popt_single))
+    plt.title('ON time %s-Azu %smV' %(proteins, specific_potential))
+    fig1.savefig("ON_histograms_{i}mV.png".format(i=specific_potential))   
+
+    fig10 = plt.figure(figsize=(12,10))
+    plt.title('OFF time %s-Azu %smV' %(proteins, specific_potential))
+    plt.xlabel(r'$\tau_{off}$')
+    plt.ylabel('#')
+    n_off,bins_off1,patches_off = hist(df3_off, range=(0,max_his_off),bins=bins_off)
+    bin_centers_off = bins_off1[:-1] + 0.5 * (bins_off1[1:] - bins_off1[:-1])    
+    popt_double, pcov_double = curve_fit(double_exp, bin_centers_off, n_off, p0 = [1, 1, 1, 1])
+    plt.plot(bin_centers_off, double_exp(bin_centers_off, *popt_double))
+    fig10.savefig("OFF_histograms_{i}mV.png".format(i=specific_potential))   
+    
+    print(r'Fit ON time histogram: %s * e^{-%s t}' %(popt_single[0],popt_single[1]))
+    print(r'Fit OFF time histogram: %s * e^{-%s t} - %s * e^{-%s t}' %(popt_double[0],popt_double[1],popt_double[2],popt_double[3]))
+    
 
     fig2 = plt.figure(figsize=(12,10))
     ax3 = fig2.add_subplot(2,2,1)
@@ -267,7 +284,6 @@ def histograms(titel, pot, pointnumbers, specific_potential, rnge_on, rnge_off, 
     fig.savefig("Cualltimes")
     
     wb.save(titel)
-    os.chdir('..')
 
     return()    
     
