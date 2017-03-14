@@ -230,13 +230,13 @@ def average_on_and_off_times(titel, pot, pointnumbers, proteins, homedir):
     os.chdir('..')
     return()
 
-def time_trace_plot(f_datn, f_emplot, x_lim_min, x_lim_max, y_lim_min, y_lim_max):
+def time_trace_plot(f_datn, f_emplot, x_lim_min, x_lim_max, y_lim_min, y_lim_max,binpts=1500):
 
 
     # #expt data
 
     df = pd.read_csv(f_datn, header=None)
-    binpts=5000; mi=min(df[0]); ma=mi+10;
+    mi=min(df[0]); ma=mi+10;
     df_hist = histogram(df[0], bins=binpts)
 
     #change point
@@ -267,7 +267,7 @@ def time_trace_plot(f_datn, f_emplot, x_lim_min, x_lim_max, y_lim_min, y_lim_max
     #----time trace overlapped with change-points
     plt.plot()
     plot(df_hist[1][:-1], df_hist[0]*binpts/(ma-mi), 'b')#original data
-    plot(df[0], df[1], 'r', linewidth=2)#change-point analysis
+    plot(df[0], df[1]*2, 'r', linewidth=2)#change-point analysis
     xlim(x_lim_min, x_lim_max)
     ylim(y_lim_min, y_lim_max)
     xlabel('time/s', fontsize=14, fontname='Times New Roman');
@@ -275,5 +275,100 @@ def time_trace_plot(f_datn, f_emplot, x_lim_min, x_lim_max, y_lim_min, y_lim_max
     ylabel('counts/s', fontsize=14, fontname='Times New Roman');
     yticks(fontsize=14, fontname='Times New Roman')
     legend(['expt data', 'Change-Point'], framealpha=0.5)
+
+    return()
+
+def t_ratio(pot, pointnumbers, homedir, x_prots):
+    os.chdir(homedir)
+    homedir1 = os.getcwd()
+    potential, pntnumbers = pot, pointnumbers #creates an array with dimension potential (col) x pntnumbers (rows)
+    on_time = [[None] * potential for i in range(pntnumbers)]
+    off_time = [[None] * potential for i in range(pntnumbers)]
+    t_ratio = [[None] * potential for i in range(pntnumbers)]
+    extensions = [".datn",".dat"]
+    potential_array = []
+
+    all_on_times_array = [[None] * potential for i in range(pntnumbers)]
+    all_off_times_array = [[None] * potential for i in range(pntnumbers)]
+    df3 = pd.DataFrame(columns=[potential_array])
+    df3_off = pd.DataFrame(columns=[potential_array])
+    for dirpath, dirnames, filenames in os.walk("."):
+        for filename in [f for f in filenames if f.endswith(tuple(extensions))]:
+            string_1 = 'mV'
+            string_2 = 'FCS'
+            position_FCS = filename.find(string_2)
+            if position_FCS in [-1]: #no FCS in name --> time trace file
+                number1 = filename[-11:-10] #first number
+                number2 = filename[-10:-9] #second number
+                if number1.isdigit(): #check if 1 or 2-digit number
+                    pointnumber = int(number1 + number2)
+                elif number2.isdigit():
+                    pointnumber = int(number2)
+
+                position_potential = filename.find(string_1) #determine the place where the potential number is in the filename
+                if position_potential in [-1]: #mV does not appear in the name
+                    print('Potential in %s is not properly defined.' %filename)
+                else:  #determine the potential (between -999 and +999mV)
+                    pot_number1 = filename[position_potential-1:position_potential]
+                    pot_number2 = filename[position_potential-2:position_potential-1]
+                    pot_number3 = filename[position_potential-3:position_potential-2]
+                    pot_number4 = filename[position_potential-4:position_potential-3]
+                    pot_number5 = filename[position_potential-5:position_potential-4]
+                if pot_number2 in ['_']: #filename X_voltagemV_Y
+                    potentential = pot_number1
+                elif pot_number3 in ['_']:
+                    potentential = pot_number2 + pot_number1
+                elif pot_number4 in ['_']:
+                    potentential = pot_number3 + pot_number2 + pot_number1
+                elif pot_number5 in ['_']:
+                    potentential = pot_number4 + pot_number3 + pot_number2 + pot_number1
+                potentential = int(potentential) #reading the potential
+                if potentential not in potential_array:
+                    potential_array.append(potentential) #array with unique potentials
+                    all_on_times_array.append(potentential)
+                    df3[potentential] = np.nan
+                    df3_off[potentential] = np.nan
+                for i in range(len(potential_array)): #put the on/off times in the right column with the corresponding potential
+                    if potentential == potential_array[i]:
+                        if filename.endswith('.datn'):
+                            os.chdir(dirpath)
+                            f_datn = filename
+                            f_emplot = re.sub('.datn$','.datn.em.plot',f_datn)
+                            if os.path.isfile(f_emplot):
+                                all_times = T_off_average(f_datn, f_emplot)
+                                t_on = all_times[0]
+                                t_off = all_times[1]
+                                t_on_hist = all_times[2]
+                                t_off_hist = all_times[3]
+                                t_ratio_calc = t_on / t_off
+                                on_time[pointnumber-1][i] = t_on
+                                off_time[pointnumber-1][i] = t_off
+                                t_ratio[pointnumber-1][i] = t_ratio_calc
+                                on_time_df = pd.DataFrame(t_on_hist,columns = [potential_array[i]])
+                                off_time_df = pd.DataFrame(t_off_hist,columns = [potential_array[i]])
+
+                                df3 = df3.append(on_time_df)
+                                df3_off = df3_off.append(off_time_df)
+                            else:
+                                print("The file %s does not exist" %f_emplot)
+                            os.chdir(homedir1)
+    os.chdir('..')
+
+    df_ontime = pd.DataFrame(data = on_time, index = range(1,pntnumbers+1), columns = potential_array)
+    df_offtime = pd.DataFrame(data = off_time, index = range(1,pntnumbers+1), columns = potential_array)
+    df_t_ratio = pd.DataFrame(data = t_ratio, index = range(1,pntnumbers+1), columns = potential_array)
+
+
+    fig = plt.figure(figsize=(12,10))
+    color=iter(cm.rainbow(np.linspace(0,1,x_prots)))
+    plt.title(r'$ \tau_{on} \tau_{off}^{-1}$ vs potential')
+    plt.xlabel('potential(mV)')
+    plt.yscale('log')
+    plt.ylabel(r'$\tau_{on}\tau_{off}^{-1}$')
+    for i in range(x_prots):
+        c=next(color)
+        plt.scatter(list(df_t_ratio),df_t_ratio.iloc[i], c = c)
+
+
 
     return()
