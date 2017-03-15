@@ -230,14 +230,27 @@ def average_on_and_off_times(titel, pot, pointnumbers, proteins, homedir):
     os.chdir('..')
     return()
 
-def time_trace_plot(f_datn, f_emplot, x_lim_min, x_lim_max, y_lim_min, y_lim_max,binpts=1500):
+def time_trace_plot(f_datn, f_emplot, bintime=1,xlimit=[0,10],ylimit=[0,None]):
+    '''It plots the measurement data overlapped with the output of change-point
+    output.
+    ---------------
+    Parameters:
+    f_datn: measurement data file name with file extension .datn
+    f_emplot: Output data of change point program with file extension .em.plot
+    bintime: binning time of the trace in ms
+    xlimit: Rnage of the time trace you want to display
+    ylimit: limit of the y-axis/counts
 
-
+    ---------
+    output:
+    The out put is a plot of the trace overlapped with change-point output
+    '''
     # #expt data
 
     df = pd.read_csv(f_datn, header=None)
-    mi=min(df[0]); ma=mi+10;
-    df_hist = histogram(df[0], bins=binpts)
+    len_timetrace=round(max(df[0])-min(df[0]), 1)
+    binpts=len_timetrace*1000/bintime; mi=min(df[0]); ma=mi+len_timetrace;
+    df_hist = histogram(df[0], bins=binpts, range=(mi, ma))
 
     #change point
 
@@ -267,14 +280,16 @@ def time_trace_plot(f_datn, f_emplot, x_lim_min, x_lim_max, y_lim_min, y_lim_max
     #----time trace overlapped with change-points
     plt.plot()
     plot(df_hist[1][:-1], df_hist[0]*binpts/(ma-mi), 'b')#original data
-    plot(df[0], df[1]*2, 'r', linewidth=2)#change-point analysis
-    xlim(x_lim_min, x_lim_max)
-    ylim(y_lim_min, y_lim_max)
+    plot(df[0], df[1], 'r', linewidth=2)#change-point analysis
+    xlim(xlimit[0], xlimit[1])
+    ylim(ylimit[0], ylimit[1])
     xlabel('time/s', fontsize=14, fontname='Times New Roman');
     xticks(fontsize=14, fontname='Times New Roman');
     ylabel('counts/s', fontsize=14, fontname='Times New Roman');
     yticks(fontsize=14, fontname='Times New Roman')
     legend(['expt data', 'Change-Point'], framealpha=0.5)
+
+    print("Total length of the time trace is " + str(len_timetrace))
 
     return()
 
