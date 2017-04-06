@@ -147,12 +147,23 @@ Q=\frac{\left [\textup{C}  \right ]^{a}\left [\textup{D}  \right ]^{d}}{\left [\
 \section{Electrochemical detection}
 Electrochemical detection instruments can be used for monitoring the current passing through a flow cell in liquid electrochemistry and flow injection analysis, but they can also be used for other electroanalytical applications. The potential control range of these instruments is $\pm10V$. To reach certain potentials, a constant potential is applied and the current is recorded as function of time (amperometric i-t curve), as is shown in Figure \ref{amp_curve}. Once the current in the i-t Curve is constant (i.e flat), the solution has reached the demanded potential. The data sample interval is chosen according to the length of the experiment.
 
+
 \begin{figure}[ht!]
-\centering
-\includegraphics[width= \textwidth]{amp_curve}
-\caption{The amperometric i-t curve. } 
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width= \textwidth]{amp_curve}
+
+  \label{}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.95 \linewidth]{it100mV}
+  \label{}
+\end{subfigure}
+\caption{The amperometric i-t curve.  Right: the i-t curve of oxidizing conditions. The curve goes flat within minutes allowing change in potential in relative short time scales.}
 \label{amp_curve}
 \end{figure}
+
 
 
 \chapter{Experimental setup}
@@ -171,7 +182,7 @@ To perform the experiment, a home built confocal microscope used previously for 
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=70mm]{schem_micros}
-\caption{Schematic drawing of the confocal microscope used in the chemical and electrochemical set up.}
+\caption{Schematic drawing of the confocal microscope used in the chemical and electrochemical set up. }
 \label{micros}
 \end{figure}
 

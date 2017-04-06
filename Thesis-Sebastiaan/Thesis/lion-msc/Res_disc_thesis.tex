@@ -15,9 +15,25 @@ The experiments were performed with the blue copper protein azurin from Pseudomo
 Beside the blue copper protein azurin, fluoresecntly labeled zinc azurin (ZnAz) was also used to perform experiments. This wild-type protein is used as a control since it does not show fluorescence switching when different potentials are applied.
 
 \section*{Data collection} \label{data_coll}
-The sample, mounted on the scanning stages, was brought into the focal plane of the objective. Once an areas was chosen, images of (80 x 80) ($\upmu \textup{m}^{2}$) were recorded as x-y scans. A positive and negative potential is applied and captured to detect the blinking CuAz. Images of typically (20 x 20) ($\upmu \textup{m}^{2}$) were recorded in which at least 10 blinking molecules were present. To collect data from a single molecule, the laser was parked on the blinking molecule and measurements were made for 30 seconds. Once all the blinking molecules of interest were measured, a new potential was applied and this process repeated. Many fluorophores bleach within seconds, thus only the time traces of those molecules who survived all the different potentials were included for further analysis. 
+The sample, mounted on the scanning stages, was brought into the focal plane of the objective. Once an areas was chosen, images of (80 x 80) ($\upmu \textup{m}^{2}$) were recorded as x-y scans. A positive and negative potential is applied and captured to detect the blinking CuAz. Images of typically (20 x 20) ($\upmu \textup{m}^{2}$) were recorded in which at least 10 blinking molecules were present. To collect data from a single molecule, the laser was parked on the blinking molecule and measurements were made for 30 seconds. Once all the blinking molecules of interest were measured, a new potential was applied and this process repeated. Many fluorophores bleach within seconds, thus only the timetraces of those molecules who survived all the different potentials were included for further analysis. 
 
-To make sure that the surroundings of the singe molecules were indeed the intended potential, the I-t curves were recorded at the same time.
+To make sure that the surroundings of the singe molecules were indeed the intended potential, the I-t curves were recorded at the same time. Once the I-t curves stay constant, it is assumed that the solution has the same potential as the potentiostat applies. Two examples of these I-t curves are shown in Figure \ref{it_curves}
+
+\begin{figure}[ht!]
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width= \textwidth]{it25mV}
+
+  \label{}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.95 \linewidth]{it100mV}
+  \label{}
+\end{subfigure}
+\caption{The amperometric i-t curve.  Right: the i-t curve of reducing conditions (-25 mV applied in this case). Left: the I-t curve of oxidizing conditions (100 mV applied in this case).}
+\label{it_curves}
+\end{figure}
 
 
 \section*{Time trace analysis}
@@ -79,21 +95,30 @@ Another way of looking at the $\tau_{on}$ and  $\tau_{off}$ is by plotting the d
 \end{equation}
 The reduction of $\textup{Cu}^{2+}$ to $\textup{Cu}^{1+}$ is a multi-step process. Bringing the electron close to the copper center (step 1) and reducing the copper (step 2) is happening in two short time scales. Contrary to the reduction of copper azurin, the oxidation is a single step process. This should go faster than reducing and thus shorter off times are expected to be much more present. This is in contradiction to the histograms which show an absence of these short times. Something in step 3 is delaying the oxidation. With the model presented above, this cannot be explained and further research to this subject is needed.
 
-To give the switching of the CuAz a more quantitatively meaning, the average $\tau_{on}$ ($\bar{\tau}_{on}$) and average $\tau_{on}$ ($\bar{\tau}_{off}$) can be related to the Nernst equation since the switching is due to the redox reaction of CuAz. Rewriting equation \ref{nernst} we get 
-
-\begin{equation}\label{nernst_tau}
-E = E_{0}+\frac{k_{B}T}{ne}\textup{ln}\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}}.
-\end{equation}
-At midpoint potential $\bar{\tau}_{on} = \bar{\tau}_{off}$ or differently written $\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}} = 1$. Using $\frac{k_{B}T}{ne} \approx  13 \textup{mV}$ and rewriting equation \ref{nernst_tau} to
-\begin{equation}\label{fit_onoff}
-\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}} = \textup{exp}\left ( \frac{E_{0}-E}{13} \right )
-\end{equation}
-the intersection in Figure \ref{tau_on_vs_tau_off} between $\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}} = 1$ and the fitted line of $\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}}$ will give the midpoint potential of each protein.
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=.9\textwidth]{histograms_thesis}
 \caption{Histogram distribution $\tau_{on}$ and $\tau_{off}$ at different potentials.}
 \label{histograms_disc}
 \end{figure}
+
+To give the switching of the CuAz a more quantitatively meaning, the average $\tau_{on}$ ($\bar{\tau}_{on}$) and average $\tau_{on}$ ($\bar{\tau}_{off}$) can be related to the Nernst equation since the switching is due to the redox reaction of CuAz. Rewriting equation \ref{nernst} to 
+
+\begin{equation}\label{nernst_tau}
+E = E_{0}+\frac{k_{B}T}{ne}\textup{ln}\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}}
+\end{equation}
+the average on- and off-times can be related to the potential applied. Rewriting equation \ref{nernst_tau} leads to
+\begin{equation}\label{fit_onoff}
+\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}} = \textup{exp}\left ( \frac{E_{0}-E}{0.059} \right ).
+\end{equation}
+A fit through the ratio of the $\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}}$ and the applied potential $E$ will lead to the midpoint potential $E_{0}$ of the protein. The on- and off-times above 30 mV are extracted directly from the time traces. For the potentials below 30 mV, the on- and off-times are extracted from the autocorrelation. Since the fit for the autocorrelation consist of two exponentials, the exponent in which the $\tau_{on}$ has the smallest value is considered to be the one belonging to the blinking of the dye. Using this rule the ratio $\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}}$ that belongs to the CuAz can be determined for values below the 30 mV. Using the data of one experimental day: 19 different protein under at least 8 different potentials between 0 mV and 100 mV, the midpoint potential is determined to be 25.62 mV. This is in accordance with the 25 mV given in other literature (citation needed). 
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=.9\textwidth]{t_ratio_plot}
+\caption{Plot of the ratio of $\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}}$ versus the potential of three different CuAz proteins (each represented with a different color). The dashed black line is the average fit of 15 different single CuAz.}
+\label{t_ratio_plot}
+\end{figure}
+
 
 \end{document}
