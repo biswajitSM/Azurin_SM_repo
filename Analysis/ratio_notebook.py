@@ -19,6 +19,8 @@ from lmfit import  Model, Parameter, Parameters
 import matplotlib.pyplot as plt
 
 
+
+
 def T_off_average(f_datn, f_emplot):
 
     #expt data
@@ -54,7 +56,7 @@ def T_off_average(f_datn, f_emplot):
     average_toff = np.average(df_toff);
     return(average_ton, average_toff, df_ton, df_toff)
 
-def FCS_fit(filename,tmin,tmax):
+def FCS_bi_fit(filename,tmin,tmax):
     df_fcs = pd.read_csv(filename, index_col=False, names=None, skiprows=1, header=None, sep='\ ', engine='python');
     df_fcs = df_fcs[df_fcs[0]>=tmin];
     df_fcs = df_fcs[df_fcs[0]<=tmax];
@@ -68,14 +70,36 @@ def FCS_fit(filename,tmin,tmax):
     bifit, pcov_bi = curve_fit(biexp, xdata, ydata, p0 = [10, 1, 0.5, 1], bounds=(0.01, np.inf))
     return(bifit)
 
+def FCS_mono_fit(filename,tmin,tmax):
+    df_fcs = pd.read_csv(filename, index_col=False, names=None, skiprows=1, header=None, sep='\ ', engine='python');
+    df_fcs = df_fcs[df_fcs[0]>=tmin];
+    df_fcs = df_fcs[df_fcs[0]<=tmax];
+    df_fcs = df_fcs[np.isfinite(df_fcs[2])]
+    np.isnan(df_fcs[0]);#removing nan file
+    xdata=df_fcs[0];
+    ydata=df_fcs[2];
+    def mono_exp(x, A1, t1):
+        return((A1*exp(-x/t1)))
+    
+    monofit, pcov_mono = curve_fit(mono_exp, xdata, ydata, p0 = [10, 1], bounds=(0.01, np.inf))
+    return(monofit)
 
-def t_ratio_notebook(pot, pointnumbers, homedir, x_prots, prot_number_input, save_filename, sav_filename, imp_pot, tminFCS, tmaxFCS):
+
+
+def t_ratio_notebook(pot, pointnumbers, homedir, x_prots, prot_number_input, save_filename, sav_filename, imp_pot, tminFCS, tmaxFCS, minimal_points):
+    wb = Workbook(save_filename)
+    sheet1 = wb.add_sheet('t_ratio',cell_overwrite_ok=True)
+    sheet1.write(0,0,'Potential (mV):')
+    sheet2 = wb.add_sheet('t_ratio_FCS',cell_overwrite_ok=True)
+    sheet2.write(0,0,'Potential (mV):')
+
     os.chdir(homedir)
     homedir1 = os.getcwd()
     potential, pntnumbers = pot, pointnumbers #creates an array with dimension potential (col) x pntnumbers (rows) 
     on_time = [[None] * potential for i in range(pntnumbers)]
     off_time = [[None] * potential for i in range(pntnumbers)]
     t_ratio = [[None] * potential for i in range(pntnumbers)]
+    t_ratio_FCS = [[None] * potential for i in range(pntnumbers)]
     extensions = [".datn",".dat"]
     potential_array = []
     potential_array_FCS = []
@@ -135,6 +159,8 @@ def t_ratio_notebook(pot, pointnumbers, homedir, x_prots, prot_number_input, sav
                                     t_on_hist = all_times[2]
                                     t_off_hist = all_times[3]
                                     t_ratio_calc = t_off / t_on
+                                    sheet1.write(pointnumber+2,i+1,t_ratio_calc)
+
                                     #print(t_ratio_calc)
                                     on_time[pointnumber-1][i] = t_on
                                     off_time[pointnumber-1][i] = t_off
@@ -172,14 +198,14 @@ def t_ratio_notebook(pot, pointnumbers, homedir, x_prots, prot_number_input, sav
                 elif pot_number5_FCS in ['_']:
                     potentential_FCS = pot_number4_FCS + pot_number3_FCS + pot_number2_FCS + pot_number1_FCS
                 potential_FCS = int(potentential_FCS) #reading the potential
-                if potential_FCS not in potential_array_FCS:
-                    potential_array_FCS.append(potential_FCS) #array with unique potentials
+                if potential_FCS not in potential_array:
+                    potential_array.append(potential_FCS) #array with unique potentials
                 for j in range(len(potential_array)):
                     
                     if potential_FCS == potential_array[j]:
                         if potential_FCS < imp_pot:
                             os.chdir(dirpath)
-                            variables_fit = FCS_fit(filename,tminFCS,tmaxFCS)
+                            variables_fit = FCS_bi_fit(filename,tminFCS,tmaxFCS)
                             var1 = variables_fit[0] #A1
                             var2 = variables_fit[1] #t1
                             var3 = variables_fit[2] #A2
@@ -191,38 +217,114 @@ def t_ratio_notebook(pot, pointnumbers, homedir, x_prots, prot_number_input, sav
                             ratio_1 = toff_1 / ton_1
                             ratio_2 = toff_2 /ton_2
                             if ton_1 > ton_2:
-                                t_ratio[pointnumber-1][j] = ratio_1
+                                t_ratio[pointnumberFCS-1][j] = ratio_1
+                                sheet1.write(pointnumberFCS+2,j+1,ratio_1)
+                                t_ratio_FCS[pointnumberFCS-1][j] = ratio_1
+                                sheet2.write(pointnumberFCS+2,j+1,ratio_1)
+
                             else:
-                                t_ratio[pointnumber-1][j] = ratio_2
-                                
+                                t_ratio[pointnumberFCS-1][j] = ratio_2
+                                sheet1.write(pointnumberFCS+2,j+1,ratio_2)
+                                t_ratio_FCS[pointnumberFCS-1][j] = ratio_2
+                                sheet2.write(pointnumberFCS+2,j+1,ratio_2)
+
+                        else:
+                            os.chdir(dirpath)
+                            variables_fit = FCS_mono_fit(filename,tminFCS,tmaxFCS)
+                            var1 = variables_fit[0] #A1
+                            var2 = variables_fit[1] #t1
+                            ton_1 = var2*(1+(1/var1))
+                            toff_1 = var2*(1+var1)
+                            ratio_1 = toff_1 / ton_1
+                            t_ratio_FCS[pointnumberFCS-1][j] = ratio_1
+
+
+
                             
-                        
+                            
+
+                                
+    
+                  
                         
                         os.chdir(homedir1)
     os.chdir(homedir1)
     os.chdir('..')
+
+    for i in list(range(1,pointnumbers+1)):
+        sheet1.write(i+2,0,i)
+        sheet2.write(i+2,0,i)
+
+    for i in range(len(potential_array)):
+        sheet1.write(0,1+i,int(potential_array[i]))
+        sheet2.write(0,1+i,int(potential_array[i]))
+
+    
     df_t_ratio = pd.DataFrame(data = t_ratio, index = range(1,pntnumbers+1), columns = potential_array)
+    df_t_ratio_FCS = pd.DataFrame(data = t_ratio_FCS, index = range(1,pntnumbers+1), columns = potential_array)
+
+    
+
+    
+    
+    df_t_ratio.drop(50, axis=1, inplace=True) #only for the day where 50 mV was not good data
+    df_t_ratio_FCS.drop(50, axis=1, inplace=True) #only for the day where 50 mV was not good data
+    potential_array.remove(50)
     average_ratio_1 =[]
+    average_ratio_FCS = []
     for i in potential_array:
         average_ratio_1.append(df_t_ratio[i].mean())
+        average_ratio_FCS.append(df_t_ratio_FCS[i].mean())
     
     potential_array[:] = [x / 1000 for x in potential_array]
+
+
+
     
-    #df_t_ratio.drop(50, axis=1, inplace=True)
     def nernst(x, a):
         return(10**((x - a) / 0.059))
+    
+    midpoint_potential_array = []
+    for j in range(len(potential_array)):
+        if potential_array[j] != 50:
+                
+            list_1 = []
+            potential_1 = []
+            for i in range(len(potential_array)):
+                if t_ratio[j][i] is not None:
+                    list_1.append(t_ratio[j][i])
+                    potential_1.append(potential_array[i])
+            if len(list_1) >= minimal_points:
+                midpoint_potential_array.append(curve_fit(nernst, potential_1, list_1, p0 = 0.020, bounds = (0,np.inf)))
+                    
+                    
+       
+        del list_1[:]
+        del potential_1[:]
+        #popt_1, pcov_1 = curve_fit(nernst, potential_1, list_1, p0 = 0.020, bounds = (0,np.inf))
+        #print(popt_1)
+    #print(midpoint_potential_array)
+    #print(sum(midpoint_potential_array)/len(midpoint_potential_array))
+                  
+    
     popt_0, pcov_0 = curve_fit(nernst, potential_array, average_ratio_1, p0 = 0.020, bounds = (0,np.inf))
+    popt_FCS, pcov_FCS = curve_fit(nernst, potential_array, average_ratio_FCS, p0 = 0.020, bounds = (0,np.inf))
+    
     fig = plt.figure(figsize=(12,10))
-    #color=iter(cm.rainbow(np.linspace(0,1,len(prot_number_input))))
     plt.title(r'$ \tau_{off} \tau_{on}^{-1}$ vs potential') 
-    #plt.xlim(-25,125)
     plt.xlabel('potential(mV)')
     plt.yscale('log')
     plt.ylabel(r'$\tau_{off}\tau_{on}^{-1}$')
     
-    plt.plot(potential_array, nernst(potential_array, *popt_0), 'g-') 
-    plt.plot(potential_array, average_ratio_1,'o', color = 'k')
+    plt.plot(potential_array, nernst(potential_array, *popt_0), 'g-', color = 'k') 
+    plt.plot(potential_array, average_ratio_1,'o', color = 'k', label='Average midpoint timetrace')
+    plt.plot(potential_array, nernst(potential_array, *popt_FCS), 'g-', color = 'b') 
+    plt.plot(potential_array, average_ratio_FCS,'x', color = 'b', label='Average midpoint FCS')
+    plt.legend()
 
-    print(popt_0)
-    
+    print('The (average) midpoint potential is according to timetrace/FCS: %s'%popt_0[0])
+    print('The (average) midpoint potential is according to FCS: %s'%popt_FCS[0])
+
+    wb.save(save_filename)
+
     return()    
