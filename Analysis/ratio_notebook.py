@@ -267,9 +267,9 @@ def t_ratio_notebook(pot, pointnumbers, homedir, x_prots, prot_number_input, sav
 
     
     
-    df_t_ratio.drop(50, axis=1, inplace=True) #only for the day where 50 mV was not good data
-    df_t_ratio_FCS.drop(50, axis=1, inplace=True) #only for the day where 50 mV was not good data
-    potential_array.remove(50)
+    #df_t_ratio.drop(50, axis=1, inplace=True) #only for the day where 50 mV was not good data
+    #df_t_ratio_FCS.drop(50, axis=1, inplace=True) #only for the day where 50 mV was not good data
+    #potential_array.remove(50)
     average_ratio_1 =[]
     average_ratio_FCS = []
     for i in potential_array:
