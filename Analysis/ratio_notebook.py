@@ -293,13 +293,14 @@ def t_ratio_notebook(pot, pointnumbers, homedir, x_prots, prot_number_input, sav
                 list_1.append(t_ratio[j][i])
                 potential_1.append(potential_array[i])                
         if len(list_1) >= minimal_points:
-            fit_waardes, fit_variance = curve_fit(nernst, potential_1, list_1, p0 = 0.020, bounds = (0,np.inf))
+            fit_waardes, fit_variance = curve_fit(nernst, potential_1, list_1, p0 = 0.020)
             midpoint_potential_array.append(fit_waardes[0])
             
         del list_1[:]
         del potential_1[:]
     
     av_pot_timetrace = sum(midpoint_potential_array)/len(midpoint_potential_array)
+    print(midpoint_potential_array)
     midpoint_potential_array_FCS = []
     for j in range(pointnumbers):
         list_1_FCS = []
@@ -309,13 +310,13 @@ def t_ratio_notebook(pot, pointnumbers, homedir, x_prots, prot_number_input, sav
                 list_1_FCS.append(t_ratio_FCS[j][i])
                 potential_1_FCS.append(potential_array[i])                
         if len(list_1_FCS) >= minimal_points:
-            fit_waardes_FCS, fit_variance_FCS = curve_fit(nernst, potential_1_FCS, list_1_FCS, p0 = 0.020, bounds = (0,np.inf))
+            fit_waardes_FCS, fit_variance_FCS = curve_fit(nernst, potential_1_FCS, list_1_FCS, p0 = 0.020)
             midpoint_potential_array_FCS.append(fit_waardes_FCS[0])
             
         del list_1[:]
         del potential_1[:]
     
-    
+    print(midpoint_potential_array_FCS)
     av_pot_FCS = sum(midpoint_potential_array_FCS)/len(midpoint_potential_array_FCS)   
 
 
