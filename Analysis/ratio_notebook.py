@@ -285,45 +285,61 @@ def t_ratio_notebook(pot, pointnumbers, homedir, x_prots, prot_number_input, sav
         return(10**((x - a) / 0.059))
     
     midpoint_potential_array = []
-    for j in range(len(potential_array)):
-        if potential_array[j] != 50:
-                
-            list_1 = []
-            potential_1 = []
-            for i in range(len(potential_array)):
-                if t_ratio[j][i] is not None:
-                    list_1.append(t_ratio[j][i])
-                    potential_1.append(potential_array[i])
-            if len(list_1) >= minimal_points:
-                midpoint_potential_array.append(curve_fit(nernst, potential_1, list_1, p0 = 0.020, bounds = (0,np.inf)))
-                    
-                    
-       
+    for j in range(pointnumbers):
+        list_1 = []
+        potential_1 = []
+        for i in range(len(potential_array)):
+            if t_ratio[j][i] is not None:
+                list_1.append(t_ratio[j][i])
+                potential_1.append(potential_array[i])                
+        if len(list_1) >= minimal_points:
+            fit_waardes, fit_variance = curve_fit(nernst, potential_1, list_1, p0 = 0.020, bounds = (0,np.inf))
+            midpoint_potential_array.append(fit_waardes[0])
+            
         del list_1[:]
         del potential_1[:]
-        #popt_1, pcov_1 = curve_fit(nernst, potential_1, list_1, p0 = 0.020, bounds = (0,np.inf))
-        #print(popt_1)
-    #print(midpoint_potential_array)
-    #print(sum(midpoint_potential_array)/len(midpoint_potential_array))
-                  
+    
+    av_pot_timetrace = sum(midpoint_potential_array)/len(midpoint_potential_array)
+    midpoint_potential_array_FCS = []
+    for j in range(pointnumbers):
+        list_1_FCS = []
+        potential_1_FCS = []
+        for i in range(len(potential_array)):
+            if t_ratio_FCS[j][i] is not None:
+                list_1_FCS.append(t_ratio_FCS[j][i])
+                potential_1_FCS.append(potential_array[i])                
+        if len(list_1_FCS) >= minimal_points:
+            fit_waardes_FCS, fit_variance_FCS = curve_fit(nernst, potential_1_FCS, list_1_FCS, p0 = 0.020, bounds = (0,np.inf))
+            midpoint_potential_array_FCS.append(fit_waardes_FCS[0])
+            
+        del list_1[:]
+        del potential_1[:]
+    
+    
+    av_pot_FCS = sum(midpoint_potential_array_FCS)/len(midpoint_potential_array_FCS)   
+
+
+    '''
     
     popt_0, pcov_0 = curve_fit(nernst, potential_array, average_ratio_1, p0 = 0.020, bounds = (0,np.inf))
     popt_FCS, pcov_FCS = curve_fit(nernst, potential_array, average_ratio_FCS, p0 = 0.020, bounds = (0,np.inf))
-    
+    '''
     fig = plt.figure(figsize=(12,10))
     plt.title(r'$ \tau_{off} \tau_{on}^{-1}$ vs potential') 
     plt.xlabel('potential(mV)')
     plt.yscale('log')
     plt.ylabel(r'$\tau_{off}\tau_{on}^{-1}$')
     
-    plt.plot(potential_array, nernst(potential_array, *popt_0), 'g-', color = 'k') 
+    plt.plot(potential_array, nernst(potential_array, av_pot_timetrace), 'g-', color = 'k') 
     plt.plot(potential_array, average_ratio_1,'o', color = 'k', label='Average midpoint timetrace')
-    plt.plot(potential_array, nernst(potential_array, *popt_FCS), 'g-', color = 'b') 
+    plt.plot(potential_array, nernst(potential_array, av_pot_FCS), 'g-', color = 'b') 
     plt.plot(potential_array, average_ratio_FCS,'x', color = 'b', label='Average midpoint FCS')
     plt.legend()
 
-    print('The (average) midpoint potential is according to timetrace/FCS: %s'%popt_0[0])
-    print('The (average) midpoint potential is according to FCS: %s'%popt_FCS[0])
+    print('The (average) midpoint potential is according to timetrace/FCS: %s'%av_pot_timetrace)
+    print('using %s different points' %len(midpoint_potential_array))
+    print('The (average) midpoint potential is according to FCS: %s'%av_pot_FCS)
+    print('using %s different points' %len(midpoint_potential_array_FCS))
 
     wb.save(save_filename)
 
