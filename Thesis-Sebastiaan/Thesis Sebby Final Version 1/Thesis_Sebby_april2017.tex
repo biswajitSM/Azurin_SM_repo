@@ -1,6 +1,6 @@
 \documentclass[twoside,single]{lion-msc}
 
-\title{Electrochemically changing potential}
+\title{Midpoint potential of labeled copper azurin electrochemically determined.}
 \author{Sebastiaan Van Mulken}
 \studentid{0950815}
 \supervisor{Biswajit Pradhan \\ \hspace*{\fill}Michel Orrit}
@@ -12,9 +12,11 @@
 
 
 \chapter{Introduction}
-Since the help of single-molecule fluorescence detection methods, optical studies have made many breakthroughs in the field of science. Single-molecule fluorescence resonance energy transfer (FRET) is one of the most general accepted techniques. Different kind of kinetics of proteins, such as redox switching \cite{Akklc}, have been revealed. In the past, Biswajit Pradhan has taken a closer look at the timetraces and autocorrelation of azurin labeled with ATTO 655 under different potentials. Here the potential was changed chemically: different solutions with different concentrations of ascorbate were used to achieve different potentials. The goal of this thesis is to make an experimental set up which can measure the timetraces and autocorrelation of single molecules in different potentials. However, a key difference with the set up of B. Pradhan is that the potentials are not changed chemically, but rather electrochemically. With the help of a electrochemical analyser different potentials are achieved. 
+With the help of single-molecule fluorescence detection methods, optical studies have made many breakthroughs in the field of science. Single-molecule fluorescence resonance energy transfer (FRET) is one of the most general accepted techniques. Different kind of kinetics of proteins, such as redox switching \cite{Akklc}, have been revealed. This switching can be achieved either chemically or electrochemically. Previously, this switching was monitored chemically by adjusting the concentration of oxidizing or reducing agent. In this thesis a new setup is built and tested to achieve switching of proteins electrochemically. Instead of adjusting the concentration of oxidizing or reducing agent a potentiostat will change the potential. This allows more precise and faster changing potentials. With the help of this setup the midpoint potential of blue copper azurin (CuAz) labeled with ATTO655 (position K122) has been determined. 
 
-In general the setup on its own is meaningless and rather a first step to scientific success. The results are way more important. To discuss the measurements made with the new setup, the autocorrelations of labeled azurin measured with the two different set ups are compared. 
+This thesis does not only show the results of the new setup, but also shows some insights of how the setup was established. Not only does it describe the parts that did work, but also the parts that were not successful. 
+
+
 \chapter{Theory}
 In this chapter, the fundamental physics and electrochemistry are explained which are used in the set up.
 
@@ -359,10 +361,10 @@ At this point of the process it was clear that the gold-layer as a working elect
 \chapter{Results and discussion}
 
 The experiments were performed with the blue copper protein azurin from Pseudomonas aeruginosa, labeled with ATTO655 (refered to as CuAz in the rest of the analysis). This small protein, with a molecular mass of 14 kDa, is involved in electron transfer (ET) reactions in a variety of both plants and bacteria. Its label, ATTO655, has been chosen since its properties have been well documented \cite{pvd_11}. The labeling site used in this experiment is K122 (lysine at position 122), one of the closest labeling sites to the copper center of CuAz. In the future one could label ATTO655 to a labeling site further from the copper so that the inner-dye distance changes from less to greater than the F\"{o}rster radius $R_{0}$ value for maximal sensitivity \cite{Roy2008}. 
-Beside the blue copper protein azurin, fluoresecntly labeled zinc azurin (ZnAz) was also used to perform experiments. This wild-type protein is used as a control since it does not show fluorescence switching when different potentials are applied.
+Beside the blue copper protein azurin, fluoresecntly labeled zinc azurin (ZnAz) was also used to perform experiments. This wild-type protein is used as a control. Zinc azurin does not possess the ability to redox switch, but the dye will interact with the solution. Zinc is therefore a control since exactly can be determined what the interaction between dye and solution is.
 
 \section*{Data collection} \label{data_coll}
-The sample, mounted on the scanning stages, was brought into the focal plane of the objective. Once an areas was chosen, images of (80 x 80) ($\upmu \textup{m}^{2}$) were recorded as x-y scans. A positive and negative potential is applied and captured to detect the blinking CuAz. Images of typically (20 x 20) ($\upmu \textup{m}^{2}$) were recorded in which at least 10 blinking molecules were present. To collect data from a single molecule, the laser was parked on the blinking molecule and measurements were made for 30 seconds. Once all the blinking molecules of interest were measured, a new potential was applied and this process repeated. Many fluorophores bleach within seconds, thus only the timetraces of those molecules who survived all the different potentials were included for further analysis. 
+The sample, mounted on the scanning stages, was brought into the focal plane of the objective. Once an areas was chosen, images of (80 x 80) ($\upmu \textup{m}^{2}$) were recorded as x-y scans. A positive and negative potential is applied and captured to detect the redox switching CuAz. Images of typically (20 x 20) ($\upmu \textup{m}^{2}$) were recorded in which at least 10 redox switching molecules were present. To collect data from a single molecule, the laser was parked on the blinking molecule and measurements were made for 30 seconds. Once all the blinking molecules of interest were measured, a new potential was applied and this process repeated. Many fluorophores bleach within minutes, thus only the timetraces of those molecules who survived at least four different potentials were included for further analysis. 
 
 To make sure that the surroundings of the singe molecules were indeed the intended potential, the I-t curves were recorded at the same time. Once the I-t curves stay constant, it is assumed that the solution has the same potential as the potentiostat applies. Two examples of these I-t curves are shown in Figure \ref{it_curves}
 
@@ -378,7 +380,7 @@ To make sure that the surroundings of the singe molecules were indeed the intend
   \includegraphics[width=.95 \linewidth]{it100mV}
   \label{}
 \end{subfigure}
-\caption{The amperometric i-t curve.  Right: the i-t curve of reducing conditions (-25 mV applied in this case). Left: the I-t curve of oxidizing conditions (100 mV applied in this case).}
+\caption{The amperometric i-t curve.  Left: the i-t curve of reducing conditions (-25 mV applied in this case). Right: the I-t curve of oxidizing conditions (100 mV applied in this case).}
 \label{it_curves}
 \end{figure}
 
@@ -393,32 +395,32 @@ The software used for the fluorescence lifetime imaging and correlation software
 \label{timetrace_selection}
 \end{figure}
 
-Once the timetrace is selected and put into several .dat files, another C program is run to precisely calculate the  on- ($\tau_{on}$) and off times ($\tau_{off}$). This program uses several mathematical methods to calculate the timestamps and intensity of intensity jumps in optical single molecule emission data that exhibit discrete intensity jumps, in detail described by Lucas P. Watkins and Haw Yang in their paper \cite{And2004}. As an example, several on- and off times are visualized in Figure \ref{on_off_times}. These times are defined as the duration of the CuAz being oxidized ($\tau_{on}$) and reduced ($\tau_{off}$). The intensity jumps that are controlled is what is referred to as 'switching' while the (often) unwanted and uncontrolled switching between the bright 'on' and dark 'off' states is called 'blinking'. 
+Once the timetrace is selected and put into several .dat files, another C program is run to precisely calculate the  on- ($\tau_{on}$) and off times ($\tau_{off}$). This program uses several mathematical methods to calculate the timestamps and intensity of intensity jumps in optical single molecule emission data that exhibit discrete intensity jumps, in detail described by Lucas P. Watkins and Haw Yang in their paper \cite{And2004}. As an example, several on- and off times are visualized in Figure \ref{on_off_times}. These times are defined as the duration of the CuAz being oxidized ($\tau_{on}$) and reduced ($\tau_{off}$). The intensity jumps that are due to the redox of the copper center are referred to as 'switching' while the (often) unwanted and uncontrolled intensity changes due to the dye is called 'blinking'. 
 
 \subsection*{Results and discussion timetraces CuAz}
 
-Looking at the timetraces between 100mV and 0mV (Figure \ref{plots_timetraces_diff_pot}) a trend is noticeable on sight. For the higher potentials, the $\tau_{off}$ are long and the $\tau_{on}$ are relatively short which goes hand in hand with the low amount of events. When the potential decreases the amount of events start to increase and the $\tau_{on}$ becomes longer while $\tau_{off}$ becomes shorter. The explanation for this is simply the FluRedox principle. CuAz in oxidized form (copper is in $\textup{Cu}^{2+}$) shows an absorbence maximum around 628nm which overlaps with the fluorescence emission of the ATTO655 dye as is shown earlier in Figure \ref{absorption}. Since FRET is high in this form, the fluorescence of the dye is quenched resulting in longer $\tau_{off}$. When the potential is decreasing, the solution is reducing. When CuAz is reduced - since the absorption at 628nm disappears upon reduction - the FRET is low and thus the dye  shows high fluorescence and longer $\tau_{on}$ times are expected. This principle seems to be the only role in play until the potential comes near 25mV. Here a new phenomenon is noticeable. Beside the expected  increasing $\tau_{on}$ and decreasing $\tau_{off}$ due to switching of CuAz, a secondary timescale seems to be shown in the form of very short $\tau_{on}$ in very short succession. To explain this event, a closer look has to be taken at the chemicals involved in the chemical processes concerning the redox reactions. Apart from the intramolecular electron transfer between the label and the copper center, intermolecular reactions between the redox active components in the solution and the dye are also present. For higher potentials, the time scale of the events between dye and solution are relatively high. When the potential gets lower, the solution is more and more reduced. The interaction between the dye and the reduced ascorbate and ferricyanide happen on a smaller timescale and is now prominent in the timetraces. This is more apparent when looked at the autocorrelation. The probability $I(t)$ of emission of a photon by an excited state at time t is determined by
+Looking at the timetraces between 100 mV and 0 mV (Figure \ref{plots_timetraces_diff_pot}) a trend is noticeable on sight. For the higher potentials, the $\tau_{off}$ are long and the $\tau_{on}$ are relatively short which goes hand in hand with the low amount of events. When the potential decreases the amount of events start to increase and the $\tau_{on}$ becomes longer while $\tau_{off}$ becomes shorter. The explanation for this is simply the FluRedox principle. CuAz in oxidized form (copper is in $\textup{Cu}^{2+}$) shows an absorbance maximum around 628 nm which overlaps with the fluorescence emission of the ATTO655 dye as is shown earlier in Figure \ref{absorption}. Since FRET is high in this form, the fluorescence of the dye is quenched resulting in longer $\tau_{off}$. When the potential is decreasing, the solution is reducing. When CuAz is reduced - since the absorption at 628nm disappears upon reduction - the FRET is low and thus the dye  shows high fluorescence and longer $\tau_{on}$ times are expected. This principle seems to be the only role in play until the potential comes near 25 mV. Here a new phenomenon is noticeable. Beside the expected  increasing $\tau_{on}$ and decreasing $\tau_{off}$ due to switching of CuAz, a secondary timescale seems to be shown in the form of very short $\tau_{on}$ in very short succession. To explain this event, a closer look has to be taken at the chemicals involved in the chemical processes concerning the redox reactions Intermolecular reactions between the redox active components in the solution and the dye are present. For higher potentials, the time scale of the events between dye and solution are relatively high. When the potential gets lower, the solution is more and more reduced. The interaction between the dye and the reduced ascorbate and ferricyanide happen on a smaller timescale and is now prominent in the timetraces. This is more apparent when looked at the autocorrelation. The probability $I(t)$ of emission of a photon by an excited state at time t is determined by
 \begin{equation} \label{solt}
 dI(t) = -\frac{1}{\tau(t)}I(t)dt.
 \end{equation}
 The solution of equation \ref{solt} in the case of $\tau(t) = \tau_{0}= constant$ is the classical single exponential decay function. At higher potentials the autocorrelation can be fitted with this single exponential in the form of
 \begin{equation} \label{single_exp}
-g(\tau) =  A_{1}e^{-\tau/t_{1}}
+g(\tau) =  A + Be^{-\tau/t_{1}}
 \end{equation}
-where $t_{1}$ and $A_{1}$ are constants. These constants are related to the on- and offtimes via the equations
+where $A$, $B$ and $t_{1}$ are constants. These constants are related to the on- and off-times via the equations
 \begin{equation}\label{tau_on}
-\tau_{on} = t_{1} +\frac{t_{1}}{A_{1}}
+\frac{\tau_{off}}{\tau_{on}} = \frac{B}{A}
 \end{equation}
 and
 \begin{equation}\label{tau_off}
-\tau_{off} = t_{1} +t_{1}A_{1}.
+\frac{1}{t_{1}} = \frac{1}{\tau_{on}} + \frac{1}{\tau_{off}}.
 \end{equation}
-When the potential is lowered towards the 25 mV and below, a single potential does not fit the autocorrelation but rather a sum of two exponentials fits the autocorrelation: 
-\begin{equation}\label{multi_exp}
-g(\tau) = A_{1}e^{-\tau/t_{1}} + A_{2}e^{-\tau/t_{2}}. 
-\end{equation}
-The constant-pair $t_{1}$ and $A_{1}$ and $t_{2}$ and $A_{2}$ are related with the on- and off-times according equation \ref{tau_on} and equation \ref{tau_off}. The longer $\tau_{on}$ are the ones from the switching of the CuAz, while the shorter $\tau_{on}$ is the one due to the blinking of the dye.
+These formulas are used in related autocorrelation analysis \cite{Vosch2007}. When the potential reaches values of 30 mV and below, the interaction between the dye and the reduced ascorbate and ferricyanide becomes prominent and the fit of the autocorrelation consists of two exponentials similar to the one in equation \ref{single_exp}:
 
+\begin{equation}\label{multi_exp}
+g(\tau) = A +  B_{1}e^{-\tau/t_{1}} + B_{2}e^{-\tau/t_{2}}. 
+\end{equation}
+The constants are related to the the on- and off-times according equation \ref{tau_on} and equation \ref{tau_off}. The ratio $\frac{\tau_{off}}{\tau_{on}}$ with the longer $\tau_{on}$ belongs to the redox switch of the CuAz.
 
 \begin{figure}[ht!]
 \centering
@@ -430,40 +432,40 @@ The constant-pair $t_{1}$ and $A_{1}$ and $t_{2}$ and $A_{2}$ are related with t
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=1\textwidth]{plots_timetraces_diff_pot}
-\caption{Timetraces together with its autocorrelation of the same CuAz molecule under different potentials. A clear difference between $\tau_{on}$ and $\tau_{on}$ under different potentials is visible: shorter $\tau_{on}$ for higher oxidizing potentials, longer $\tau_{on}$ for reducing lower potentials. For potentials below 25mV this pattern gets disturbed due to blinking of the ATTO665. This phenomenon is shown in the autocorrelation by changing from a single exponential fit to a multi-exponential fit.}
+\caption{Timetraces together with its autocorrelation of the same CuAz molecule under different potentials. A clear difference between $\tau_{on}$ and $\tau_{on}$ under different potentials is visible: shorter $\tau_{on}$ for higher oxidizing potentials, longer $\tau_{on}$ for reducing lower potentials. For potentials below 40 mV this pattern gets disturbed due to blinking of the ATTO665. This phenomenon is shown in the autocorrelation by changing from a single exponential fit to a multi-exponential fit.}
 \label{plots_timetraces_diff_pot}
 \end{figure}
 
 
 
-Another way of looking at the $\tau_{on}$ and  $\tau_{off}$ is by plotting the distribution of the on and off times in the timetraces. This is done in Figure \ref{histograms_disc}. The fit through these histograms will give the average on- and off-times. A very interesting phenomenon is observed in the off-times however. Where the on-times are fitted with a single exponent, the off-times have a different form. Very short off-times seem to be relatively rare. To get a deeper understanding of this a closer look has to be taken at the electron transfer process between the solution and the copper azurin.
+Another way of looking at the $\tau_{on}$ and  $\tau_{off}$ is by plotting the distribution of the on and off times in the timetraces. This is done in Figure \ref{histograms_disc}. The fit through these histograms will give the average on- and off-times. A very interesting phenomenon is observed in the off-times however. Where the on-times are fitted with a single exponent, the off-times have a different form. Very short off-times seem to be relatively rare. The distributions of  $\tau_{on}$ and  $\tau_{off}$ should be both single exponential because the reduction and oxidation coefficients are first order rate constants and involves only one rate constant.  To get a deeper understanding of this a closer look has to be taken at the electron transfer process between the solution and the copper azurin.
 \begin{equation}\label{ox_pros}
 \textup{Cu}^{2+}\xleftarrow[3]{\overset{1}{\longrightarrow}\textup{Cu}^{2+}+ e^{-}\overset{2}{\longrightarrow}}\textup{Cu}^{1+}
 \end{equation}
-The reduction of $\textup{Cu}^{2+}$ to $\textup{Cu}^{1+}$ is a multi-step process. Bringing the electron close to the copper center (step 1) and reducing the copper (step 2) is happening in two short time scales. Contrary to the reduction of copper azurin, the oxidation is a single step process. This should go faster than reducing and thus shorter off times are expected to be much more present. This is in contradiction to the histograms which show an absence of these short times. Something in step 3 is delaying the oxidation. With the model presented above, this cannot be explained and further research to this subject is needed.
+The reduction of $\textup{Cu}^{2+}$ to $\textup{Cu}^{1+}$ is a multi-step process if it is a processor-successor reaction. Bringing the electron close to the copper center (step 1) and reducing the copper (step 2) is happening in two short time scales. Therefore the reduction of copper involves two rate constants. The oxidation of the copper center is 'easier' since it involves the removal of an electron from the center. This is not consistent with the distribution, which clearly shows the absence of the very short off-times. The oxidation step is somehow delayed, suppress the very short $\tau_{off}$ times. With the model presented above, this cannot be entirely explained and further research to this subject is needed to get a better understanding.
 
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=.9\textwidth]{histograms_thesis}
-\caption{Histogram distribution $\tau_{on}$ and $\tau_{off}$ at different potentials.}
+\caption{Histogram distribution $\tau_{on}$ and $\tau_{off}$ of CuAz at different potentials.}
 \label{histograms_disc}
 \end{figure}
 
-To give the switching of the CuAz a more quantitatively meaning, the average $\tau_{on}$ ($\bar{\tau}_{on}$) and average $\tau_{on}$ ($\bar{\tau}_{off}$) can be related to the Nernst equation since the switching is due to the redox reaction of CuAz. Rewriting equation \ref{nernst} to 
+To give the redox switching of the CuAz a more quantitatively meaning, the average $\tau_{on}$ ($\bar{\tau}_{on}$) and average $\tau_{off}$ ($\bar{\tau}_{off}$) can be related to the Nernst equation since the switching is due to the redox reaction of CuAz. Rewriting equation \ref{nernst} to 
 
 \begin{equation}\label{nernst_tau}
-E = E_{0}+\frac{k_{B}T}{ne}\textup{ln}\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}}
+E = E_{0}+\frac{k_{B}T}{ne}\textup{ln}\left ( \frac{\bar{\tau}_{off}}{\bar{\tau}_{on}} \right )
 \end{equation}
 the average on- and off-times can be related to the potential applied. Rewriting equation \ref{nernst_tau} leads to
 \begin{equation}\label{fit_onoff}
 \frac{\bar{\tau}_{off}}{\bar{\tau}_{on}} = \textup{exp}\left ( \frac{E_{0}-E}{0.059} \right ).
 \end{equation}
-A fit through the ratio of the $\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}}$ and the applied potential $E$ will lead to the midpoint potential $E_{0}$ of the protein. The on- and off-times above 30 mV are extracted directly from the timetraces. For the potentials below 30 mV, the on- and off-times are extracted from the autocorrelation. Since the fit for the autocorrelation consist of two exponentials, the exponent in which the $\tau_{on}$ has the smallest value is considered to be the one belonging to the blinking of the dye. Using this rule the ratio $\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}}$ that belongs to the CuAz can be determined for values below the 30 mV. Using the data of one experimental day: 19 different protein under at least 8 different potentials between 0 mV and 100 mV, the midpoint potential is determined to be 25.62 mV. This is in accordance with the 25 mV given in other literature (citation needed). 
+A fit through the ratio of the $\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}}$ and the applied potential $E$ will lead to the midpoint potential $E_{0}$ of the protein. To extract the midpoint potential, two different methods are combined. The first method is the direct calculation of the on- and off-times from the timetraces with the use of the changepoint program written by  Lucas P. Watkins and Haw Yang. Since for potentials below 40 mV this is not accurate (due to the interaction of the dye with the surrounding solution), the midpoint potential in the range below 40 mV is calculated using the autocorrelation and the corresponding equations presented above (equation \ref{single_exp} - \ref{multi_exp}). The second method uses exclusively the autocorrelation to find the ratio of  $\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}}$ for any given potential. Further requirements in this analysis is the amount of survived potentials: the single molecules must have been active in at least four different potentials to be considered in the analysis. Using 65 different CuAz molecules, the midpoint potential is determined to be $-3.30$ mV according to the timetrace analysis and the midpoint potential according to the autocorrelation is $2.84$ mV. In Figure \ref{t_ratio_plot} the average midpoint potential is plotted together with three CuAz molecules. Also the distribution of the different midpoint potentials is shown together with a Gaussian fit. The spread in midpoint potential of CuAz has been reported earlier \cite{Salverda2010} and was found to vary by tens of millivolts across the electrode surface.  Both the midpoint potential of CuAz via autocorrelation or timetrace seem to be different from literature (around 25 mV). This kind of difference in midpoint potentials has been reported by other similar experiments \cite{Zhang2017} and explained due to strong irradiation. Single molecules show higher mid-point potential when excited at higher intensity. This aspect has to be confirmed by further research in this specific case however. 
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=.9\textwidth]{t_ratio_plot}
-\caption{Plot of the ratio of $\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}}$ versus the potential of three different CuAz proteins (each represented with a different color). The dashed black line is the average fit of 15 different single CuAz.}
+\includegraphics[width=\textwidth]{t_ratio_plot}
+\caption{Plot of the ratio of $\frac{\bar{\tau}_{off}}{\bar{\tau}_{on}}$ versus the potential of three different CuAz proteins (each represented with a different color). The lines represent the average fit of 65 different single CuAz molecules in at least four different potentials via autocorrelation or directly via timetraces. Top right: the distribution of midpoint potentials extracted from the timetraces. Bottom rightL the distribution of midpoint potentials extracted from the autocorrelation.}
 \label{t_ratio_plot}
 \end{figure}
 
