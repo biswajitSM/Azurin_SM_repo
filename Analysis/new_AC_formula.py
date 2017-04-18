@@ -14,7 +14,6 @@ global pointnumber
 
 
 from numpy import sqrt, pi, exp, linspace, loadtxt
-from lmfit import  Model, Parameter, Parameters
 
 import matplotlib.pyplot as plt
 
