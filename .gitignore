@@ -2,3 +2,4 @@
 *.aux
 *.out
 *.bak
+*.ipynb_checkpoints
