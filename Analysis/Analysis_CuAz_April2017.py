@@ -246,7 +246,7 @@ def FCS_plot(foldername, tmin, tmax, pnt_numb, pnt_pot, kind):
     return()
 
 
-def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, minimal_points):
+def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, minimal_points, inp_bins, min_range, max_range, min_x1, max_x1, min_x2, max_x2):
     wb = Workbook()
     wb2 = Workbook()
     maindir = os.getcwd()
@@ -537,9 +537,46 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
     print('The average midpoint potential according to FCS:')
     print(sum(midpoint_potential_array_FCS)/len(midpoint_potential_array_FCS))
     
+    #-------FIgure Parameters---------------
+    fig, axes = subplots(figsize=(10, 10), ncols=1, nrows=2)
+    # plt.figure()
+    mpl.rcParams["font.family"] = "sans-serif"
+    mpl.rcParams["font.size"] = "14"
+
+    range_fit = [min_range, max_range]
+    bins = inp_bins
+    bin_centers_on = linspace(range_fit[0], range_fit[1], bins)
+    x=linspace(range_fit[0], range_fit[1], 100)# for a smooth fitting plot include more points
+
+    def gaus(x,M,sigma):
+        return exp(-((x-M)**2)/(2*sigma**2))/(sigma*sqrt(2*pi))
+
+    #Change point--------------------------
+    n,bins_on1,patches = axes[0].hist(midpoint_potential_array, bins = bins, range=range_fit, color='b', label='Change Point')
+    popt, pcov = curve_fit(gaus, bin_centers_on, n)
+    E_mean = popt[0]*1000; #in mV
+    FWHM = 2.3548*popt[1]*1000; #in mV
+    axes[0].plot(x,gaus(x,*popt), color = 'k', linewidth = 3, label='$E^0_{avg}$ is %.2f mV\n FWHM is %.2f mV' %(E_mean, FWHM))
+    axes[0].set_xlim(min_x1, max_x1)
+    axes[0].set_ylabel('P', fontsize=16)
+    axes[0].legend()
+
+    #FCS plot------------------------------
+    n,bins_on1,patches = axes[1].hist(midpoint_potential_array_FCS, bins = bins, range=range_fit, color='r', label='FCS')
+    popt, pcov = curve_fit(gaus, bin_centers_on, n)
+    E_mean = popt[0]*1000; #in mV
+    FWHM = 2.3548*popt[1]*1000; #in mV
+    axes[1].plot(x, gaus(x,*popt), color = 'k', linewidth = 3, label='$E^0_{avg}$ is %.2f mV\n FWHM is %.2f mV' %(E_mean, FWHM))
+
+    axes[1].set_xlim(min_x2, max_x2)
+    axes[1].set_xlabel('Potential[Volt]')
+    axes[1].set_ylabel('P')
+    axes[1].legend()
+
+    fig.tight_layout()
+    plt.show()
     
-    
-    
+    '''
     fig = plt.figure(figsize=(12,10))
     ax1 = fig.add_subplot(211)
     xlim(-0.08, 0.08)
@@ -553,6 +590,7 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
     n_FCS,bins_FCS,patches_FCS = plt.hist(midpoint_potential_array_FCS)
     wb.save(excel_name)
     wb2.save(excel_name_FCS)
+    '''
     return()
 
 def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on, bins_off, proteins, homedir, max_his_on, max_his_off, x_shift):
@@ -643,9 +681,14 @@ def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on
     plt.xlabel(r'$\tau_{on}$')
     plt.ylabel('#')
     n,bins_on1,patches = hist(df3, range=(0,max_his_on),bins=bins_on)
-    bin_centers_on = bins_on1[:-1] + 0.5 * (bins_on1[1:] - bins_on1[:-1])    
-    popt_single, pcov_single = curve_fit(single_exp, bin_centers_on, n, p0 = [1, 1])
-    plt.plot(bin_centers_on, single_exp(bin_centers_on, *popt_single))
+    bin_centers_on = bins_on1[:-1] + 0.5 * (bins_on1[1:] - bins_on1[:-1])
+    try:
+        popt_single, pcov_single = curve_fit(single_exp, bin_centers_on, n, p0 = [1, 1])
+        plt.plot(bin_centers_on, single_exp(bin_centers_on, *popt_single))
+        print(r'Fit ON time histogram: %s * e^{-%s t}' %(popt_single[0],popt_single[1]))
+
+    except RuntimeError:
+        print('Fit failed')
     plt.title('ON time %s-Azu %smV' %(proteins, specific_potential))
 
     fig10 = plt.figure(figsize=(12,10))
@@ -654,11 +697,14 @@ def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on
     plt.ylabel('#')
     n_off,bins_off1,patches_off = hist(df3_off, range=(0,max_his_off),bins=bins_off)
     bin_centers_off = bins_off1[:-1] + 0.5 * (bins_off1[1:] - bins_off1[:-1])    
-    popt_double, pcov_double = curve_fit(double_exp, bin_centers_off, n_off, p0 = [1, 1, 1, 1])
-    plt.plot(bin_centers_off, double_exp(bin_centers_off, *popt_double))
+    try:
+        popt_double, pcov_double = curve_fit(double_exp, bin_centers_off, n_off, p0 = [1, 1, 1, 1])
+        plt.plot(bin_centers_off, double_exp(bin_centers_off, *popt_double))
+        print(r'Fit OFF time histogram: %s * e^{-%s t} - %s * e^{-%s t}' %(popt_double[0],popt_double[1],popt_double[2],popt_double[3]))
     
-    print(r'Fit ON time histogram: %s * e^{-%s t}' %(popt_single[0],popt_single[1]))
-    print(r'Fit OFF time histogram: %s * e^{-%s t} - %s * e^{-%s t}' %(popt_double[0],popt_double[1],popt_double[2],popt_double[3]))
+        
+    except RuntimeError:
+        print('Fit failed')
     
 
     fig2 = plt.figure(figsize=(12,10))
