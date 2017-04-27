@@ -262,7 +262,7 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
         
     extensions = [".datn",".dat"] #file extensions we are interested in
     list_direct = []
-    w, h = 30, 300;
+    w, h = 24, 300;
     t_ratio_TT = [[None for x in range(w)] for y in range(h)]
     t_ratio_FCS = [[None for x in range(w)] for y in range(h)]
     list_pointnumbers = []
@@ -487,6 +487,8 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
         ws2.write(0, 1, 'Potential(mV):')
         ws2.write(1, 1, 'Pointnumber:')
         ws.write(1, 1, 'Pointnumber:')
+        ws2.write(0, len(potential_array)+2, 'Midpoint Potential (in mV):')
+        
         for i in range(len(potential_array)):
             ws.write(0,i+2,potential_array[i]) 
             ws2.write(0,i+2,potential_array[i])
@@ -497,7 +499,10 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
 
     #making the values into mV        
     potential_array[:] = [x / 1000 for x in potential_array]
-        
+    
+    #This part goes through the matrix with all the ratios 
+    
+    list_mp = []    
     midpoint_potential_array = []
     for j in range(len(list_direct) * 24):
         list_1 = []
@@ -507,17 +512,22 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
             
 
             if t_ratio_TT[j][i] is not None:
+                #saving ratios with their potentials for each point
                 list_1.append(t_ratio_TT[j][i])
                 potential_1.append(potential_array[i])
 
         if len(list_1) >= minimal_points:
             fit_waardes, fit_variance = curve_fit(nernst, potential_1, list_1, p0 = 0.020)
             midpoint_potential_array.append(fit_waardes[0])
+            list_mp.append(fit_waardes[0])
+        else:
+            list_mp.append(None)
             
         del list_1[:]
         del potential_1[:]
-        
+   
     midpoint_potential_array_FCS = []
+    list_mp_FCS = []
     for j in range(len(list_direct) * 24):
         list_FCS = []
         potential_FCS = []
@@ -528,10 +538,32 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
         if len(list_FCS) >= minimal_points:
             fit_waardes, fit_variance = curve_fit(nernst, potential_FCS, list_FCS, p0 = 0.020)
             midpoint_potential_array_FCS.append(fit_waardes[0])
+            list_mp_FCS.append(fit_waardes[0])
+        else:
+            list_mp_FCS.append(None)
+            
             
         del list_FCS[:]
         del potential_FCS[:]
+    for i in range(len(list_mp)):
+        if list_mp[i] is not None:
+            list_mp[i] = list_mp[i] * 1000
+    for i in range(len(list_mp_FCS)):
+        if list_mp_FCS[i] is not None:
+            list_mp_FCS[i] = list_mp_FCS[i] * 1000
     
+    
+    for i in range(len(list_direct)):
+        ws = wb.get_sheet(i)
+        for j in range(24):
+            ws.write(j+3, len(potential_array)+2, list_mp[i*24 + j])
+        ws2 = wb2.get_sheet(i)
+        for k in range(24):
+            ws2.write(k+3, len(potential_array)+2, list_mp_FCS[i*24 + k])
+        
+
+        
+            
     print('The average midpoint potential according to TT:')
     print(sum(midpoint_potential_array)/len(midpoint_potential_array))
     print('The average midpoint potential according to FCS:')
@@ -576,24 +608,14 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
     fig.tight_layout()
     plt.show()
     
-    '''
-    fig = plt.figure(figsize=(12,10))
-    ax1 = fig.add_subplot(211)
-    xlim(-0.08, 0.08)
-
-    #plt.plot(x, gaus(x,*popt), color = 'k', linewidth = 3)
-    n_TT,bins_TT,patches_TT = plt.hist(midpoint_potential_array)
-    ax2 = fig.add_subplot(212)
-    #plt.plot(x, gaus(x,*popt), color = 'k', linewidth = 3)
-    xlim(-0.08, 0.08)
-
-    n_FCS,bins_FCS,patches_FCS = plt.hist(midpoint_potential_array_FCS)
+    
     wb.save(excel_name)
     wb2.save(excel_name_FCS)
-    '''
+    
     return()
 
 def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on, bins_off, proteins, homedir, max_his_on, max_his_off, x_shift):
+    parentdir = os.getcwd()
     os.chdir(homedir)
     homedir1 = os.getcwd()
     potential, pntnumbers = pot, pointnumbers #creates an array with dimension potential (col) x pntnumbers (rows) 
@@ -657,8 +679,7 @@ def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on
                         os.chdir(homedir1)
             
             
-    os.chdir('..')       
-    
+    os.chdir(parentdir)       
  
     df_on_shifted = df3.shift(+1) ## shift up
     df_on_shifted.drop(df3.shape[0] - 1,inplace = True)
@@ -680,7 +701,10 @@ def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on
     fig1 = plt.figure(figsize=(12,10))
     plt.xlabel(r'$\tau_{on}$')
     plt.ylabel('#')
+    plt.yscale('log')
+
     n,bins_on1,patches = hist(df3, range=(0,max_his_on),bins=bins_on)
+    '''
     bin_centers_on = bins_on1[:-1] + 0.5 * (bins_on1[1:] - bins_on1[:-1])
     try:
         popt_single, pcov_single = curve_fit(single_exp, bin_centers_on, n, p0 = [1, 1])
@@ -689,13 +713,17 @@ def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on
 
     except RuntimeError:
         print('Fit failed')
+    '''
     plt.title('ON time %s-Azu %smV' %(proteins, specific_potential))
 
     fig10 = plt.figure(figsize=(12,10))
     plt.title('OFF time %s-Azu %smV' %(proteins, specific_potential))
     plt.xlabel(r'$\tau_{off}$')
     plt.ylabel('#')
+    plt.yscale('log')
+
     n_off,bins_off1,patches_off = hist(df3_off, range=(0,max_his_off),bins=bins_off)
+    '''
     bin_centers_off = bins_off1[:-1] + 0.5 * (bins_off1[1:] - bins_off1[:-1])    
     try:
         popt_double, pcov_double = curve_fit(double_exp, bin_centers_off, n_off, p0 = [1, 1, 1, 1])
@@ -705,7 +733,7 @@ def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on
         
     except RuntimeError:
         print('Fit failed')
-    
+    '''
 
     fig2 = plt.figure(figsize=(12,10))
     ax3 = fig2.add_subplot(2,2,1)
