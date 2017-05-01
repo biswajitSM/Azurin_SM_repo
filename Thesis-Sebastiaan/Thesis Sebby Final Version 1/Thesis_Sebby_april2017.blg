@@ -1,8 +1,8 @@
 This is BibTeX, Version 0.99dThe top-level auxiliary file: Thesis_Sebby_april2017.aux
-I couldn't open style file lion-msc.bst
----line 148 of file Thesis_Sebby_april2017.aux
- : \bibstyle{lion-msc
- :                   }
-I'm skipping whatever remains of this command
-I found no style file---while reading file Thesis_Sebby_april2017.aux
-(There were 2 error messages)
+The style file: lion-msc.bst
+Database file #1: THESIS.bib
+Repeated entry---line 177 of file THESIS.bib
+ : @article{And2004
+ :                 ,
+I'm skipping whatever remains of this entry
+(There was 1 error message)
