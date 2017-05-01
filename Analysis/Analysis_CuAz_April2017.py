@@ -612,9 +612,9 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
     wb.save(excel_name)
     wb2.save(excel_name_FCS)
     
-    return()
+    return(midpoint_potential_array, midpoint_potential_array_FCS)
 
-def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on, bins_off, proteins, homedir, max_his_on, max_his_off, x_shift):
+def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on, bins_off, proteins, homedir, max_his_on, max_his_off, x_shift, plots=False):
     parentdir = os.getcwd()
     os.chdir(homedir)
     homedir1 = os.getcwd()
@@ -698,72 +698,72 @@ def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on
     def double_exp(x_values, constant3, constant4, constant5, constant6):
         return(constant3*exp(-constant4*x_values) - constant5*exp(-constant6*x_values))
                      
-    fig1 = plt.figure(figsize=(12,10))
-    plt.xlabel(r'$\tau_{on}$')
-    plt.ylabel('#')
-    plt.yscale('log')
-
-    n,bins_on1,patches = hist(df3, range=(0,max_his_on),bins=bins_on)
-    '''
-    bin_centers_on = bins_on1[:-1] + 0.5 * (bins_on1[1:] - bins_on1[:-1])
-    try:
-        popt_single, pcov_single = curve_fit(single_exp, bin_centers_on, n, p0 = [1, 1])
-        plt.plot(bin_centers_on, single_exp(bin_centers_on, *popt_single))
-        print(r'Fit ON time histogram: %s * e^{-%s t}' %(popt_single[0],popt_single[1]))
-
-    except RuntimeError:
-        print('Fit failed')
-    '''
-    plt.title('ON time %s-Azu %smV' %(proteins, specific_potential))
-
-    fig10 = plt.figure(figsize=(12,10))
-    plt.title('OFF time %s-Azu %smV' %(proteins, specific_potential))
-    plt.xlabel(r'$\tau_{off}$')
-    plt.ylabel('#')
-    plt.yscale('log')
-
-    n_off,bins_off1,patches_off = hist(df3_off, range=(0,max_his_off),bins=bins_off)
-    '''
-    bin_centers_off = bins_off1[:-1] + 0.5 * (bins_off1[1:] - bins_off1[:-1])    
-    try:
-        popt_double, pcov_double = curve_fit(double_exp, bin_centers_off, n_off, p0 = [1, 1, 1, 1])
-        plt.plot(bin_centers_off, double_exp(bin_centers_off, *popt_double))
-        print(r'Fit OFF time histogram: %s * e^{-%s t} - %s * e^{-%s t}' %(popt_double[0],popt_double[1],popt_double[2],popt_double[3]))
-    
+    if plots==True:
         
-    except RuntimeError:
-        print('Fit failed')
-    '''
+        fig1, axes1 = plt.subplots(1, 2, figsize=(10,4))
 
-    fig2 = plt.figure(figsize=(12,10))
-    ax3 = fig2.add_subplot(2,2,1)
-    hist2d(df3[specific_potential],df_on_shifted[specific_potential], range=rnge_on ,bins=bins_on, norm=LogNorm());
-    colorbar()
-    ax3.set_title('ON time %s-Azu %smV' %(proteins, specific_potential))
-    ax3.set_xlabel(r'$\tau_{on}/s$')
-    ax3.set_ylabel(r'$\tau_{on}+1/s$')
-        
-    ax4 = fig2.add_subplot(2,2,2)
-    hist2d(df3_off[specific_potential],df_off_shifted[specific_potential], range=rnge_off,bins=bins_off, norm=LogNorm());
-    colorbar()
-    ax4.set_title('OFF time %s-Azu %smV' %(proteins, specific_potential))
-    ax4.set_xlabel(r'$\tau_{off}/s$')
-    ax4.set_ylabel(r'$\tau_{off}+1/s$')
-    plt.tight_layout()
-    
-    ax5 = fig2.add_subplot(2,2,3)
-    hist2d(df3[specific_potential],df_on_shifted_x[specific_potential], range=rnge_on ,bins=bins_on, norm=LogNorm());
-    colorbar()
-    ax5.set_title('ON time %s-Azu %smV' %(proteins, specific_potential))
-    ax5.set_xlabel(r'$\tau_{on}/s$')
-    ax5.set_ylabel(r'$\tau_{off}+%s/s$' %x_shift)
-        
-    ax6 = fig2.add_subplot(2,2,4)
-    hist2d(df3_off[specific_potential],df_off_shifted_x[specific_potential], range=rnge_off,bins=bins_off, norm=LogNorm());
-    colorbar()
-    ax6.set_title('OFF time %s-Azu %smV' %(proteins, specific_potential))
-    ax6.set_xlabel(r'$\tau_{off}/s$')
-    ax6.set_ylabel(r'$\tau_{off}+%s/s$' %x_shift)
-    plt.tight_layout()    
+        n,bins_on1,patches = axes1[0].hist(df3, range=(0,max_his_on),bins=bins_on)
+        axes1[0].set_xlabel(r'$\tau_{on}$')
+        axes1[0].set_ylabel('#')
+        axes1[0].set_yscale('log')
+        axes1[0].set_title("ON time %s-Azu %smV" %(proteins, specific_potential))
+        '''
+        bin_centers_on = bins_on1[:-1] + 0.5 * (bins_on1[1:] - bins_on1[:-1])
+        try:
+            popt_single, pcov_single = curve_fit(single_exp, bin_centers_on, n, p0 = [1, 1])
+            plt.plot(bin_centers_on, single_exp(bin_centers_on, *popt_single))
+            print(r'Fit ON time histogram: %s * e^{-%s t}' %(popt_single[0],popt_single[1]))
 
-    return()    
+        except RuntimeError:
+            print('Fit failed')
+        '''
+        n_off,bins_off1,patches_off = axes1[1].hist(df3_off, range=(0,max_his_off),bins=bins_off)
+        axes1[1].set_xlabel(r'$\tau_{off}$')
+        axes1[1].set_ylabel('#')
+        axes1[1].set_yscale('log')
+        axes1[1].set_title('OFF time %s-Azu %smV' %(proteins, specific_potential))
+
+        '''
+        bin_centers_off = bins_off1[:-1] + 0.5 * (bins_off1[1:] - bins_off1[:-1])    
+        try:
+            popt_double, pcov_double = curve_fit(double_exp, bin_centers_off, n_off, p0 = [1, 1, 1, 1])
+            plt.plot(bin_centers_off, double_exp(bin_centers_off, *popt_double))
+            print(r'Fit OFF time histogram: %s * e^{-%s t} - %s * e^{-%s t}' %(popt_double[0],popt_double[1],popt_double[2],popt_double[3]))
+
+
+        except RuntimeError:
+            print('Fit failed')
+        '''
+
+        fig2 = plt.figure(figsize=(12,10))
+        ax3 = fig2.add_subplot(2,2,1)
+        hist2d(df3[specific_potential],df_on_shifted[specific_potential], range=rnge_on ,bins=bins_on, norm=LogNorm());
+        colorbar()
+        ax3.set_title('ON time %s-Azu %smV' %(proteins, specific_potential))
+        ax3.set_xlabel(r'$\tau_{on}/s$')
+        ax3.set_ylabel(r'$\tau_{on}+1/s$')
+
+        ax4 = fig2.add_subplot(2,2,2)
+        hist2d(df3_off[specific_potential],df_off_shifted[specific_potential], range=rnge_off,bins=bins_off, norm=LogNorm());
+        colorbar()
+        ax4.set_title('OFF time %s-Azu %smV' %(proteins, specific_potential))
+        ax4.set_xlabel(r'$\tau_{off}/s$')
+        ax4.set_ylabel(r'$\tau_{off}+1/s$')
+        plt.tight_layout()
+
+        ax5 = fig2.add_subplot(2,2,3)
+        hist2d(df3[specific_potential],df_on_shifted_x[specific_potential], range=rnge_on ,bins=bins_on, norm=LogNorm());
+        colorbar()
+        ax5.set_title('ON time %s-Azu %smV' %(proteins, specific_potential))
+        ax5.set_xlabel(r'$\tau_{on}/s$')
+        ax5.set_ylabel(r'$\tau_{off}+%s/s$' %x_shift)
+
+        ax6 = fig2.add_subplot(2,2,4)
+        hist2d(df3_off[specific_potential],df_off_shifted_x[specific_potential], range=rnge_off,bins=bins_off, norm=LogNorm());
+        colorbar()
+        ax6.set_title('OFF time %s-Azu %smV' %(proteins, specific_potential))
+        ax6.set_xlabel(r'$\tau_{off}/s$')
+        ax6.set_ylabel(r'$\tau_{off}+%s/s$' %x_shift)
+        plt.tight_layout()    
+
+    return(df3, df_on_shifted, df_on_shifted_x, df3_off, df_off_shifted, df_off_shifted_x)    
