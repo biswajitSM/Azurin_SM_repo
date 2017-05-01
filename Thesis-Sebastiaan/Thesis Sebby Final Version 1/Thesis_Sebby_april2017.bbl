@@ -1,9 +1,9 @@
 \begin{thebibliography}{10}
 
 \bibitem{Akklc}
-N.~Akkılı{\c{c}} and F.~d.~W. en~Natuurwetenschappen,
+N.~Akkılı{\c{c}},
 \newblock {\em {Fluorescent electrochemistry : towards controlled
-  redox-switching of a single metalloprotein}}.
+  redox-switching of a single metalloprotein}}, 2013.
 
 \bibitem{Tabares2014}
 L.~C. Tabares, A.~Gupta, T.~J. Aartsma, and G.~W. Canters, {\em {Tracking
@@ -12,7 +12,7 @@ L.~C. Tabares, A.~Gupta, T.~J. Aartsma, and G.~W. Canters, {\em {Tracking
 
 \bibitem{BORMAN2010}
 S.~BORMAN, {\em {ELECTRON-TRANSFER PROTEINS TWEAKED}},
-\newblock Chemical {\&} Engineering News  (2010).
+\newblock Chemical {\&} Engineering News {\bf 87}, 47 (2009).
 
 \bibitem{Schwille}
 P.~Schwille and E.~Haustein, {\em {Fluorescence Correlation Spectroscopy An
@@ -68,27 +68,8 @@ R.~Roy, S.~Hohng, and T.~Ha, {\em {A practical guide to single-molecule FRET}},
 \newblock Nature Methods {\bf 5}, 507 (2008).
 
 \bibitem{And2004}
-L.~P.~W. And and H.~Yang*, {\em {Detection of Intensity Change Points in
+L.~P. Watkins and H.~Yang, {\em {Detection of Intensity Change Points in
   Time-Resolved Single-Molecule Measurements}},
-\newblock (2004).
-
-\bibitem{Vosch2007}
-T.~Vosch, Y.~Antoku, J.-C. Hsiang, C.~I. Richards, J.~I. Gonzalez, and R.~M.
-  Dickson, {\em {Strongly emissive individual DNA-encapsulated Ag nanoclusters
-  as single-molecule fluorophores.}},
-\newblock Proceedings of the National Academy of Sciences of the United States
-  of America {\bf 104}, 12616 (2007).
-
-\bibitem{Salverda2010}
-J.~Salverda, A.~Patil, G.~Mizzon, S.~Kuznetsova, G.~Zauner, N.~Akkilic,
-  G.~Canters, J.~Davis, H.~Heering, and T.~Aartsma, {\em {Fluorescent Cyclic
-  Voltammetry of Immobilized Azurin: Direct Observation of Thermodynamic and
-  Kinetic Heterogeneity}},
-\newblock Angewandte Chemie International Edition {\bf 49}, 5776 (2010).
-
-\bibitem{Zhang2017}
-W.~Zhang, M.~Caldarola, B.~Pradhan, and M.~Orrit, {\em {Gold Nanorod Enhanced
-  Fluorescence Enables Single-Molecule Electrochemistry of Methylene Blue}},
-\newblock Angewandte Chemie International Edition {\bf 56}, 3566 (2017).
+\newblock The Journal of Physical Chemistry B {\bf 109}, 617 (2005).
 
 \end{thebibliography}

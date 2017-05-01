@@ -3,3 +3,6 @@
 *.out
 *.bak
 *.ipynb_checkpoints
+*.bbl
+*.blg
+*.synnctex.gz
