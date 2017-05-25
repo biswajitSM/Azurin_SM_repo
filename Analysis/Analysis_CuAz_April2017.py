@@ -53,11 +53,16 @@ def T_off_average(f_datn, f_emplot):
     return(average_ton, average_toff, df_ton, df_toff)
 
 
-def time_trace_plot(foldername, input_potential, input_number, x_lim_min, y_lim_min, x_lim_max, y_lim_max):
+def time_trace_plot(foldername='S101d14Feb17_60.5_635_A2_CuAzu655', input_potential=[0, 25],
+                    input_number=1, x_lim_min=0, y_lim_min=0, x_lim_max=5, y_lim_max=5000, bin=1, show_changepoint=True):
+    """bin=1 in millisecond"""
     maindir = os.getcwd()
     os.chdir(foldername)
     folderdir = os.getcwd()
     extensions = [".datn"] #file extensions we are interested in
+    fig, ax = plt.subplots(figsize = (10, 8))
+    subplots_adjust(hspace=0.000);
+    
     for dirpath, dirnames, filenames in os.walk("."):
         for filename in [f for f in filenames if f.endswith(tuple(extensions))]: 
             #looking through all folders
@@ -92,50 +97,52 @@ def time_trace_plot(foldername, input_potential, input_number, x_lim_min, y_lim_
                 elif pot_number5 in ['_']:
                     potentential = pot_number4 + pot_number3 + pot_number2 + pot_number1
                 potentential = int(potentential) #reading the potential
-                if potentential == input_potential and pointnumber == input_number:
-                    os.chdir(dirpath)
-                    f_datn = filename
-                    f_emplot = re.sub('.datn$','.datn.em.plot',f_datn)
-                    if os.path.isfile(f_emplot):
-                        #raw data
-                        df = pd.read_csv(f_datn, header=None)
-                        binpts=5000; mi=min(df[0]); ma=mi+10;
-                        df_hist = histogram(df[0], bins=binpts)
-                        #change point
-                        df = pd.read_csv(f_emplot, header=None, sep='\t')
-                        df_diff= diff(df[0])
-                        #calculating Ton and Toff
-                        df_tag = df[[0, 1]];# df_ton = df_ton[1:]
-                        df_tag = pd.DataFrame([df_tag[0][1:], diff(df_tag[1])]); df_tag = df_tag.T;
-                        df_tag.columns = [0, 1];
-                        df_tag = df_tag[df_tag[1] != 0];
-                        df_tag.reset_index(drop=True, inplace=True);
-                        if df_tag[1][0] < 0:
-                            df_tag = df_tag[1:]
-                            df_tag.reset_index(drop=True, inplace=True);
-                        df_tag_pos = df_tag[df_tag[1]==max(df_tag[1])];df_tag_pos.reset_index(drop=True, inplace=True);
-                        df_tag_neg = df_tag[df_tag[1]==min(df_tag[1])];df_tag_neg.reset_index(drop=True, inplace=True);
-                        df_ton = df_tag_neg[0]-df_tag_pos[0];df_ton.reset_index(drop=True, inplace=True);
-                        t1=df_tag_pos[0][1:]; t1.reset_index(drop=True, inplace=True);
-                        t2=df_tag_neg[0]; t1.reset_index(drop=True, inplace=True);
-                        df_toff = t1 - t2; df_toff = df_toff[:df_toff.shape[0]-2];df_ton.reset_index(drop=True, inplace=True)
-                        df_onhist= histogram(df_ton[0], bins=100, range=(0, 0.5))
-                        df_offhist = histogram(df_toff[0], bins=100, range=(0, 0.5))
+                for i in range(len(input_potential)):
+                    given_potential = input_potential[i]
+                    if potentential == given_potential and pointnumber == input_number:
+                        os.chdir(dirpath)
+                        f_datn = filename
+                        f_emplot = re.sub('.datn$','.datn.em.plot',f_datn)
+                        ax = subplot(len(input_potential),1,i+1)
+                        if os.path.isfile(f_emplot):
+                            #raw data
+                            df = pd.read_csv(f_datn, header=None)
+                            tt_length=max(df[0])-min(df[0])
+                            tt_length = round(tt_length, 0)
+                            binpts=tt_length*1000/bin
+                            df_hist = histogram(df[0], bins=binpts,range=(min(df[0]), max(df[0])))
+                            #change point
+                            df = pd.read_csv(f_emplot, header=None, sep='\t')
 
-                        figure(figsize=(12,10))
-                        #----time trace overlapped with change-points
-                        plt.plot()
-                        plot(df_hist[1][:-1], df_hist[0]*binpts/(ma-mi), 'b')#original data
-                        plot(df[0], df[1], 'r', linewidth=2)#change-point analysis
-                        xlim(x_lim_min, x_lim_max)
-                        ylim(y_lim_min, y_lim_max)
-                        xlabel('time/s', fontsize=12, fontname='Times New Roman')
-                        ylabel('counts/s', fontsize=12, fontname='Times New Roman')                            
-                    else:
-                        print("The file %s does not exist" %f_emplot)
-                    os.chdir(folderdir)  
+                            #----time trace overlapped with change-points
+                            plt.plot()
+                            plot(df_hist[1][:-1], df_hist[0]/bin, 'b', label=str(given_potential)+" mV")#original data
+                            if show_changepoint == True:
+                                plot(df[0], df[1]*0.8/1000, 'r', linewidth=2, label='')#change-point analysis
+                            xticks([])
+                            yticks(range(0, y_lim_max, 2), fontsize=16)
+                            if i == len(input_potential)-1:
+                                xticks(range(0, x_lim_max+1, 1), fontsize=16)
+                                yticks(range(0, y_lim_max, 2), fontsize=16)
+                                ax.set_xlabel('time/s', fontsize=16)
+                            tick_params(
+                                axis='y',          # changes apply to the x-axis
+                                which='both',      # both major and minor ticks are affected
+                                labelleft='on',      # ticks along the bottom edge are off
+                                top='off',         # ticks along the top edge are off
+                                labelbottom='off') # labels along the bottom edge are off
+#                                 ax.set_ylabel('Fluorescence(kcps)', fontsize=16)
+                            
+                            xlim(x_lim_min, x_lim_max)
+                            ylim(y_lim_min, y_lim_max)
+                            
+                            legend(fontsize=16, framealpha=0.5)
+                        else:
+                            print("The file %s does not exist" %f_emplot)
+                        os.chdir(folderdir)
+    ax.set_ylabel('Fluorescence(kcps)', fontsize=16)
     os.chdir(maindir)    
-    return()
+    return(fig)
 
 def FCS_mono_fit(filename,tmin,tmax):
     df_fcs = pd.read_csv(filename, index_col=False, names=None, skiprows=1, header=None, sep='\ ', engine='python');
