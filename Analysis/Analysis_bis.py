@@ -14,7 +14,12 @@ import matplotlib.pyplot as plt
 #--------------Get the pointnumber, datn, emplot, FCS files with their filepath in a "GIVEN FOLDER"---------------------
 foldername = r'D:\Research\Experimental\Analysis\2017analysis\201702\Analysis_Sebby_March_2017\S101d14Feb17_60.5_635_A2_CuAzu655'
 def dir_mV_molNo(foldername=foldername):
-    """bin=1 in millisecond"""
+    """input: Path of the Folder name as: foldername = r'D:\Research\Experimental\Analysis\2017analysis\201702\Analysis_Sebby_March_2017\S101d14Feb17_60.5_635_A2_CuAzu655'
+	-----
+	Output: df_datn_emplot, df_FCS, foldername
+	e.g. df_datn_emplot, df_FCS, foldername = dir_mV_molNo(foldername)
+	df_datn_emplot gives the list of points with their number, potential values and pathdirectory
+	"""
 #     maindir = os.getcwd()
     os.chdir(foldername)
 #     folderdir = os.getcwd()
@@ -162,6 +167,7 @@ def FCS_bi_fit(filename,tmin,tmax):
         bifit = [NaN,NaN,NaN,NaN,NaN]
         print('Runtime Error %s' %filename)
     return(bifit)
+
 def FCS_plot(foldername= foldername, input_potential=[0, 25, 50, 100],
                     pointnumbers=[1], tmin=0.005, tmax=1000, kind='bi'):
     """
@@ -207,3 +213,78 @@ def FCS_plot(foldername= foldername, input_potential=[0, 25, 50, 100],
                 print('g(t) = %s + %s * exp(-t/%s) + %s * exp(-t/%s)' %(bifit[0], bifit[1], bifit[2], bifit[3], bifit[4]))
             plt.xscale('log')
     return()
+
+#------------------TIME TRACE OUTPUT-------All parameters are calculaed from the time traces of molecule----t_on, t_off, t_ratio....also from FCS...........
+
+pointnumbers = linspace(1, 40, 40);pointnumbers = pointnumbers.astype(int);
+potentialist = linspace(-100, 200, 1+(200-(-100))/5);
+folderpath = r'D:\Research\Experimental\Analysis\2017analysis\201702\Analysis_Sebby_March_2017\S101d14Feb17_60.5_635_A2_CuAzu655'
+def timetrace_outputs_folderwise(folderpath=folderpath, pointnumbers=[1], potentialist=potentialist):
+    df_datn_emplot, df_FCS, folderpath = dir_mV_molNo(foldername=folderpath)
+    df_datn_emplot = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
+    df_datn_emplot = df_datn_emplot[df_datn_emplot['Potential'].isin(potentialist)]
+    out_total = pd.DataFrame()
+    for input_number in pointnumbers:
+        df_datnem_specific = df_datn_emplot[df_datn_emplot['Point number']==input_number]
+        
+        if not df_datnem_specific.empty:
+            #---------Create Pandas array to save outputs----------
+            indices = np.ones(13); indices=indices.astype(str)
+            Point_number = 'Point_'+str(input_number)
+            indices[:]=Point_number
+            group_1 = ['Potential']
+            group_ind = np.ones(6);group_ind = group_ind.astype(str)
+            group_2=group_ind.copy(); group_2[:]='t_ratio_timetrace'
+            group_3 = group_ind.copy(); group_3[:]='t_ratio_FCS'
+            group=concatenate((group_1, group_2, group_3))
+            subgroup_1 = ['Potential']
+            subgroup_2 = ['t_onav', 't_onaverr', 't_offav','t_offaverr','t_ratio', 't_ratioerr']
+            subgroup_3 = subgroup_2;
+            subgroup = concatenate((subgroup_1, subgroup_2, subgroup_3))
+            arrays = [indices, group, subgroup]
+            col = pd.MultiIndex.from_arrays(arrays)
+            length=(len(df_datnem_specific))#for defining dimension of out_mat
+            out_point = pd.DataFrame(zeros((length, len(subgroup))), columns=col)#create zeroes which will be replaced by proper values
+
+            #---------Pandas array created to save outputs----
+            out_point[Point_number]['Potential']=df_datnem_specific['Potential']
+            t_onav=[];t_onaverr=[]; t_offav=[]; t_offaverr=[]; t_ratio=[]; t_ratioerr=[] #Empty forms for timetrace output
+            t_onavfcs=[];t_onaverrfcs=[]; t_offavfcs=[]; t_offaverrfcs=[]; t_ratiofcs=[]; t_ratioerrfcs=[] #Empty forms for timetrace output
+            for i in range(length):
+                # .datn and em.plot data analysis
+                t_onav.append(i)
+                t_onaverr.append(i+1)
+                t_offav.append(i+3)
+                t_offaverr.append(i+4)
+                t_ratio.append(i+10)
+                t_ratioerr.append(i+20)
+                potential = out_mat['Point number']['Potential']['Potential'][i]
+                df_datnem_potential = df_datn_emplot[df_datn_emplot['Potential']==potential]
+                df_datnem_potential = df_datn_emplot[df_datn_emplot['Potential']==potential]
+                df_datnem_potential.reset_index(drop=True, inplace=True);
+                df_datn_path = df_datnem_potential['filepath[.datn]'][0]
+                df_em_path = df_datnem_potential['filepath[.em.plot]'][0]
+                
+                df_datn = pd.read_csv(df_datn_path, header=None)
+                df_emplot = pd.read_csv(df_em_path, header=None, sep='\t')
+                
+                # FCS data analysis
+                t_onavfcs.append(i*2)
+                t_onaverrfcs.append(i*5)
+                t_offavfcs.append(i*1+1)
+                t_offaverrfcs.append(i*0.5)
+                t_ratiofcs.append(i*6)
+                t_ratioerrfcs.append(i*7)
+            df_create=array([t_onav, t_onaverr, t_offav, t_offaverr, t_ratio, t_ratioerr])
+            df_create=df_create.astype(float64)#;a=pd.DataFrame(a)
+            df_create = pd.DataFrame(df_create.T, columns=['t_onav', 't_onaverr', 't_offav','t_offaverr','t_ratio', 't_ratioerr'])
+            out_point[Point_number]['t_ratio_timetrace']=df_create
+            
+            df_create_fcs = array([t_onavfcs,t_onaverrfcs, t_offavfcs, t_offaverrfcs, t_ratiofcs, t_ratioerrfcs])
+            df_create_fcs = df_create_fcs.astype(float64)
+            df_create_fcs = pd.DataFrame(df_create_fcs.T, columns=subgroup_2)
+            out_point[Point_number]['t_ratio_FCS']=df_create_fcs
+            
+            out_total=pd.concat([out_total, out_point], axis=1);
+    return(out_total)
+a=timetrace_outputs_folderwise()
