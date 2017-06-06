@@ -62,9 +62,9 @@ def time_trace_plot(foldername='S101d14Feb17_60.5_635_A2_CuAzu655', input_potent
     extensions = [".datn"] #file extensions we are interested in
     fig, ax = plt.subplots(figsize = (10, 8))
     subplots_adjust(hspace=0.000);
-    
+
     for dirpath, dirnames, filenames in os.walk("."):
-        for filename in [f for f in filenames if f.endswith(tuple(extensions))]: 
+        for filename in [f for f in filenames if f.endswith(tuple(extensions))]:
             #looking through all folders
             string_1 = 'mV'
             string_2 = 'FCS'
@@ -77,7 +77,7 @@ def time_trace_plot(foldername='S101d14Feb17_60.5_635_A2_CuAzu655', input_potent
                     pointnumber = int(number1 + number2)
                 elif number2.isdigit():
                     pointnumber = int(number2)
-                
+
                 #list_pointnumbers.append(pointnumber) #make a list will all the pointnumbers
                 position_potential = filename.find(string_1) #determine the place where the potential number is in the filename
                 if position_potential in [-1]: #mV does not appear in the name
@@ -131,17 +131,17 @@ def time_trace_plot(foldername='S101d14Feb17_60.5_635_A2_CuAzu655', input_potent
                                 labelleft='on',      # ticks along the bottom edge are off
                                 top='off',         # ticks along the top edge are off
                                 labelbottom='off') # labels along the bottom edge are off
-#                                 ax.set_ylabel('Fluorescence(kcps)', fontsize=16)
-                            
+
+
                             xlim(x_lim_min, x_lim_max)
                             ylim(y_lim_min, y_lim_max)
-                            
+
                             legend(fontsize=16, framealpha=0.5)
                         else:
                             print("The file %s does not exist" %f_emplot)
                         os.chdir(folderdir)
     ax.set_ylabel('Fluorescence(kcps)', fontsize=16)
-    os.chdir(maindir)    
+    os.chdir(maindir)
     return(fig)
 
 def FCS_mono_fit(filename,tmin,tmax):
@@ -154,7 +154,7 @@ def FCS_mono_fit(filename,tmin,tmax):
     ydata=df_fcs[2];
     def mono_exp(x, A1, A2, t1):
         return((A1+A2*exp(-x/t1)))
-    
+
     monofit, pcov_mono = curve_fit(mono_exp, xdata, ydata, p0 = [10, 1, 1], bounds=(0, np.inf))
     return(monofit)
 
@@ -176,15 +176,14 @@ def FCS_bi_fit(filename,tmin,tmax):
     return(bifit)
 
 
-
 def FCS_plot(foldername, tmin, tmax, pnt_numb, pnt_pot, kind):
     maindir = os.getcwd()
     os.chdir(foldername)
     folderdir = os.getcwd()
     extensions = [".dat"] #file extensions we are interested in
-    
+
     for dirpath, dirnames, filenames in os.walk("."):
-        for filename in [f for f in filenames if f.endswith(tuple(extensions))]: 
+        for filename in [f for f in filenames if f.endswith(tuple(extensions))]:
             #looking through all folders
             string_1 = 'mV'
             string_2 = 'FCS'
@@ -266,7 +265,7 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
         #adding foldername on row 1 column 1
         #ws = wb.get_sheet(i)
         #ws.write(0, 0, 'Foldername: %s' %directories_name[i]) #write in sheet (row, col, 'information')
-        
+
     extensions = [".datn",".dat"] #file extensions we are interested in
     list_direct = []
     w, h = 24, 300;
@@ -275,7 +274,7 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
     list_pointnumbers = []
     potential_array = [] #array with the potentials
     for dirpath, dirnames, filenames in os.walk("."):
-        for filename in [f for f in filenames if f.endswith(tuple(extensions))]: 
+        for filename in [f for f in filenames if f.endswith(tuple(extensions))]:
             #looking through all folders
             string_1 = 'mV'
             string_2 = 'FCS'
@@ -288,7 +287,7 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
                     pointnumber = int(number1 + number2)
                 elif number2.isdigit():
                     pointnumber = int(number2)
-                
+
                 #list_pointnumbers.append(pointnumber) #make a list will all the pointnumbers
                 position_potential = filename.find(string_1) #determine the place where the potential number is in the filename
                 if position_potential in [-1]: #mV does not appear in the name
@@ -309,8 +308,8 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
                     potentential = pot_number4 + pot_number3 + pot_number2 + pot_number1
                 potentential = int(potentential) #reading the potential
                 if potentential not in potential_array:
-                    potential_array.append(int(potentential)) #array with unique potentials 
-                for i in range(len(potential_array)): 
+                    potential_array.append(int(potentential)) #array with unique potentials
+                for i in range(len(potential_array)):
                 #put the on/off times in the right column with the corresponding potential
                     if int(potentential) == int(potential_array[i]):
                         if potentential >= imp_pot:
@@ -319,14 +318,14 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
                                 os.chdir(dirpath)
                                 f_datn = filename
                                 f_emplot = re.sub('.datn$','.datn.em.plot',f_datn)
-                                if os.path.isfile(f_emplot):    
+                                if os.path.isfile(f_emplot):
                                     all_times = T_off_average(f_datn, f_emplot)
                                     #calculation of the ratios
                                     t_on = all_times[0]
                                     t_off = all_times[1]
                                     t_on_hist = all_times[2]
                                     t_off_hist = all_times[3]
-                                    t_ratio_calc = t_off / t_on 
+                                    t_ratio_calc = t_off / t_on
                                     #writing the calculations to the right place in the excell file
                                     for j in range(len(directories_name)):
                                         if directories_name[j] in dirpath:
@@ -346,13 +345,13 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
                                                         ws = wb.get_sheet(x)
                                                         ws.write(pointnumber+2,i+2,t_ratio_calc)
                                                         t_ratio_TT[x * 24 + pointnumber-1][i] = t_ratio_calc
-                                    
+
                                 else:
                                     print("The file %s does not exist" %f_emplot)
                                 os.chdir(maindir)
-                    
-            
-            
+
+
+
             else:
                 #exactly same calculations as above but for the FCS files
                 point_number1_FCS = filename[position_FCS-2:position_FCS-1]
@@ -391,8 +390,8 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
                             var4 = variables_fit[3] #B2
                             var5 = variables_fit[2] #C1
                             var6 = variables_fit[4] #C2
-                            
-                            ton_1 = ((var1/var2) + 1) * var5 
+
+                            ton_1 = ((var1/var2) + 1) * var5
                             ton_2 = ((var1/var4) + 1) * var6
                             ratio_1 = var2/var1
                             ratio_2 = var4/var1
@@ -445,10 +444,10 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
                                                         ws2.write(pointnumberFCS+2,k+2,ratio_2)
                                                         t_ratio_TT[x * 24 + pointnumberFCS-1][k] = ratio_2
                                                         t_ratio_FCS[x * 24 + pointnumberFCS-1][k] = ratio_2
-                    
-                    
-                    
-                    
+
+
+
+
                         else:
                             os.chdir(dirpath)
                             variables_fit_mono = FCS_mono_fit(filename,tminFCS,tmaxFCS)
@@ -472,21 +471,21 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
                                                         ws2 = wb2.get_sheet(x)
                                                         ws2.write(pointnumberFCS+2,k+2,ratio_mono)
                                                         t_ratio_FCS[x * 24 + pointnumberFCS-1][k] = ratio_mono
-            
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
+
             os.chdir(maindir)
-            
+
 
     def nernst(x, a):
         return(10**((x - a) / 0.059))
-    
-    
+
+
     for i in range(len(list_direct)):
         ws = wb.get_sheet(i)
         ws2 = wb2.get_sheet(i)
@@ -495,28 +494,28 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
         ws2.write(1, 1, 'Pointnumber:')
         ws.write(1, 1, 'Pointnumber:')
         ws2.write(0, len(potential_array)+2, 'Midpoint Potential (in mV):')
-        
+
         for i in range(len(potential_array)):
-            ws.write(0,i+2,potential_array[i]) 
+            ws.write(0,i+2,potential_array[i])
             ws2.write(0,i+2,potential_array[i])
-            #writing all the potentials to the sheets 
+            #writing all the potentials to the sheets
         for i in range(1,25):
             ws.write(i+2,1,i)
             ws2.write(i+2,1,i)
 
-    #making the values into mV        
+    #making the values into mV
     potential_array[:] = [x / 1000 for x in potential_array]
-    
-    #This part goes through the matrix with all the ratios 
-    
-    list_mp = []    
+
+    #This part goes through the matrix with all the ratios
+
+    list_mp = []
     midpoint_potential_array = []
     for j in range(len(list_direct) * 24):
         list_1 = []
         potential_1 = []
         all_midpoint_potential = []
         for i in range(len(potential_array)):
-            
+
 
             if t_ratio_TT[j][i] is not None:
                 #saving ratios with their potentials for each point
@@ -529,10 +528,10 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
             list_mp.append(fit_waardes[0])
         else:
             list_mp.append(None)
-            
+
         del list_1[:]
         del potential_1[:]
-   
+
     midpoint_potential_array_FCS = []
     list_mp_FCS = []
     for j in range(len(list_direct) * 24):
@@ -541,15 +540,15 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
         for i in range(len(potential_array)):
             if t_ratio_FCS[j][i] is not None:
                 list_FCS.append(t_ratio_FCS[j][i])
-                potential_FCS.append(potential_array[i])                
+                potential_FCS.append(potential_array[i])
         if len(list_FCS) >= minimal_points:
             fit_waardes, fit_variance = curve_fit(nernst, potential_FCS, list_FCS, p0 = 0.020)
             midpoint_potential_array_FCS.append(fit_waardes[0])
             list_mp_FCS.append(fit_waardes[0])
         else:
             list_mp_FCS.append(None)
-            
-            
+
+
         del list_FCS[:]
         del potential_FCS[:]
     for i in range(len(list_mp)):
@@ -558,8 +557,8 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
     for i in range(len(list_mp_FCS)):
         if list_mp_FCS[i] is not None:
             list_mp_FCS[i] = list_mp_FCS[i] * 1000
-    
-    
+
+
     for i in range(len(list_direct)):
         ws = wb.get_sheet(i)
         for j in range(24):
@@ -567,15 +566,15 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
         ws2 = wb2.get_sheet(i)
         for k in range(24):
             ws2.write(k+3, len(potential_array)+2, list_mp_FCS[i*24 + k])
-        
 
-        
-            
+
+
+
     print('The average midpoint potential according to TT:')
     print(sum(midpoint_potential_array)/len(midpoint_potential_array))
     print('The average midpoint potential according to FCS:')
     print(sum(midpoint_potential_array_FCS)/len(midpoint_potential_array_FCS))
-    
+
     #-------FIgure Parameters---------------
     fig, axes = subplots(figsize=(10, 10), ncols=1, nrows=2)
     # plt.figure()
@@ -614,18 +613,18 @@ def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, m
 
     fig.tight_layout()
     plt.show()
-    
-    
+
+
     wb.save(excel_name)
     wb2.save(excel_name_FCS)
-    
+
     return(midpoint_potential_array, midpoint_potential_array_FCS)
 
 def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on, bins_off, proteins, homedir, max_his_on, max_his_off, x_shift, plots=False):
     parentdir = os.getcwd()
     os.chdir(homedir)
     homedir1 = os.getcwd()
-    potential, pntnumbers = pot, pointnumbers #creates an array with dimension potential (col) x pntnumbers (rows) 
+    potential, pntnumbers = pot, pointnumbers #creates an array with dimension potential (col) x pntnumbers (rows)
     on_time = []
     off_time = []
     extensions = [".datn",".dat"]
@@ -645,7 +644,7 @@ def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on
                     pointnumber = int(number1 + number2)
                 elif number2.isdigit():
                     pointnumber = int(number2)
-                
+
                 position_potential = filename.find(string_1) #determine the place where the potential number is in the filename
                 if position_potential in [-1]: #mV does not appear in the name
                     print('Potential in %s is not properly defined.' %filename)
@@ -669,7 +668,7 @@ def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on
                         os.chdir(dirpath)
                         f_datn = filename
                         f_emplot = re.sub('.datn$','.datn.em.plot',f_datn)
-                        if os.path.isfile(f_emplot):    
+                        if os.path.isfile(f_emplot):
                             all_times = T_off_average(f_datn, f_emplot)
                             t_on = all_times[0]
                             t_off = all_times[1]
@@ -684,29 +683,29 @@ def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on
                         else:
                             print("The file %s does not exist" %f_emplot)
                         os.chdir(homedir1)
-            
-            
-    os.chdir(parentdir)       
- 
+
+
+    os.chdir(parentdir)
+
     df_on_shifted = df3.shift(+1) ## shift up
     df_on_shifted.drop(df3.shape[0] - 1,inplace = True)
     df_off_shifted = df3_off.shift(+1) ## shift up
     df_off_shifted.drop(df3_off.shape[0] - 1,inplace = True)
-    
+
     df_on_shifted_x = df3.shift(+x_shift) ## shift up
     df_on_shifted_x.drop(df3.shape[0] - x_shift,inplace = True)
     df_off_shifted_x = df3_off.shift(+x_shift) ## shift up
     df_off_shifted_x.drop(df3_off.shape[0] - x_shift,inplace = True)
-  
-    
+
+
     def single_exp(x_values, constant1,constant2):
         return(constant1*exp(-constant2*x_values))
 
     def double_exp(x_values, constant3, constant4, constant5, constant6):
         return(constant3*exp(-constant4*x_values) - constant5*exp(-constant6*x_values))
-                     
+
     if plots==True:
-        
+
         fig1, axes1 = plt.subplots(1, 2, figsize=(10,4))
 
         n,bins_on1,patches = axes1[0].hist(df3, range=(0,max_his_on),bins=bins_on)
@@ -731,7 +730,7 @@ def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on
         axes1[1].set_title('OFF time %s-Azu %smV' %(proteins, specific_potential))
 
         '''
-        bin_centers_off = bins_off1[:-1] + 0.5 * (bins_off1[1:] - bins_off1[:-1])    
+        bin_centers_off = bins_off1[:-1] + 0.5 * (bins_off1[1:] - bins_off1[:-1])
         try:
             popt_double, pcov_double = curve_fit(double_exp, bin_centers_off, n_off, p0 = [1, 1, 1, 1])
             plt.plot(bin_centers_off, double_exp(bin_centers_off, *popt_double))
@@ -771,6 +770,6 @@ def histograms(pot, pointnumbers, specific_potential, rnge_on, rnge_off, bins_on
         ax6.set_title('OFF time %s-Azu %smV' %(proteins, specific_potential))
         ax6.set_xlabel(r'$\tau_{off}/s$')
         ax6.set_ylabel(r'$\tau_{off}+%s/s$' %x_shift)
-        plt.tight_layout()    
+        plt.tight_layout()
 
-    return(df3, df_on_shifted, df_on_shifted_x, df3_off, df_off_shifted, df_off_shifted_x)    
+    return(df3, df_on_shifted, df_on_shifted_x, df3_off, df_off_shifted, df_off_shifted_x)
