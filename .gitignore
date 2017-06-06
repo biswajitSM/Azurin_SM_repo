@@ -6,3 +6,4 @@
 *.bbl
 *.blg
 *.synnctex.gz
+*.ipynb_checkpoints
