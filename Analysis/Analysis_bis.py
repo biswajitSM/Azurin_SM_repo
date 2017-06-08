@@ -226,8 +226,8 @@ def FCS_plot(foldername= foldername, input_potential=[0, 25, 50, 100],
                 print('g(t) = %s + %s * exp(-t/%s) + %s * exp(-t/%s)' %(bifit[0], bifit[1], bifit[2], bifit[3], bifit[4]))
             plt.xscale('log')
     return()
-#------------------HISTOGRAM ON/OFF: given folder name, potential and list of point number, plot histogram at certain potentialof ------------------
-def t_on_off(f_datn, f_emplot):
+#-----------------------------ON/OFF times from changepoint and FCS------------------------------------
+def t_on_off_fromCP(f_datn, f_emplot):
     #expt data
     df = pd.read_csv(f_datn, header=None)
     binpts=5000; mi=min(df[0]); ma=mi+10;
@@ -254,12 +254,28 @@ def t_on_off(f_datn, f_emplot):
     #remove NAN values:
     df_ton = df_ton[~np.isnan(df_ton)];
     df_toff = df_toff[~np.isnan(df_toff)];
-    average_ton = np.average(df_ton);
-    average_toff = np.average(df_toff);
+    average_ton = 1000 * np.average(df_ton);# also converts to millisecond
+    average_ton = np.round(average_ton, 2)
+    average_toff = 1000 * np.average(df_toff);# also converts to millisecond
+    average_toff = np.round(average_toff, 2)
     return(df_ton, df_toff, average_ton, average_toff)
-def histogram_point():
+#------------------HISTOGRAM ON/OFF: given folder name, potential and list of point number, plot histogram at certain potentialof ------------------
 
-    return()
+def histogram_on_off_1mol(foldername= foldername, input_potential=[100], pointnumbers=[1],
+                          bins_on=50, range_on=[0, 0.2], bins_off=50, range_off=[0, 0.5]):
+    df_datn_emplot, df_FCS, folder = dir_mV_molNo(foldername)
+    df_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
+    df_specific = df_specific[df_specific['Potential'].isin(input_potential)]; df_specific.reset_index(drop=True, inplace=True)
+    f_datn_path = df_specific['filepath[.datn]'].values[0]
+    f_emplot_path = df_specific['filepath[.em.plot]'].values[0]
+    df_ton, df_toff, average_ton, average_toff = t_on_off_fromCP(f_datn_path, f_emplot_path)
+    length_onoff = len(df_ton)
+    print('Number of on-off events is %d' %length_onoff)
+    fig_on, ax_on = plt.subplots(figsize=(10,8))
+    hist(df_ton, bins=bins_on, range=range_on)
+    fig_off, ax_off = plt.subplots(figsize=(10,8))
+    hist(df_toff, bins=bins_off, range=range_off)
+    return(fig_on, fig_off)
 #------------------TIME TRACE OUTPUT-------All parameters are calculaed from the time traces of molecule----t_on, t_off, t_ratio....also from FCS...........
 pointnumbers = linspace(1, 40, 40);pointnumbers = pointnumbers.astype(int);
 potentialist = linspace(-100, 200, 1+(200-(-100))/5);
@@ -312,27 +328,27 @@ def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potent
                 df_datn_path = df_datnem_potential['filepath[.datn]'][0]
                 df_em_path = df_datnem_potential['filepath[.em.plot]'][0]
 
-                df_datn = pd.read_csv(df_datn_path, header=None)
-                df_emplot = pd.read_csv(df_em_path, header=None, sep='\t')
+                df_ton, df_toff, average_ton, average_toff = t_on_off_fromCP(df_datn_path, df_em_path)
+                ratio_on_off = average_ton/average_toff;
 
-                t_onav.append(i)
-                t_onaverr.append(i+1)
-                t_offav.append(i+3)
-                t_offaverr.append(i+4)
-                t_ratio.append(i+10)
-                t_ratioerr.append(i+20)
+                t_onav.append(average_ton)
+                t_onaverr.append(i+1)#needs to be changed
+                t_offav.append(average_toff)
+                t_offaverr.append(i+4)#needs to be changed
+                t_ratio.append(ratio_on_off)
+                t_ratioerr.append(i+20)#needs to be changed
 
                 #-------------------- FCS data analysis-----------
                 df_fcs_potential = df_FCS[df_FCS['Potential']==potential]
                 df_fcs_potential.reset_index(drop=True, inplace=True);
                 df_fcs_path = df_fcs_potential['filepath[FCS]'][0]
 
-                t_onavfcs.append(i*2)
-                t_onaverrfcs.append(i*5)
-                t_offavfcs.append(i*1+1)
-                t_offaverrfcs.append(i*0.5)
-                t_ratiofcs.append(i*6)
-                t_ratioerrfcs.append(i*7)
+                t_onavfcs.append(i*2)#needs to be changed
+                t_onaverrfcs.append(i*5)# needs to be changed
+                t_offavfcs.append(i*1+1)# needs to be changed
+                t_offaverrfcs.append(i*0.5)# needs to be changed
+                t_ratiofcs.append(i*6)# needs to be changed
+                t_ratioerrfcs.append(i*7)# needs to be changed
             df_create=array([t_onav, t_onaverr, t_offav, t_offaverr, t_ratio, t_ratioerr])
             df_create=df_create.astype(float64)#;a=pd.DataFrame(a)
             df_create = pd.DataFrame(df_create.T, columns=['t_onav', 't_onaverr', 't_offav','t_offaverr','t_ratio', 't_ratioerr'])
