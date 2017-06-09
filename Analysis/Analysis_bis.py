@@ -262,20 +262,54 @@ def t_on_off_fromCP(f_datn, f_emplot):
 #------------------HISTOGRAM ON/OFF: given folder name, potential and list of point number, plot histogram at certain potentialof ------------------
 
 def histogram_on_off_1mol(foldername= foldername, input_potential=[100], pointnumbers=[1],
-                          bins_on=50, range_on=[0, 0.2], bins_off=50, range_off=[0, 0.5]):
+                          bins_on=50, range_on=[0, 0.2], bins_off=50, range_off=[0, 0.5], plotting=False):
     df_datn_emplot, df_FCS, folder = dir_mV_molNo(foldername)
     df_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
     df_specific = df_specific[df_specific['Potential'].isin(input_potential)]; df_specific.reset_index(drop=True, inplace=True)
     f_datn_path = df_specific['filepath[.datn]'].values[0]
     f_emplot_path = df_specific['filepath[.em.plot]'].values[0]
     df_ton, df_toff, average_ton, average_toff = t_on_off_fromCP(f_datn_path, f_emplot_path)
-    length_onoff = len(df_ton)
-    print('Number of on-off events is %d' %length_onoff)
-    fig_on, ax_on = plt.subplots(figsize=(10,8))
-    hist(df_ton, bins=bins_on, range=range_on)
-    fig_off, ax_off = plt.subplots(figsize=(10,8))
-    hist(df_toff, bins=bins_off, range=range_off)
-    return(fig_on, fig_off)
+    t_ons = np.array(df_ton);
+    t_offs = np.array(df_toff)
+    if plotting == True:
+        fig, axes = plt.subplots(1, 2, figsize=(10,4))
+        n,bins_on,patches = axes[0].hist(t_ons, range=range_on,bins=bins_on)
+        axes[0].set_xlabel(r'$\tau_{on}$')
+        axes[0].set_ylabel('#')
+        #axes[0].set_yscale('log')
+        axes[0].set_title("ON time histogram at %s mV" %input_potential[0])
+        n,bins_off,patches = axes[1].hist(t_offs, range=range_off,bins=bins_off)
+        axes[1].set_xlabel(r'$\tau_{off}$')
+        axes[1].set_ylabel('#')
+        #axes[1].set_yscale('log')
+        axes[1].set_title("OFF time histogram at %s mV" %input_potential[0])
+    return(t_ons, t_offs)
+
+def histogram_on_off_folder(foldername= foldername, input_potential=[100], pointnumbers=range(100),
+                          bins_on=50, range_on=[0, 0.2], bins_off=50, range_off=[0, 0.5], plotting=False):
+    df_datn_emplot, df_FCS, folder = dir_mV_molNo(foldername)
+    df_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
+    df_specific = df_specific[df_specific['Potential'].isin(input_potential)]; df_specific.reset_index(drop=True, inplace=True)
+    t_ons = []; t_offs = [];
+    for i in range(len(df_specific)):
+        f_datn_path = df_specific['filepath[.datn]'].values[i]
+        f_emplot_path = df_specific['filepath[.em.plot]'].values[i]
+        df_ton, df_toff, average_ton, average_toff = t_on_off_fromCP(f_datn_path, f_emplot_path);
+        t_ons = np.concatenate((t_ons, df_ton), axis=0);
+        t_offs = np.concatenate((t_offs, df_toff));
+    if plotting == True:
+        fig, axes = plt.subplots(1, 2, figsize=(10,4))
+        n,bins_on,patches = axes[0].hist(t_ons, range=range_on,bins=bins_on)
+        axes[0].set_xlabel(r'$\tau_{on}$')
+        axes[0].set_ylabel('#')
+        #axes[0].set_yscale('log')
+        axes[0].set_title("ON time histogram at %s mV" %input_potential[0])
+        n,bins_off,patches = axes[1].hist(t_offs, range=range_off,bins=bins_off)
+        axes[1].set_xlabel(r'$\tau_{off}$')
+        axes[1].set_ylabel('#')
+        #axes[1].set_yscale('log')
+        axes[1].set_title("OFF time histogram at %s mV" %input_potential[0])
+    return(t_ons, t_offs)
 #------------------TIME TRACE OUTPUT-------All parameters are calculaed from the time traces of molecule----t_on, t_off, t_ratio....also from FCS...........
 pointnumbers = linspace(1, 40, 40);pointnumbers = pointnumbers.astype(int);
 potentialist = linspace(-100, 200, 1+(200-(-100))/5);
