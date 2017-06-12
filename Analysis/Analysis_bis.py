@@ -256,9 +256,20 @@ def t_on_off_fromCP(f_datn, f_emplot):
     df_toff = df_toff[~np.isnan(df_toff)];
     average_ton = 1000 * np.average(df_ton);# also converts to millisecond
     average_ton = np.round(average_ton, 2)
+    lambda_ton = 1/average_ton;
+    lambda_ton_low = lambda_ton * (1-(1.96/np.sqrt(len(df_ton))))
+    lambda_ton_upp = lambda_ton * (1+(1.96/np.sqrt(len(df_ton))))
+    average_ton_err = (1/lambda_ton_low) - (1/lambda_ton_upp);
+    average_ton_err = np.round(average_ton_err, 2)
+
     average_toff = 1000 * np.average(df_toff);# also converts to millisecond
     average_toff = np.round(average_toff, 2)
-    return(df_ton, df_toff, average_ton, average_toff)
+    lambda_toff = 1/average_toff;
+    lambda_toff_low = lambda_toff * (1-(1.96/np.sqrt(len(df_toff))))
+    lambda_toff_upp = lambda_toff * (1+(1.96/np.sqrt(len(df_toff))))
+    average_toff_err = (1/lambda_toff_low) - (1/lambda_toff_upp);
+    average_toff_err = np.round(average_toff_err, 2)
+    return(df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err)
 #------------------HISTOGRAM ON/OFF: given folder name, potential and list of point number, plot histogram at certain potentialof ------------------
 
 def histogram_on_off_1mol(foldername= foldername, input_potential=[100], pointnumbers=[1],
@@ -362,15 +373,16 @@ def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potent
                 df_datn_path = df_datnem_potential['filepath[.datn]'][0]
                 df_em_path = df_datnem_potential['filepath[.em.plot]'][0]
 
-                df_ton, df_toff, average_ton, average_toff = t_on_off_fromCP(df_datn_path, df_em_path)
+                df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(df_datn_path, df_em_path)
                 ratio_on_off = average_ton/average_toff;
+                ratio_on_off_err = (average_ton/average_toff)*sqrt(((average_ton_err/average_ton)**2)+((average_toff_err/average_toff)**2))
 
                 t_onav.append(average_ton)
-                t_onaverr.append(i+1)#needs to be changed
+                t_onaverr.append(average_ton_err)#needs to be changed
                 t_offav.append(average_toff)
-                t_offaverr.append(i+4)#needs to be changed
+                t_offaverr.append(average_toff_err)#needs to be changed
                 t_ratio.append(ratio_on_off)
-                t_ratioerr.append(i+20)#needs to be changed
+                t_ratioerr.append(ratio_on_off_err)#needs to be changed
 
                 #-------------------- FCS data analysis-----------
                 df_fcs_potential = df_FCS[df_FCS['Potential']==potential]
