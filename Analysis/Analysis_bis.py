@@ -99,6 +99,56 @@ def dir_mV_molNo(foldername=foldername):
 
     os.chdir(foldername)
     return(df_datn_emplot, df_FCS, foldername)
+def point_list(foldername = foldername, pointnumbers=range(100)):
+    df_datn_emplot, df_FCS, folderpath = dir_mV_molNo(foldername=foldername)
+    df_datn_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]
+    df_groupby = df_datn_specific.groupby(['Point number'])
+    out_total = pd.DataFrame()
+    for name, group in df_groupby:
+        temp = df_groupby.get_group(name)
+        temp = temp['Potential']
+        df_point = pd.DataFrame(sort(array(temp)), columns=['Point_'+str(int(name))])
+        out_total=pd.concat([out_total, df_point], axis=1);
+    out_total = out_total.replace(np.nan, '', regex=True)
+    return(out_total)
+def point_not_working(foldername = foldername, pointnumbers=range(100)):
+    df_datn_emplot, df_FCS, folderpath = dir_mV_molNo(foldername=foldername)
+    df_datn_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]
+    df_datn_path = df_datn_specific['filepath[.em.plot]']
+    output = np.array([])
+    for i in df_datn_path:
+        try:
+            df=i
+            df = pd.read_csv(df, header=None, sep='\t')
+        except:
+            output = np.concatenate((output, np.array([i])))
+            pass
+    #os.chdir(parentdir)
+    #savetxt('notworking.dat', output, fmt='%s')
+    return(output)
+def removeifemplotdoesntexist(foldername = foldername, pointnumbers=range(100)):
+    df_datn_emplot, df_FCS, folderpath = dir_mV_molNo(foldername=foldername)
+    #df_datn_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]
+
+    for i in range(len(df_datn_emplot['filepath[.em.plot]'])):
+        if not os.path.isfile(df_datn_emplot['filepath[.em.plot]'][i]):
+            df_datn_emplot['filepath[.em.plot]'][i] = 0
+            df_FCS['filepath[FCS]'][i] = 0
+    df_datn_em = df_datn_emplot[df_datn_emplot['filepath[.em.plot]'] != 0]
+    df_FCS = df_FCS[df_datn_emplot['filepath[.em.plot]'] != 0]
+    df_datn_path = df_datn_em['filepath[.em.plot]']
+    output = np.array([])
+    for i in df_datn_path:
+        try:
+            df=i
+            df = pd.read_csv(df, header=None, sep='\t')
+        except:
+            output = np.concatenate((output, np.array([i])))
+            pass
+    print('Output should be empty')
+    #os.chdir(parentdir)
+    #savetxt('notworking.dat', output, fmt='%s')
+    return(output)
 #---------get_point_specifics-----
 def get_point_specifics(foldername= foldername, input_potential=[0, 25, 50, 100], pointnumbers=[1]):
     """bin=1 in millisecond
@@ -271,7 +321,6 @@ def t_on_off_fromCP(f_datn, f_emplot):
     average_toff_err = np.round(average_toff_err, 2)
     return(df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err)
 #------------------HISTOGRAM ON/OFF: given folder name, potential and list of point number, plot histogram at certain potentialof ------------------
-
 def histogram_on_off_1mol(foldername= foldername, input_potential=[100], pointnumbers=[1],
                           bins_on=50, range_on=[0, 0.2], bins_off=50, range_off=[0, 0.5], plotting=False):
     df_datn_emplot, df_FCS, folder = dir_mV_molNo(foldername)
@@ -326,6 +375,13 @@ pointnumbers = linspace(1, 40, 40);pointnumbers = pointnumbers.astype(int);
 potentialist = linspace(-100, 200, 1+(200-(-100))/5);
 def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist=potentialist):
     df_datn_emplot, df_FCS, folderpath = dir_mV_molNo(foldername=folderpath)
+    for i in range(len(df_datn_emplot['filepath[.em.plot]'])):
+        if not os.path.isfile(df_datn_emplot['filepath[.em.plot]'][i]):
+            df_datn_emplot['filepath[.em.plot]'][i] = 0
+            df_FCS['filepath[FCS]'][i] = 0
+    df_datn_em = df_datn_emplot[df_datn_emplot['filepath[.em.plot]'] != 0]
+    df_FCS = df_FCS[df_datn_emplot['filepath[.em.plot]'] != 0]
+    df_datn_emplot = df_datn_em
     df_datn_emplot = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
     df_datn_emplot = df_datn_emplot[df_datn_emplot['Potential'].isin(potentialist)]
 
