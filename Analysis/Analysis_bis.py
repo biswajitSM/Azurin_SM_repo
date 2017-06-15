@@ -13,7 +13,7 @@ from lmfit import  Model, Parameter, Parameters
 import matplotlib.pyplot as plt
 #--------------Get the pointnumber, datn, emplot, FCS files with their filepath in a "GIVEN FOLDER"---------------------
 foldername = r'/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data/201702_S101toS104/S101d14Feb17_60.5_635_A2_CuAzu655'
-def dir_mV_molNo(foldername=foldername):
+def dir_mV_molNo_temp(foldername=foldername):
     """input: Path of the Folder name as: foldername = r'D:\Research\Experimental\Analysis\2017analysis\201702\Analysis_Sebby_March_2017\S101d14Feb17_60.5_635_A2_CuAzu655'
 	-----
 	Output: df_datn_emplot, df_FCS, foldername
@@ -99,6 +99,75 @@ def dir_mV_molNo(foldername=foldername):
 
     os.chdir(foldername)
     return(df_datn_emplot, df_FCS, foldername)
+def dir_mV_molNo_pt3(foldername=foldername):
+    os.chdir(foldername)
+    extensions_pt3 = [".pt3"] #file extensions we are interested in
+    string_pt3 = '.pt3'
+    string_mV = 'mV'
+    columns = ['Point number', 'Potential', 'filename[pt3]', 'filepath[pt3]']
+    pt3_list = pd.DataFrame(index=None, columns=columns)
+    for dirpath, dirnames, filenames in os.walk("."):
+        for filename in [f for f in filenames if f.endswith(tuple(extensions_pt3))]:
+            position_num = filename.find(string_pt3)
+            pos_num_val_1 = filename[position_num-1]
+            pos_num_val_2 = filename[position_num-2]
+            pos_num_val_3 = filename[position_num-3]
+            if not pos_num_val_1.isdigit():
+                print('Point number in %s is not properly placed(found): ' %filename)
+                point_number = 1000
+            elif pos_num_val_2 in ['_']:
+                point_number = pos_num_val_1
+            elif pos_num_val_3 in ['_']:
+                point_number = pos_num_val_2 + pos_num_val_1
+            point_number=int(point_number)
+            #print(point_number)
+            #potential extraction
+            position_pot = filename.find(string_mV)
+            pos_pot_val_1 = filename[position_pot-1]
+            pos_pot_val_2 = filename[position_pot-2]
+            pos_pot_val_3 = filename[position_pot-3]
+            pos_pot_val_4 = filename[position_pot-4]
+            pos_pot_val_5 = filename[position_pot-5]
+            if not pos_num_val_1.isdigit():
+                print('potential value in %s is not properly defined' %filename)
+                potentail_val = 1000
+            elif pos_pot_val_2 in ['_']:
+                potentail_val = pos_pot_val_1
+            elif pos_pot_val_3 in ['_']:
+                potentail_val = pos_pot_val_2 + pos_pot_val_1
+            elif pos_pot_val_4 in ['_']:
+                potentail_val = pos_pot_val_3 + pos_pot_val_2 + pos_pot_val_1
+            elif pos_pot_val_5 in ['_']:
+                potentail_val = pos_pot_val_4 +pos_pot_val_3 + pos_pot_val_2 + pos_pot_val_1
+            potentail_val = int(potentail_val)
+            file_pt3 = filename;
+            temp_pt3list = pd.DataFrame([[point_number, potentail_val, filename, foldername+'/'+dirpath+'/'+filename]], columns=columns)
+            pt3_list = pt3_list.append(temp_pt3list, ignore_index = True)
+    return(pt3_list)
+def dir_mV_molNo(foldername=foldername):
+    pt3_list = dir_mV_molNo_pt3(foldername=foldername)
+    extensions = [".dat", ".datn"]
+    columns_FCS = ['Point number', 'Potential', 'filename[FCS]', 'filepath[FCS]']
+    FCS_list = pd.DataFrame(index=None, columns=columns_FCS)
+    columns_datn_em=['Point number', 'Potential', 'filename[.datn]', 'filepath[.datn]','filename[.em.plot]', 'filepath[.em.plot]']
+    datn_em_list = pd.DataFrame(index=None, columns=columns_datn_em)
+    for i in range(len(pt3_list)):
+        pt3_filename = pt3_list['filename[pt3]'][i]
+        point_number = pt3_list['Point number'][i]
+        potential = pt3_list['Potential'][i]
+        pt3_path = pt3_list['filepath[pt3]'][i]
+        for dirpath, dirnames, filenames in os.walk("."):
+            for filename in [f for f in filenames if f.endswith(tuple(extensions))]:
+                if pt3_filename[:-5] in filename and 'FCS' in filename and '_'+str(point_number)+'_' in filename:
+                    temp_FCS_list = pd.DataFrame([[point_number, potential, filename, foldername+'/'+dirpath+'/'+filename]], columns=columns_FCS)
+                    FCS_list = FCS_list.append(temp_FCS_list, ignore_index=True)
+                if pt3_filename[:-3] in filename and 'datn' in filename:
+                    filename_datn = filename
+                    filename_emplot = filename+'.em.plot'
+                    temp_datn_list = pd.DataFrame([[point_number, potential, filename_datn, foldername+'/'+dirpath+'/'+filename_datn,
+                                                   filename_emplot, foldername+'/'+dirpath+'/'+filename_emplot]], columns=columns_datn_em)
+                    datn_em_list = datn_em_list.append(temp_datn_list, ignore_index=True)
+    return(datn_em_list, FCS_list, pt3_list)
 def point_list(foldername = foldername, pointnumbers=range(100)):
     df_datn_emplot, df_FCS, folderpath = dir_mV_molNo(foldername=foldername)
     df_datn_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]
@@ -373,45 +442,32 @@ def histogram_on_off_folder(foldername= foldername, input_potential=[100], point
 #------------------TIME TRACE OUTPUT-------All parameters are calculaed from the time traces of molecule----t_on, t_off, t_ratio....also from FCS...........
 pointnumbers = linspace(1, 40, 40);pointnumbers = pointnumbers.astype(int);
 potentialist = linspace(-100, 200, 1+(200-(-100))/5);
+potentialist = linspace(-100, 200, 1+(200-(-100))/5);
 def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist=potentialist):
-    df_datn_emplot, df_FCS, folderpath = dir_mV_molNo(foldername=folderpath)
-    for i in range(len(df_datn_emplot['filepath[.em.plot]'])):
-        if not os.path.isfile(df_datn_emplot['filepath[.em.plot]'][i]):
-            df_datn_emplot['filepath[.em.plot]'][i] = 0
-            df_FCS['filepath[FCS]'][i] = 0
-    df_datn_em = df_datn_emplot[df_datn_emplot['filepath[.em.plot]'] != 0]
-    df_FCS = df_FCS[df_datn_emplot['filepath[.em.plot]'] != 0]
-    df_datn_emplot = df_datn_em
+    df_datn_emplot, df_FCS, pt3_list = dir_mV_molNo(foldername=folderpath)
     df_datn_emplot = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
     df_datn_emplot = df_datn_emplot[df_datn_emplot['Potential'].isin(potentialist)]
-
-    df_FCS = df_FCS[df_FCS['Point number'].isin(pointnumbers)]
-    df_FCS = df_FCS[df_FCS['Potential'].isin(potentialist)]
-
+    out_point = []#pd.DataFrame()
     out_total = pd.DataFrame()#initiating empty output matrix
     for input_number in pointnumbers:
         df_datnem_specific = df_datn_emplot[df_datn_emplot['Point number']==input_number]
         df_datnem_specific = df_datnem_specific.sort(['Potential'], ascending=[1])
         df_datnem_specific.reset_index(drop=True, inplace=True)
 
-        df_fcs_specific = df_FCS[df_FCS['Point number']==input_number]
-        df_fcs_specific = df_fcs_specific.sort(['Potential'], ascending=[1])
-        df_fcs_specific.reset_index(drop=True, inplace=True)
-
         if not df_datnem_specific.empty:
             #---------Create Pandas array to save outputs----------
-            indices = np.ones(13); indices=indices.astype(str)
+            indices = np.ones(7); indices=indices.astype(str)
             Point_number = 'Point_'+str(input_number)
             indices[:]=Point_number
             group_1 = ['Potential']
             group_ind = np.ones(6);group_ind = group_ind.astype(str)
             group_2=group_ind.copy(); group_2[:]='t_ratio_timetrace'
-            group_3 = group_ind.copy(); group_3[:]='t_ratio_FCS'
-            group=concatenate((group_1, group_2, group_3))
+            #group_3 = group_ind.copy(); group_3[:]='t_ratio_FCS'
+            group=concatenate((group_1, group_2))
             subgroup_1 = ['Potential']
             subgroup_2 = ['t_onav', 't_onaverr', 't_offav','t_offaverr','t_ratio', 't_ratioerr']
-            subgroup_3 = subgroup_2;
-            subgroup = concatenate((subgroup_1, subgroup_2, subgroup_3))
+            #subgroup_3 = subgroup_2;
+            subgroup = concatenate((subgroup_1, subgroup_2))
             arrays = [indices, group, subgroup]
             col = pd.MultiIndex.from_arrays(arrays)
             length=(len(df_datnem_specific))#for defining dimension of out_mat
@@ -423,7 +479,6 @@ def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potent
             t_onavfcs=[];t_onaverrfcs=[]; t_offavfcs=[]; t_offaverrfcs=[]; t_ratiofcs=[]; t_ratioerrfcs=[] #Empty forms for timetrace output
             for i in range(length):
                 potential = out_point[Point_number]['Potential']['Potential'][i]
-                #----------------- .datn and em.plot data analysis----------------
                 df_datnem_potential = df_datn_emplot[df_datn_emplot['Potential']==potential]
                 df_datnem_potential.reset_index(drop=True, inplace=True);
                 df_datn_path = df_datnem_potential['filepath[.datn]'][0]
@@ -439,27 +494,9 @@ def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potent
                 t_offaverr.append(average_toff_err)#needs to be changed
                 t_ratio.append(ratio_on_off)
                 t_ratioerr.append(ratio_on_off_err)#needs to be changed
-
-                #-------------------- FCS data analysis-----------
-                df_fcs_potential = df_FCS[df_FCS['Potential']==potential]
-                df_fcs_potential.reset_index(drop=True, inplace=True);
-                df_fcs_path = df_fcs_potential['filepath[FCS]'][0]
-
-                t_onavfcs.append(i*2)#needs to be changed
-                t_onaverrfcs.append(i*5)# needs to be changed
-                t_offavfcs.append(i*1+1)# needs to be changed
-                t_offaverrfcs.append(i*0.5)# needs to be changed
-                t_ratiofcs.append(i*6)# needs to be changed
-                t_ratioerrfcs.append(i*7)# needs to be changed
             df_create=array([t_onav, t_onaverr, t_offav, t_offaverr, t_ratio, t_ratioerr])
             df_create=df_create.astype(float64)#;a=pd.DataFrame(a)
             df_create = pd.DataFrame(df_create.T, columns=['t_onav', 't_onaverr', 't_offav','t_offaverr','t_ratio', 't_ratioerr'])
             out_point[Point_number]['t_ratio_timetrace']=df_create
-
-            df_create_fcs = array([t_onavfcs,t_onaverrfcs, t_offavfcs, t_offaverrfcs, t_ratiofcs, t_ratioerrfcs])
-            df_create_fcs = df_create_fcs.astype(float64)
-            df_create_fcs = pd.DataFrame(df_create_fcs.T, columns=subgroup_2)
-            out_point[Point_number]['t_ratio_FCS']=df_create_fcs
-
             out_total=pd.concat([out_total, out_point], axis=1);
-    return(out_total)
+    return(out_point)
