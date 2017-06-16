@@ -154,7 +154,9 @@ def dir_mV_molNo(foldername=foldername):
     for i in range(len(pt3_list)):
         pt3_filename = pt3_list['filename[pt3]'][i]
         point_number = pt3_list['Point number'][i]
+        point_number = int(point_number)
         potential = pt3_list['Potential'][i]
+        potential = int(potential)
         pt3_path = pt3_list['filepath[pt3]'][i]
         for dirpath, dirnames, filenames in os.walk("."):
             for filename in [f for f in filenames if f.endswith(tuple(extensions))]:
@@ -167,6 +169,9 @@ def dir_mV_molNo(foldername=foldername):
                     temp_datn_list = pd.DataFrame([[point_number, potential, filename_datn, foldername+'/'+dirpath+'/'+filename_datn,
                                                    filename_emplot, foldername+'/'+dirpath+'/'+filename_emplot]], columns=columns_datn_em)
                     datn_em_list = datn_em_list.append(temp_datn_list, ignore_index=True)
+    pt3_list = pt3_list.sort(['Point number'], ascending=[1])
+    FCS_list = FCS_list.sort(['Point number'], ascending=[1])
+    datn_em_list = datn_em_list.sort(['Point number'], ascending=[1])
     return(datn_em_list, FCS_list, pt3_list)
 def point_list(foldername = foldername, pointnumbers=range(100)):
     df_datn_emplot, df_FCS, folderpath = dir_mV_molNo(foldername=foldername)
@@ -218,6 +223,17 @@ def removeifemplotdoesntexist(foldername = foldername, pointnumbers=range(100)):
     #os.chdir(parentdir)
     #savetxt('notworking.dat', output, fmt='%s')
     return(output)
+def check_missingFCSfiles(foldername=foldername):
+    datn_em_list, FCS_list, pt3_list = dir_mV_molNo(foldername=foldername)
+    for i in range(len(datn_em_list)):
+        file_name = datn_em_list['filename[.datn]'][i]
+        point_number = datn_em_list['Point number'][i]
+        potential = datn_em_list['Potential'][i]
+        FCS = FCS_list[FCS_list['Point number'].isin([point_number])]
+        FCS = FCS[FCS['Potential'].isin([potential])]
+        if FCS.empty:
+            print('FCS of %s with Point number %s with potential %s doesn''nt exist' %(file_name,point_number, potential) )
+    return
 #---------get_point_specifics-----
 def get_point_specifics(foldername= foldername, input_potential=[0, 25, 50, 100], pointnumbers=[1]):
     """bin=1 in millisecond
@@ -239,15 +255,16 @@ def time_trace_plot(foldername= foldername, input_potential=[0, 25, 50, 100],
     """
     df_datn_emplot, df_FCS, folder = dir_mV_molNo(foldername)
     df_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
-    df_specific = df_specific[df_specific['Potential'].isin(input_potential)]; df_specific.reset_index(drop=True, inplace=True)
+    df_specific = df_specific[df_specific['Potential'].isin(input_potential)];
+    df_specific=df_specific.sort(['Potential'], ascending=[1]);df_specific.reset_index(drop=True, inplace=True)
     fig, ax = plt.subplots(figsize = (10, 8),sharex=True, sharey=True)
     subplots_adjust(hspace=0.000);
     for i in range(len(df_specific)):
         given_potential = df_specific['Potential'][i]
-        print(given_potential)
-        df_specific_V = df_specific[df_specific['Potential'] == given_potential];df_specific_V.reset_index(drop=True, inplace=True)
-        f_datn_path = df_specific_V['filepath[.datn]'].values[0]
-        f_emplot_path = df_specific_V['filepath[.em.plot]'].values[0]
+        #print(given_potential)
+        #df_specific_V = df_specific[df_specific['Potential'] == given_potential];df_specific_V.reset_index(drop=True, inplace=True)
+        f_datn_path = df_specific['filepath[.datn]'][i]
+        f_emplot_path = df_specific['filepath[.em.plot]'][i]
         f_datn = f_datn_path
         f_emplot = f_emplot_path
 
@@ -442,7 +459,6 @@ def histogram_on_off_folder(foldername= foldername, input_potential=[100], point
 #------------------TIME TRACE OUTPUT-------All parameters are calculaed from the time traces of molecule----t_on, t_off, t_ratio....also from FCS...........
 pointnumbers = linspace(1, 40, 40);pointnumbers = pointnumbers.astype(int);
 potentialist = linspace(-100, 200, 1+(200-(-100))/5);
-potentialist = linspace(-100, 200, 1+(200-(-100))/5);
 def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist=potentialist):
     df_datn_emplot, df_FCS, pt3_list = dir_mV_molNo(foldername=folderpath)
     df_datn_emplot = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
@@ -479,10 +495,8 @@ def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potent
             t_onavfcs=[];t_onaverrfcs=[]; t_offavfcs=[]; t_offaverrfcs=[]; t_ratiofcs=[]; t_ratioerrfcs=[] #Empty forms for timetrace output
             for i in range(length):
                 potential = out_point[Point_number]['Potential']['Potential'][i]
-                df_datnem_potential = df_datn_emplot[df_datn_emplot['Potential']==potential]
-                df_datnem_potential.reset_index(drop=True, inplace=True);
-                df_datn_path = df_datnem_potential['filepath[.datn]'][0]
-                df_em_path = df_datnem_potential['filepath[.em.plot]'][0]
+                df_datn_path = df_datnem_specific['filepath[.datn]'][i]
+                df_em_path = df_datnem_specific['filepath[.em.plot]'][i]
 
                 df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(df_datn_path, df_em_path)
                 ratio_on_off = average_ton/average_toff;
@@ -499,4 +513,4 @@ def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potent
             df_create = pd.DataFrame(df_create.T, columns=['t_onav', 't_onaverr', 't_offav','t_offaverr','t_ratio', 't_ratioerr'])
             out_point[Point_number]['t_ratio_timetrace']=df_create
             out_total=pd.concat([out_total, out_point], axis=1);
-    return(out_point)
+    return(out_total)
