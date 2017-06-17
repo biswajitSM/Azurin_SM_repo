@@ -475,42 +475,82 @@ def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potent
             indices = np.ones(7); indices=indices.astype(str)
             Point_number = 'Point_'+str(input_number)
             indices[:]=Point_number
-            group_1 = ['Potential']
-            group_ind = np.ones(6);group_ind = group_ind.astype(str)
-            group_2=group_ind.copy(); group_2[:]='t_ratio_timetrace'
-            #group_3 = group_ind.copy(); group_3[:]='t_ratio_FCS'
-            group=concatenate((group_1, group_2))
-            subgroup_1 = ['Potential']
-            subgroup_2 = ['t_onav', 't_onaverr', 't_offav','t_offaverr','t_ratio', 't_ratioerr']
-            #subgroup_3 = subgroup_2;
-            subgroup = concatenate((subgroup_1, subgroup_2))
-            arrays = [indices, group, subgroup]
+            subgroup = ['Potential','t_onav', 't_onaverr', 't_offav','t_offaverr','t_ratio', 't_ratioerr']
+            arrays = [indices, subgroup]
             col = pd.MultiIndex.from_arrays(arrays)
             length=(len(df_datnem_specific))#for defining dimension of out_mat
             out_point = pd.DataFrame(zeros((length, len(subgroup))), columns=col)#create zeroes which will be replaced by proper values
 
             #---------Pandas array created to save outputs----
             out_point[Point_number]['Potential']=df_datnem_specific['Potential']
-            t_onav=[];t_onaverr=[]; t_offav=[]; t_offaverr=[]; t_ratio=[]; t_ratioerr=[] #Empty forms for timetrace output
-            t_onavfcs=[];t_onaverrfcs=[]; t_offavfcs=[]; t_offaverrfcs=[]; t_ratiofcs=[]; t_ratioerrfcs=[] #Empty forms for timetrace output
+            poten_array = [];t_onav=[];t_onaverr=[]; t_offav=[]; t_offaverr=[]; t_ratio=[]; t_ratioerr=[] #Empty forms for timetrace output
             for i in range(length):
-                potential = out_point[Point_number]['Potential']['Potential'][i]
+                potential = out_point[Point_number]['Potential'][i]
                 df_datn_path = df_datnem_specific['filepath[.datn]'][i]
                 df_em_path = df_datnem_specific['filepath[.em.plot]'][i]
 
-                df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(df_datn_path, df_em_path)
-                ratio_on_off = average_ton/average_toff;
-                ratio_on_off_err = (average_ton/average_toff)*sqrt(((average_ton_err/average_ton)**2)+((average_toff_err/average_toff)**2))
-
+                if os.path.isfile(df_em_path):
+                    df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(df_datn_path, df_em_path)
+                    ratio_off_on = average_toff/average_ton;
+                    ratio_off_on_err = (average_toff/average_ton)*sqrt(((average_toff_err/average_toff)**2)+((average_ton_err/average_ton)**2))
+                else:
+                    print('em.plot file of %s with potential %s doesn''t exist' %(Point_number, potential))
+                    potential=np.nan#, average_ton=np.nan, ratio_off_on=np.nan
+                poten_array.append(potential)
                 t_onav.append(average_ton)
                 t_onaverr.append(average_ton_err)#needs to be changed
                 t_offav.append(average_toff)
                 t_offaverr.append(average_toff_err)#needs to be changed
-                t_ratio.append(ratio_on_off)
-                t_ratioerr.append(ratio_on_off_err)#needs to be changed
-            df_create=array([t_onav, t_onaverr, t_offav, t_offaverr, t_ratio, t_ratioerr])
+                t_ratio.append(ratio_off_on)
+                t_ratioerr.append(ratio_off_on_err)#needs to be changed
+            df_create=array([poten_array, t_onav, t_onaverr, t_offav, t_offaverr, t_ratio, t_ratioerr])
             df_create=df_create.astype(float64)#;a=pd.DataFrame(a)
-            df_create = pd.DataFrame(df_create.T, columns=['t_onav', 't_onaverr', 't_offav','t_offaverr','t_ratio', 't_ratioerr'])
-            out_point[Point_number]['t_ratio_timetrace']=df_create
+            df_create = pd.DataFrame(df_create.T, columns=subgroup)
+            out_point[Point_number]=df_create
             out_total=pd.concat([out_total, out_point], axis=1);
     return(out_total)
+#------------Midpoint potential---------------------
+def Mid_potentials(folderpath=foldername, pointnumbers=range(20), plotting=True, min_pot=40, print_missing):
+    timetrace_output = timetrace_outputs_folderwise(folderpath=folderpath, pointnumbers=pointnumbers, potentialist=potentialist)
+    def nernst(x, a):
+        '''x is potential
+        a: E0/midpoint potential(parameter)
+        returns ratio(t_oxd/t_red)'''
+        return(10**((x - a) / 0.059))
+    columns_E0 = ['Point number', 'E0_fit', 'E0_err']
+    E0_list = pd.DataFrame(index=None, columns=columns_E0)
+    cmap = plt.get_cmap('hsv')#jet_r
+    N=len(timetrace_output.columns.levels[0])
+    for i in range(len(timetrace_output.columns.levels[0])):
+        point = timetrace_output.columns.levels[0][i]
+        point_output_tot = timetrace_output[point].dropna()
+        point_output = point_output_tot[point_output_tot['Potential'] >= min_pot] #select a potential threshold
+        if len(point_output)>2:
+            potential = point_output['Potential']
+            t_onav = point_output['t_onav']
+            t_onaverr = point_output['t_onaverr']
+            t_offav = point_output['t_offav']
+            t_offaverr = point_output['t_offaverr']
+            t_ratio = point_output['t_ratio']
+            t_ratioerr = point_output['t_ratioerr']
+            #--------fitting--------------
+            E = potential*0.001 #converting to mV
+            E0_fit, E0_var = curve_fit(nernst, E, t_ratio, p0=0.02)
+            E0_err = np.sqrt(np.diag(E0_var));
+            E0 = E0_fit[0]; E0_err=E0_err[0]
+            #---------append to list---------
+            E0_list_temp = pd.DataFrame([[point, E0, E0_err]], columns=columns_E0)
+            E0_list=E0_list.append(E0_list_temp, ignore_index=True)
+            #-----plot------
+            if plotting == True:
+                color = cmap(float(i)/N)
+                errorbar(point_output_tot['Potential'], point_output_tot['t_ratio'],
+                         yerr=point_output_tot['t_ratioerr'], fmt='o', color=color, label=point)#plot raw outputs
+                plot(1000*linspace(-0.025, 0.11), nernst(linspace(-0.025, 0.11), *E0_fit), color=color, linewidth=2.0)
+                yscale('log')
+                xlabel('$Potential [V]$', fontsize=20)
+                ylabel('$T_{OFF}/T_{ON}$', fontsize=20)
+                tick_params(axis='both', which='major', labelsize=16)
+                tight_layout()
+                legend(bbox_to_anchor=(0.9, 0.3), fontsize=16)
+    return(point_output_tot, point_output, E0_list)

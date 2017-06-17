@@ -11,7 +11,6 @@ from scipy.optimize import curve_fit
 from matplotlib.colors import LogNorm
 global pointnumber
 
-
 from numpy import sqrt, pi, exp, linspace, loadtxt
 from lmfit import  Model, Parameter, Parameters
 
@@ -51,7 +50,6 @@ def T_off_average(f_datn, f_emplot):
     average_ton = np.average(df_ton);
     average_toff = np.average(df_toff);
     return(average_ton, average_toff, df_ton, df_toff)
-
 
 def time_trace_plot(foldername='S101d14Feb17_60.5_635_A2_CuAzu655', input_potential=[0, 25],
                     input_number=1, x_lim_min=0, y_lim_min=0, x_lim_max=5, y_lim_max=5000, bin=1, show_changepoint=True):
@@ -175,7 +173,6 @@ def FCS_bi_fit(filename,tmin,tmax):
         print('Runtime Error %s' %filename)
     return(bifit)
 
-
 def FCS_plot(foldername, tmin, tmax, pnt_numb, pnt_pot, kind):
     maindir = os.getcwd()
     os.chdir(foldername)
@@ -194,7 +191,8 @@ def FCS_plot(foldername, tmin, tmax, pnt_numb, pnt_pot, kind):
             else:
                 point_number1_FCS = filename[position_FCS-2:position_FCS-1]
                 point_number2_FCS = filename[position_FCS-3:position_FCS-2]
-                if point_number2_FCS in ['_']: #filename X_voltagemV_Y
+
+                    if point_number2_FCS in ['_']: #filename X_voltagemV_Y
                     pointnumberFCS = int(point_number1_FCS)
                 else:
                     pointnumberFCS = int(point_number2_FCS + point_number1_FCS)
@@ -250,7 +248,6 @@ def FCS_plot(foldername, tmin, tmax, pnt_numb, pnt_pot, kind):
                     os.chdir(folderdir)
     os.chdir(maindir)
     return()
-
 
 def midpoint_histograms(excel_name, excel_name_FCS, imp_pot, tminFCS, tmaxFCS, minimal_points, inp_bins, min_range, max_range, min_x1, max_x1, min_x2, max_x2):
     wb = Workbook()
