@@ -365,9 +365,9 @@ def FCS_plot(foldername= foldername, input_potential=[0, 25, 50, 100],
 #-----------------------------ON/OFF times from changepoint and FCS------------------------------------
 def t_on_off_fromCP(f_datn, f_emplot):
     #expt data
-    df = pd.read_csv(f_datn, header=None)
-    binpts=5000; mi=min(df[0]); ma=mi+10;
-    df_hist = histogram(df[0], bins=binpts, range=(mi, ma))
+    # df = pd.read_csv(f_datn, header=None)
+    # binpts=5000; mi=min(df[0]); ma=mi+10;
+    # df_hist = histogram(df[0], bins=binpts, range=(mi, ma))
     #change point
     df = pd.read_csv(f_emplot, header=None, sep='\t')
     df_diff= diff(df[0])
@@ -488,14 +488,20 @@ def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potent
                 potential = out_point[Point_number]['Potential'][i]
                 df_datn_path = df_datnem_specific['filepath[.datn]'][i]
                 df_em_path = df_datnem_specific['filepath[.em.plot]'][i]
+                df_emplot_filename = df_datnem_specific['filename[.em.plot]'][i]
 
                 if os.path.isfile(df_em_path):
-                    df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(df_datn_path, df_em_path)
-                    ratio_off_on = average_toff/average_ton;
-                    ratio_off_on_err = (average_toff/average_ton)*sqrt(((average_toff_err/average_toff)**2)+((average_ton_err/average_ton)**2))
+                    try:
+                        df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(df_datn_path, df_em_path)
+                        ratio_off_on = average_toff/average_ton;
+                        ratio_off_on_err = (average_toff/average_ton)*sqrt(((average_toff_err/average_toff)**2)+((average_ton_err/average_ton)**2))
+                    except:
+                        print('em.plot file: %s doesn''t contain proper data' %df_emplot_filename)
+                        potential=np.nan # This row will be removed in later processing
+                        pass
                 else:
                     print('em.plot file of %s with potential %s doesn''t exist' %(Point_number, potential))
-                    potential=np.nan#, average_ton=np.nan, ratio_off_on=np.nan
+                    potential=np.nan #, # This row will be removed in later processing
                 poten_array.append(potential)
                 t_onav.append(average_ton)
                 t_onaverr.append(average_ton_err)#needs to be changed
@@ -510,7 +516,7 @@ def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potent
             out_total=pd.concat([out_total, out_point], axis=1);
     return(out_total)
 #------------Midpoint potential---------------------
-def Mid_potentials(folderpath=foldername, pointnumbers=range(20), plotting=True, min_pot=40, print_missing):
+def Mid_potentials(folderpath=foldername, pointnumbers=range(20), plotting=True, min_pot=40):
     timetrace_output = timetrace_outputs_folderwise(folderpath=folderpath, pointnumbers=pointnumbers, potentialist=potentialist)
     def nernst(x, a):
         '''x is potential
@@ -553,4 +559,4 @@ def Mid_potentials(folderpath=foldername, pointnumbers=range(20), plotting=True,
                 tick_params(axis='both', which='major', labelsize=16)
                 tight_layout()
                 legend(bbox_to_anchor=(0.9, 0.3), fontsize=16)
-    return(point_output_tot, point_output, E0_list)
+    return(E0_list)
