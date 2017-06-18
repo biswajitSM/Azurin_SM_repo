@@ -558,5 +558,5 @@ def Mid_potentials(folderpath=foldername, pointnumbers=range(20), plotting=True,
                 ylabel('$T_{OFF}/T_{ON}$', fontsize=20)
                 tick_params(axis='both', which='major', labelsize=16)
                 tight_layout()
-                legend(bbox_to_anchor=(0.9, 0.3), fontsize=16)
+                #legend(bbox_to_anchor=(0.9, 0.3), fontsize=16)
     return(E0_list)
