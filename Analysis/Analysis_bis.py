@@ -414,7 +414,7 @@ def histogram_on_off_1mol(foldername= foldername, input_potential=[100], pointnu
     df_specific = df_specific[df_specific['Potential'].isin(input_potential)]; df_specific.reset_index(drop=True, inplace=True)
     f_datn_path = df_specific['filepath[.datn]'].values[0]
     f_emplot_path = df_specific['filepath[.em.plot]'].values[0]
-    df_ton, df_toff, average_ton, average_toff = t_on_off_fromCP(f_datn_path, f_emplot_path)
+    df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(f_datn_path, f_emplot_path)
     t_ons = np.array(df_ton);
     t_offs = np.array(df_toff)
     if plotting == True:
@@ -440,7 +440,7 @@ def histogram_on_off_folder(foldername= foldername, input_potential=[100], point
     for i in range(len(df_specific)):
         f_datn_path = df_specific['filepath[.datn]'].values[i]
         f_emplot_path = df_specific['filepath[.em.plot]'].values[i]
-        df_ton, df_toff, average_ton, average_toff = t_on_off_fromCP(f_datn_path, f_emplot_path);
+        df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(f_datn_path, f_emplot_path);
         t_ons = np.concatenate((t_ons, df_ton), axis=0);
         t_offs = np.concatenate((t_offs, df_toff));
     if plotting == True:
