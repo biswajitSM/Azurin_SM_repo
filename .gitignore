@@ -7,4 +7,7 @@
 *.blg
 *.synnctex.gz
 *.ipynb_checkpoints
-*Analysis/tempfiles
+*Analysis/tempfiles/
+tempfiles/
+*.tempfiles/
+*tempfiles/
