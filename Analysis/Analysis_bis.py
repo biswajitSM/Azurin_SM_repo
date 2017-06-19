@@ -456,6 +456,67 @@ def histogram_on_off_folder(foldername= foldername, input_potential=[100], point
         #axes[1].set_yscale('log')
         axes[1].set_title("OFF time histogram at %s mV" %input_potential[0])
     return(t_ons, t_offs)
+def hist2D_on_off(foldername=homedir, input_potential=[100], pointnumbers=[24], bins_on=40, range_on=[0, 0.01], bins_off=50, range_off=[0, 1], x_shift=10, plots=True):
+    t_ons, t_offs = histogram_on_off_1mol(foldername= foldername, input_potential=input_potential, pointnumbers=pointnumbers, plotting=False)
+    t_ons=pd.Series(t_ons);t_offs=pd.Series(t_offs)
+    t_on_shifted_1 = t_ons.shift(+1) ## shift up
+    t_on_delay_1 = pd.DataFrame([t_on_shifted_1, t_ons]); t_on_delay_1=t_on_delay_1.T
+    t_on_delay_1 = t_on_delay_1.dropna();
+    t_off_shifted_1 = t_offs.shift(+1) ## shift up
+
+    t_on_shifted_x = t_ons.shift(+x_shift) ## shift up
+    t_off_shifted_x = t_offs.shift(+x_shift) ## shift up
+
+    if plots==True:
+        import matplotlib as mpl
+        colormap=mpl.cm.RdBu_r
+        fig = plt.figure(figsize=(16,8))
+
+        ax1 = fig.add_subplot(2,3,1)#2,2,1
+        C_on_1,Ex_on_1,Ey_on_1, figu = hist2d(t_on_shifted_1[1:], t_ons[1:], range=[range_on, range_on], bins=bins_on, norm=mpl.colors.LogNorm(), cmap=colormap)
+        Ex_on_1,Ey_on_1 = meshgrid(Ex_on_1,Ey_on_1)
+        colorbar()
+        ax1.set_title('ON time Cu-Azu %smV' %input_potential)
+        ax1.set_xlabel(r'$\tau_{on}/s$')
+        ax1.set_ylabel(r'$\tau_{on}+1/s$')
+
+        ax2 = fig.add_subplot(2,3,2)#2,2,1
+        C_on_x,Ex_on_x,Ey_on_x, figu = hist2d(t_on_shifted_x[x_shift:], t_ons[x_shift:], range=[range_on, range_on], bins=bins_on, norm=mpl.colors.LogNorm(), cmap=colormap)
+        Ex_on_x,Ey_on_x = meshgrid(Ex_on_x,Ey_on_x)
+        colorbar()
+        ax2.set_title('ON time Cu-Azu %smV' %input_potential)
+        ax2.set_xlabel(r'$\tau_{on}/s$')
+        ax2.set_ylabel(r'$\tau_{on}+%s/s$'%x_shift)
+
+        ax3 = fig.add_subplot(2,3,3)
+        C_on_diff = C_on_1-C_on_x;
+        pcm=ax3.pcolormesh(Ex_on_x, Ey_on_x, C_on_diff,
+                       norm=mpl.colors.SymLogNorm(linthresh=0.03, linscale=0.03,vmin=C_on_diff.min(), vmax=C_on_diff.max()), cmap=colormap)
+        fig.colorbar(pcm, ax=ax3, extend='max')
+
+        ax4 = fig.add_subplot(2,3,4)
+        C_off_1, Ex_off_1, Ey_off_1, figu= hist2d(t_off_shifted_1[1:], t_offs[1:], range=[range_off, range_off],bins=bins_off, norm=mpl.colors.LogNorm(), cmap=colormap);#, norm=mpl.colors.LogNorm()
+        Ex_off_1, Ey_off_1 = meshgrid(Ex_off_1, Ey_off_1)
+        colorbar()
+        ax4.set_title('OFF time Cu-Azu %smV' %input_potential)
+        ax4.set_xlabel(r'$\tau_{off}/s$')
+        ax4.set_ylabel(r'$\tau_{off}+1/s$')
+
+        ax5 = fig.add_subplot(2,3,5)
+        C_off_x,Ex_off_x,Ey_off_x, figu = hist2d(t_off_shifted_x[x_shift:], t_offs[x_shift:], range=[range_off, range_off],bins=bins_off, norm=mpl.colors.LogNorm(), cmap=colormap);#, norm=mpl.colors.LogNorm()
+        Ex_off_x,Ey_off_x = meshgrid(Ex_off_x,Ey_off_x)
+        colorbar()
+        ax5.set_title('OFF time Cu-Azu %smV' %input_potential)
+        ax5.set_xlabel(r'$\tau_{off}/s$')
+        ax5.set_ylabel(r'$\tau_{off}+%s/s$'%x_shift)
+
+        ax6 = fig.add_subplot(2,3,6)
+        C_off_diff=C_off_1-C_off_x
+        pcm=ax6.pcolormesh(Ex_off_x, Ey_off_x, C_off_diff, norm=mpl.colors.SymLogNorm(linthresh=0.03, linscale=0.03,vmin=C_off_diff.min(), vmax=C_off_diff.max()), cmap=colormap)
+        fig.colorbar(pcm, ax=ax6, extend='max')
+        plt.tight_layout()
+    return(C_on_diff, C_off_diff)
+
 #------------------TIME TRACE OUTPUT-------All parameters are calculaed from the time traces of molecule----t_on, t_off, t_ratio....also from FCS...........
 pointnumbers = linspace(1, 40, 40);pointnumbers = pointnumbers.astype(int);
 potentialist = linspace(-100, 200, 1+(200-(-100))/5);
