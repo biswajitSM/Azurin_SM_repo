@@ -1,0 +1,10 @@
+*.log
+*.aux
+*.out
+*.bak
+*.ipynb_checkpoints
+*.bbl
+*.blg
+*.synnctex.gz
+*.ipynb_checkpoints
+*tempfiles/
