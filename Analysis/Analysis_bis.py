@@ -412,23 +412,31 @@ def histogram_on_off_1mol(foldername= foldername, input_potential=[100], pointnu
     df_datn_emplot, df_FCS, folder = dir_mV_molNo(foldername)
     df_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
     df_specific = df_specific[df_specific['Potential'].isin(input_potential)]; df_specific.reset_index(drop=True, inplace=True)
-    f_datn_path = df_specific['filepath[.datn]'].values[0]
-    f_emplot_path = df_specific['filepath[.em.plot]'].values[0]
-    df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(f_datn_path, f_emplot_path)
-    t_ons = np.array(df_ton);
-    t_offs = np.array(df_toff)
-    if plotting == True:
-        fig, axes = plt.subplots(1, 2, figsize=(10,4))
-        n,bins_on,patches = axes[0].hist(t_ons, range=range_on,bins=bins_on)
-        axes[0].set_xlabel(r'$\tau_{on}$')
-        axes[0].set_ylabel('#')
-        #axes[0].set_yscale('log')
-        axes[0].set_title("ON time histogram at %s mV" %input_potential[0])
-        n,bins_off,patches = axes[1].hist(t_offs, range=range_off,bins=bins_off)
-        axes[1].set_xlabel(r'$\tau_{off}$')
-        axes[1].set_ylabel('#')
-        #axes[1].set_yscale('log')
-        axes[1].set_title("OFF time histogram at %s mV" %input_potential[0])
+    f_emplot_path = 'x'; f_datn_path='x'; t_ons=[];t_offs=[]
+    if not df_specific.empty:
+        f_datn_path = df_specific['filepath[.datn]'].values[0]
+        f_emplot_path = df_specific['filepath[.em.plot]'].values[0]
+    if os.path.isfile(f_emplot_path):
+        try:
+            df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(f_datn_path, f_emplot_path)
+            t_ons = np.array(df_ton);
+            t_offs = np.array(df_toff)
+            if plotting == True:
+                fig, axes = plt.subplots(1, 2, figsize=(10,4))
+                n,bins_on,patches = axes[0].hist(t_ons, range=range_on,bins=bins_on)
+                axes[0].set_xlabel(r'$\tau_{on}$')
+                axes[0].set_ylabel('#')
+                #axes[0].set_yscale('log')
+                axes[0].set_title("ON time histogram at %s mV" %input_potential[0])
+                n,bins_off,patches = axes[1].hist(t_offs, range=range_off,bins=bins_off)
+                axes[1].set_xlabel(r'$\tau_{off}$')
+                axes[1].set_ylabel('#')
+                #axes[1].set_yscale('log')
+                axes[1].set_title("OFF time histogram at %s mV" %input_potential[0])
+        except:
+            print('em.plot file: %s doesn''t contain proper data' %df_emplot_filename)
+            #potential=np.nan # This row will be removed in later processing
+            pass
     return(t_ons, t_offs)
 
 def histogram_on_off_folder(foldername= foldername, input_potential=[100], pointnumbers=range(100),
@@ -456,7 +464,7 @@ def histogram_on_off_folder(foldername= foldername, input_potential=[100], point
         #axes[1].set_yscale('log')
         axes[1].set_title("OFF time histogram at %s mV" %input_potential[0])
     return(t_ons, t_offs)
-def hist2D_on_off(foldername=homedir, input_potential=[100], pointnumbers=[24], bins_on=40, range_on=[0, 0.01], bins_off=50, range_off=[0, 1], x_shift=10, plots=True):
+def hist2D_on_off(foldername=foldername, input_potential=[100], pointnumbers=[24], bins_on=40, range_on=[0, 0.01], bins_off=50, range_off=[0, 1], x_shift=10, plots=True):
     t_ons, t_offs = histogram_on_off_1mol(foldername= foldername, input_potential=input_potential, pointnumbers=pointnumbers, plotting=False)
     t_ons=pd.Series(t_ons);t_offs=pd.Series(t_offs)
     t_on_shifted_1 = t_ons.shift(+1) ## shift up
