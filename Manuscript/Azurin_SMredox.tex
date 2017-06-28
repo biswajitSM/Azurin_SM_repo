@@ -1,115 +1,38 @@
-
-\documentclass[journal=jacsat,manuscript=article]{achemso}
+\documentclass[journal=bichaw,manuscript=article]{achemso}
 
 \usepackage[version=3]{mhchem} % Formula subscripts using \ce{}
 \usepackage[T1]{fontenc}       % Use modern font encodings
 
 \newcommand*\mycommand[1]{\texttt{\emph{#1}}}
 
-\author{Andrew N. Other}
-\altaffiliation{A shared footnote}
-\author{Fred T. Secondauthor}
-\altaffiliation{Current address: Some other place, Othert\"own,
-Germany}
-\author{I. Ken Groupleader}
-\altaffiliation{A shared footnote}
-\email{i.k.groupleader@unknown.uu}
-\phone{+123 (0)123 4445556}
-\fax{+123 (0)123 4445557}
-\affiliation[Unknown University]
-{Department of Chemistry, Unknown University, Unknown Town}
-\alsoaffiliation[Second University]
-{Department of Chemistry, Second University, Nearby Town}
-\author{Susanne K. Laborator}
-\email{s.k.laborator@bigpharma.co}
-\affiliation[BigPharma]
-{Lead Discovery, BigPharma, Big Town, USA}
-\author{Kay T. Finally}
-\affiliation[Unknown University]
-{Department of Chemistry, Unknown University, Unknown Town}
-\alsoaffiliation[Second University]
-{Department of Chemistry, Second University, Nearby Town}
+\author{Authors}
+\altaffiliation{Huygens-Kamerlingh Onnes Laboratory, Leiden University, RA, Leiden, The Netherlands}
 
 \title[An \textsf{achemso} demo]
-  {A demonstration of the \textsf{achemso} \LaTeX\
-   class\footnote{A footnote for the title}}
+  {Electrochemsitry of single Azurin shows time variant turnovers}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Some journals require a list of abbreviations or keywords to be
-%% supplied. These should be set up here, and will be printed after
-%% the title and author information, if needed.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \abbreviations{IR,NMR,UV}
 \keywords{American Chemical Society, \LaTeX}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% The manuscript does not need to include \maketitle, which is
-%% executed automatically.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
+Start of doccument.
 
-\begin{tocentry}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%% Start the main part of the manuscript here.%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\end{tocentry}
-
-\begin{abstract}
-
-\end{abstract}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Start the main part of the manuscript here.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
+Introduction here.
+%%%%%%Results and Discussion%%%%%%%%%
+\section{Results and discussion\label{sec:results}}
+Results and discussion.
+\begin{figure}
+	\includegraphics[width=\textwidth]{Figure/Figure_2_timetrace_CuAzu.eps}
+	\caption{Time traces of labeled Cu-Azurin at different potential}
+	\label{fig:timetrace}
+\end{figure}
 
-
-\section{Results and discussion}
-
-\subsection{Outline}
-
-
-%\begin{scheme}
-%
-%\end{scheme}
-
-%\begin{figure}
-%
-%\end{figure}
-
-
-%\begin{equation}
-% 
-%\end{equation}
-
-
+%%%%%Experimental Section%%%%%%%%%%
 \section{Experimental}
-
-%\begin{table}
-%
-%\end{table}
-
-
-%\begin{acknowledgement}
-%
-%\end{acknowledgement}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% The same is true for Supporting Information, which should use the
-%% suppinfo environment.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{suppinfo}
-
-%\begin{itemize}
-%  \item Filename: brief description
-%  \item Filename: brief description
-%\end{itemize}
-
-\end{suppinfo}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% The appropriate \bibliography command should be placed here.
-%% Notice that the class file automatically sets \bibliographystyle
-%% and also names the section correctly.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\bibliography{achemso-demo}
-
+\bibliography{Azurin-SMredox}
 \end{document}
