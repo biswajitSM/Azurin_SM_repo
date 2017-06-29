@@ -1,4 +1,4 @@
-\documentclass[journal=bichaw,manuscript=article]{achemso}
+\documentclass[journal=jpclcd,manuscript=article]{achemso}
 
 \usepackage[version=3]{mhchem} % Formula subscripts using \ce{}
 \usepackage[T1]{fontenc}       % Use modern font encodings
@@ -7,15 +7,14 @@
 
 \author{Authors}
 \altaffiliation{Huygens-Kamerlingh Onnes Laboratory, Leiden University, RA, Leiden, The Netherlands}
-
-\title[An \textsf{achemso} demo]
-  {Electrochemsitry of single Azurin shows time variant turnovers}
+\email{corresponding_author@physics.leidenuniv.nl}
+\title[]
+{Electrochemsitry of single Azurin shows time variant turnovers}
 
 \abbreviations{IR,NMR,UV}
 \keywords{American Chemical Society, \LaTeX}
 
 \begin{document}
-Start of doccument.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%% Start the main part of the manuscript here.%%%%%%%%%%%%%%
@@ -26,6 +25,13 @@ Introduction here.
 %%%%%%Results and Discussion%%%%%%%%%
 \section{Results and discussion\label{sec:results}}
 Results and discussion.
+\begin{scheme}
+	\includegraphics[width=\textwidth]{Figure/Scheme_1_setup.eps}
+	The scheme for
+	\caption{An example scheme}
+  	\label{sch:setup}
+\end{scheme}
+
 \begin{figure}
 	\includegraphics[width=\textwidth]{Figure/Figure_2_timetrace_CuAzu.eps}
 	\caption{Time traces of labeled Cu-Azurin at different potential}
