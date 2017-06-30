@@ -7,6 +7,5 @@
 *.dvi
 *.log
 *.out
-*.eps
 *.gz
 *.bak
