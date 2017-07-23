@@ -11,6 +11,8 @@ global pointnumber
 from numpy import sqrt, pi, exp, linspace, loadtxt
 from lmfit import  Model, Parameter, Parameters
 import matplotlib.pyplot as plt
+mpl.rcParams["font.family"] = "sans-serif"
+mpl.rcParams["font.size"] = "14"
 #--------------Get the pointnumber, datn, emplot, FCS files with their filepath in a "GIVEN FOLDER"---------------------
 foldername = r'/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data/201702_S101toS104/S101d14Feb17_60.5_635_A2_CuAzu655'
 def dir_mV_molNo_temp(foldername=foldername):
@@ -465,7 +467,12 @@ def histogram_on_off_folder(foldername= foldername, input_potential=[100], point
         axes[1].set_title("OFF time histogram at %s mV" %input_potential[0])
     return(t_ons, t_offs)
 def hist2D_on_off(foldername=foldername, input_potential=[100], pointnumbers=[24], bins_on=40, range_on=[0, 0.01], bins_off=50, range_off=[0, 1], x_shift=10, plots=True):
-    t_ons, t_offs = histogram_on_off_1mol(foldername= foldername, input_potential=input_potential, pointnumbers=pointnumbers, plotting=False)
+    t_ons = []; t_offs=[];
+    for i in pointnumbers:
+        t_on_temp, t_off_temp = histogram_on_off_1mol(foldername= foldername, input_potential=input_potential, pointnumbers=[i], plotting=False)
+        t_ons = np.concatenate((t_ons, t_on_temp), axis=0)
+        t_offs = np.concatenate((t_offs, t_off_temp), axis=0)
+
     t_ons=pd.Series(t_ons);t_offs=pd.Series(t_offs)
     t_on_shifted_1 = t_ons.shift(+1) ## shift up
     t_on_delay_1 = pd.DataFrame([t_on_shifted_1, t_ons]); t_on_delay_1=t_on_delay_1.T
@@ -474,7 +481,8 @@ def hist2D_on_off(foldername=foldername, input_potential=[100], pointnumbers=[24
 
     t_on_shifted_x = t_ons.shift(+x_shift) ## shift up
     t_off_shifted_x = t_offs.shift(+x_shift) ## shift up
-
+    print('Number of on events: %d' %len(t_ons))
+    print('Number of off events: %d' %len(t_offs))
     if plots==True:
         import matplotlib as mpl
         colormap=mpl.cm.RdBu_r
@@ -483,6 +491,7 @@ def hist2D_on_off(foldername=foldername, input_potential=[100], pointnumbers=[24
         ax1 = fig.add_subplot(2,3,1)#2,2,1
         C_on_1,Ex_on_1,Ey_on_1, figu = hist2d(t_on_shifted_1[1:], t_ons[1:], range=[range_on, range_on], bins=bins_on, norm=mpl.colors.LogNorm(), cmap=colormap)
         Ex_on_1,Ey_on_1 = meshgrid(Ex_on_1,Ey_on_1)
+        #ax1.pcolormesh(Ex_on_1, Ey_on_1, C_on_1, cmap=colormap)#,norm=mpl.colors.LogNorm()
         colorbar()
         ax1.set_title('ON time Cu-Azu %smV' %input_potential)
         ax1.set_xlabel(r'$\tau_{on}/s$')
@@ -491,6 +500,7 @@ def hist2D_on_off(foldername=foldername, input_potential=[100], pointnumbers=[24
         ax2 = fig.add_subplot(2,3,2)#2,2,1
         C_on_x,Ex_on_x,Ey_on_x, figu = hist2d(t_on_shifted_x[x_shift:], t_ons[x_shift:], range=[range_on, range_on], bins=bins_on, norm=mpl.colors.LogNorm(), cmap=colormap)
         Ex_on_x,Ey_on_x = meshgrid(Ex_on_x,Ey_on_x)
+        #ax2.pcolormesh(Ex_on_x, Ey_on_x, C_on_x, cmap=colormap)#,norm=mpl.colors.LogNorm()
         colorbar()
         ax2.set_title('ON time Cu-Azu %smV' %input_potential)
         ax2.set_xlabel(r'$\tau_{on}/s$')
@@ -523,7 +533,7 @@ def hist2D_on_off(foldername=foldername, input_potential=[100], pointnumbers=[24
         pcm=ax6.pcolormesh(Ex_off_x, Ey_off_x, C_off_diff, norm=mpl.colors.SymLogNorm(linthresh=0.03, linscale=0.03,vmin=C_off_diff.min(), vmax=C_off_diff.max()), cmap=colormap)
         fig.colorbar(pcm, ax=ax6, extend='max')
         plt.tight_layout()
-    return(C_on_diff, C_off_diff)
+    return(t_ons, t_offs)
 
 #------------------TIME TRACE OUTPUT-------All parameters are calculaed from the time traces of molecule----t_on, t_off, t_ratio....also from FCS...........
 pointnumbers = linspace(1, 40, 40);pointnumbers = pointnumbers.astype(int);

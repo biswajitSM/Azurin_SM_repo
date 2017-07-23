@@ -15,7 +15,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="Figure_3_midpoint.svg">
+   sodipodi:docname="Figure_2_midpoint.svg">
   <defs
      id="defs4">
     <clipPath
@@ -2891,14 +2891,14 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.1236753"
-     inkscape:cx="433.71238"
+     inkscape:cx="226.83336"
      inkscape:cy="207.54398"
      inkscape:document-units="px"
      inkscape:current-layer="g3363"
      showgrid="false"
      inkscape:window-width="1680"
      inkscape:window-height="1026"
-     inkscape:window-x="0"
+     inkscape:window-x="1680"
      inkscape:window-y="24"
      inkscape:window-maximized="1" />
   <metadata
@@ -4902,8 +4902,21 @@
              y="1408.1582"
              x="255.27489"
              id="tspan12207"
-             sodipodi:role="line">Potential [V]</tspan></text>
+             sodipodi:role="line">Potential [mV]</tspan></text>
       </g>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:99.70430756px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         x="1220.2393"
+         y="821.05353"
+         id="text4528"
+         sodipodi:linespacing="125%"
+         transform="scale(1,-1)"><tspan
+           sodipodi:role="line"
+           id="tspan4530"
+           x="1220.2393"
+           y="821.05353"
+           style="font-size:37.38911438px">4.5 mV</tspan></text>
     </g>
   </g>
 </svg>
