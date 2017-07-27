@@ -2,6 +2,8 @@
 
 \usepackage[version=3]{mhchem} % Formula subscripts using \ce{}
 \usepackage[T1]{fontenc}       % Use modern font encodings
+\usepackage{siunitx}
+\DeclareSIUnit\Molar{\textsc{m}}
 
 \newcommand*\mycommand[1]{\texttt{\emph{#1}}}
 
@@ -24,9 +26,9 @@ Introduction here.
 \section{Results and discussion\label{sec:results}}
 %Scheme
 \begin{scheme}
-	\includegraphics[scale=0.5]{Figure/Scheme_1_setup.eps}
+	\includegraphics[scale=0.8]{Figure/Scheme_1_setup.eps}
 	\caption{The scheme picture of the final setup. \textbf{(1)}  Objective through which light is irradiated on and collected from the sample. \textbf{(2)} The functionalized sample slide with on top the platinum grid
-and another small glass slide to press the grid on the sample slide, resulting in small confined volumes in the order of nanoliters. \textbf{(3)} The electron mediator solution consisting of 200 μM ferricyanide, 100 μM ascorbate in PBS (PH 7.4) buffer with a total volume of 4 mL. \textbf{(4)} The working electrode (Platinum wire) that is in contact with the platinum grid. \textbf{(5)} The saturated calomel reference electrode. \textbf{(6)} The Platinum wire (not touching the grid) as counter electrode. \textbf{(7)} The potentiostat (Model 800B Series Electrochemical Detector, CH Instruments) to which the electrodes are connected. \textbf{(8)}, \textbf{(9)} Top view of the sample slide and two images are showing the labeled Cu-Azurin reduced(brighter) and oxidized(dimmer).}
+	and another small glass slide to press the grid on the sample slide, resulting in small confined volumes in the order of nanoliters. \textbf{(3)} The electron mediator solution consisting of \SI{200}{\micro\Molar} ferricyanide, \SI{100}{\micro\Molar} ascorbate in PBS (PH 7.4) buffer with a total volume of 4 mL. \textbf{(4)} The working electrode (Platinum wire) that is in contact with the platinum grid. \textbf{(5)} The saturated calomel reference electrode. \textbf{(6)} The Platinum wire (not touching the grid) as counter electrode. \textbf{(7)} The potentiostat (Model 800B Series Electrochemical Detector, CH Instruments) to which the electrodes are connected. \textbf{(8)}, \textbf{(9)} Top view of the sample slide and two images are showing the labeled Cu-Azurin reduced(brighter) and oxidized(dimmer).}
   	\label{sch:setup}
 \end{scheme}
 %time trace
@@ -54,7 +56,6 @@ and another small glass slide to press the grid on the sample slide, resulting i
 	\label{fig:onoff2D}
 \end{figure}
 %%%%%Experimental Section%%%%%%%%%%
-
 \section%{Experimental}
 \bibliography{Azurin-SMredox}
-\end{document}
+\end{document\}

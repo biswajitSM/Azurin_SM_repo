@@ -251,7 +251,7 @@ def get_point_specifics(foldername= foldername, input_potential=[0, 25, 50, 100]
     return(df_datn_em_specific, df_fcs_specific)
 #---------TIME_TRACE_PLOT: given folder name, point number and list of potential, plot time traces at diff potentialof same molecule------
 def time_trace_plot(foldername= foldername, input_potential=[0, 25, 50, 100],
-                    pointnumbers=[1], x_lim_min=0, y_lim_min=0, x_lim_max=5, y_lim_max=6, bin=5, show_changepoint=True):
+                    pointnumbers=[1], x_lim_min=0, y_lim_min=0, x_lim_max=5, y_lim_max=6, bin=5, show_changepoint=True, figsize=(10, 8)):
     """bin=1 in millisecond
     foldername should be given as r'D:\Research\...'
     """
@@ -259,7 +259,7 @@ def time_trace_plot(foldername= foldername, input_potential=[0, 25, 50, 100],
     df_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
     df_specific = df_specific[df_specific['Potential'].isin(input_potential)];
     df_specific=df_specific.sort(['Potential'], ascending=[1]);df_specific.reset_index(drop=True, inplace=True)
-    fig, ax = plt.subplots(figsize = (10, 8),sharex=True, sharey=True)
+    fig, ax = plt.subplots(figsize = figsize,sharex=True, sharey=True)
     subplots_adjust(hspace=0.000);
     for i in range(len(df_specific)):
         given_potential = df_specific['Potential'][i]
@@ -535,10 +535,12 @@ def hist2D_on_off(foldername=foldername, input_potential=[100], pointnumbers=[24
         plt.tight_layout()
     return(t_ons, t_offs)
 
-#------------------TIME TRACE OUTPUT-------All parameters are calculaed from the time traces of molecule----t_on, t_off, t_ratio....also from FCS...........
+#------------------TIME TRACE OUTPUT-------All parameters are calculaed from the time traces of molecule----t_on, t_off, t_ratio...............
 pointnumbers = linspace(1, 40, 40);pointnumbers = pointnumbers.astype(int);
 potentialist = linspace(-100, 200, 1+(200-(-100))/5);
-def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist=potentialist):
+def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist=potentialist, kind=['timetrace']):
+    '''
+    kind=['timetrace'] or kind=['fcs']'''
     df_datn_emplot, df_FCS, pt3_list = dir_mV_molNo(foldername=folderpath)
     df_datn_emplot = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
     df_datn_emplot = df_datn_emplot[df_datn_emplot['Potential'].isin(potentialist)]
@@ -594,6 +596,87 @@ def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potent
             out_point[Point_number]=df_create
             out_total=pd.concat([out_total, out_point], axis=1);
     return(out_total)
+#------------------fcs output---------------All parameters are calculaed from the FCS of molecule----t_on, t_off, t_ratio.....
+potential = 35
+def t_on_off_fromFCS(df_fcs, tmin=0.05,tmax=1000, V= potential, V_th=40):
+    df_fcs = pd.read_csv(df_fcs, index_col=False, names=None, skiprows=1, header=None, sep='\s+');
+    df_fcs = df_fcs[df_fcs[0]>=tmin];
+    df_fcs = df_fcs[df_fcs[0]<=tmax];
+    xdata=df_fcs[0];
+    ydata=df_fcs[1];
+    def mono_exp(x, A, t_ac):
+        return (A*exp(-x/t_ac))
+    def bi_exp(x, A1, t1, A2, t2):
+        return (A1*exp(-x/t1) + A2*exp(-x/t2))
+    if V >= V_th:
+        monofit, pcov = curve_fit(mono_exp, xdata, ydata, p0 = [1, 1], bounds=(0, np.inf))
+        perr = np.sqrt(np.diag(pcov))
+        A=monofit[0]; t_ac = monofit[1]; t_er = perr[1]
+        toff = t_ac*(1+A); ton = t_ac*(1+(1/A));
+        toff_er = t_er*(1+A); ton_er = t_er*(1+(1/A));
+    else:
+        bifit, pcov = curve_fit(bi_exp, xdata, ydata, p0 = [1, 1, 1, 1], bounds=(0, np.inf))
+        perr = np.sqrt(np.diag(pcov))
+        if bifit[1]>bifit[3]:
+            A=bifit[0]; t_ac = bifit[1]; t_er = perr[1]
+        else:
+            A=bifit[2]; t_ac = bifit[3]; t_er = perr[3]
+        toff = t_ac*(1+A); ton = t_ac*(1+(1/A));
+        toff_er = t_er*(1+A); ton_er = t_er*(1+(1/A));
+    return(ton, toff, ton_er, toff_er)#, t_on_err, t_off_err
+def fcs_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist=potentialist, V_th=40):
+    df_datn_emplot, df_FCS, pt3_list = dir_mV_molNo(foldername=folderpath)
+    # df_FCS = df_FCS[df_FCS['Point number'].isin(pointnumbers)]
+    # df_FCS = df_FCS[df_FCS['Point number'].isin(potentialist)
+    out_total = pd.DataFrame()#initiating empty output matrix
+    for input_number in pointnumbers:
+        df_fcs_specific = df_FCS[df_FCS['Point number']==input_number]
+        df_fcs_specific = df_fcs_specific.sort(['Potential'], ascending=[1])
+        df_fcs_specific.reset_index(drop=True, inplace=True)
+
+        if not df_fcs_specific.empty:
+            #---------Create Pandas array to save outputs----------
+            indices = np.ones(7); indices=indices.astype(str)
+            Point_number = 'Point_'+str(input_number)
+            indices[:]=Point_number
+            subgroup = ['Potential','t_onav', 't_onaverr', 't_offav','t_offaverr','t_ratio', 't_ratioerr']
+            arrays = [indices, subgroup]
+            col = pd.MultiIndex.from_arrays(arrays)
+            length=(len(df_fcs_specific))#for defining dimension of out_mat
+            out_point = pd.DataFrame(zeros((length, len(subgroup))), columns=col)#create zeroes which will be replaced by proper values
+
+            #---------Pandas array created to save outputs----
+            out_point[Point_number]['Potential']=df_fcs_specific['Potential']
+            poten_array = [];t_onav=[];t_onaverr=[]; t_offav=[]; t_offaverr=[]; t_ratio=[]; t_ratioerr=[] #Empty forms for timetrace output
+            for i in range(length):
+                potential = out_point[Point_number]['Potential'][i]
+                df_fcs_path = df_fcs_specific['filepath[FCS]'][i]
+
+                if os.path.isfile(df_fcs_path):
+                    try:
+                        average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromFCS(df_fcs_path, tmin=0.05,tmax=1000, V= potential, V_th=40)
+                        ratio_off_on = average_toff/average_ton;
+                        ratio_off_on_err = (average_toff/average_ton)*sqrt(((average_toff_err/average_toff)**2)+((average_ton_err/average_ton)**2))
+                    except:
+                        print('fcs file: %s doesn''t contain proper data' %df_fcs_path)
+                        potential=np.nan # This row will be removed in later processing
+                        pass
+                else:
+                    print('fcs file of %s with potential %s doesn''t exist' %(Point_number, potential))
+                    potential=np.nan #, # This row will be removed in later processing
+                poten_array.append(potential)
+                t_onav.append(average_ton)
+                t_onaverr.append(average_ton_err)#needs to be changed
+                t_offav.append(average_toff)
+                t_offaverr.append(average_toff_err)#needs to be changed
+                t_ratio.append(ratio_off_on)
+                t_ratioerr.append(ratio_off_on_err)#needs to be changed
+            df_create=array([poten_array, t_onav, t_onaverr, t_offav, t_offaverr, t_ratio, t_ratioerr])
+            df_create=df_create.astype(float64)#;a=pd.DataFrame(a)
+            df_create = pd.DataFrame(df_create.T, columns=subgroup)
+            out_point[Point_number]=df_create
+            out_total=pd.concat([out_total, out_point], axis=1);
+    return(df_FCS, out_total)
 #------------Midpoint potential---------------------
 def Mid_potentials(folderpath=foldername, pointnumbers=range(20), plotting=True, min_pot=40):
     timetrace_output = timetrace_outputs_folderwise(folderpath=folderpath, pointnumbers=pointnumbers, potentialist=potentialist)
