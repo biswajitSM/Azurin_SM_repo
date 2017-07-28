@@ -35,8 +35,27 @@
 \maketitle
 \tableofcontents
 \pagebreak
-
+%BULK Switching
+\begin{figure}
+  \centering
+  \includegraphics{Figure_SI/spectral_overlap_switching.eps}
+  \makeatletter
+  \renewcommand{\fnum@figure}{\figurename~S\thefigure}
+  \makeatother
+  \caption{Bulk switching and spectral overlap}
+  \label{SIfig: switching}
+\end{figure}
 %\section{Time traces}
+%lifetime and switching ration from time trace
+\begin{figure}
+  \centering
+  \includegraphics{Figure_SI/lifetime.eps}
+  \makeatletter
+  \renewcommand{\fnum@figure}{\figurename~S\thefigure}
+  \makeatother
+  \caption{Switching ratio from single-molecule data. lifetime corresponding to the bright state, dimmer state and instrument response function.}
+  \label{SIfig: lifetime}
+\end{figure}
 %time trace Zn and Cu azurin
 \begin{figure}
   \centering
@@ -57,16 +76,6 @@
   \caption{\textbf{Zn-AzurinATTO655 blinking.} Ratio between on and off time as a function of applied potential for the same single $ZnAzurin$ molecule. Different color represents different single-molecules. And the line connecting the data points is the Nernst fit for all the data points above 25 mV. The plot in the right is the histogram of midpoint potentials for $51$ molecules with a gaussian fit with center -23 mV with respect to calomel electrode.}
   \label{SIfig:2Dhist_Zn}
 \end{figure}
-%2D on_off hist: ZnAzurin
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth,keepaspectratio]{Figure_SI/SI_on_off_2D_histogram_Zn.png}
-	\makeatletter
-	\renewcommand{\fnum@figure}{\figurename~S\thefigure}
-	\makeatother
-  \caption{\textbf{2D histogram: Zn-Azurin.} 2D correlation plot of (a) on-times vs the next on-times (b) on-times vs the on-time after 100 turnovers (c) off-times vs next off-times (d) off-times vs the off-time after 100 turnovers.}
-  \label{SIfig:tracecomparision}
-\end{figure}
 %Slope: Nernst equation
 \begin{figure}
   \centering
@@ -77,7 +86,17 @@
   \caption{Fitting with Nernst equation with slope as variable parameters for  (a) Cu-Azurin ATTO655 (b) Zn-Azurin ATTO 655. The corresponding histogram of slopes obtained from the fitting shown in the right.}
   \label{SIfig:potential_slope}
 \end{figure}
-%\bibliography{}
+%Cyclic voltametry: Electrochemical measurement
+\begin{figure}
+  \centering
+  \includegraphics{Figure_SI/cyclic_voltametry.eps}
+  \makeatletter
+  \renewcommand{\fnum@figure}{\figurename~S\thefigure}
+  \makeatother
+  \caption{Cyclic voltametry for Cu-Azurin, Pottasium Ferricyanide and ATTO655 attached to ZnAzurin}
+  \label{SIfig: cyclic_voltametry}
+\end{figure}
 
+%\bibliography{}
 
 \end{document}

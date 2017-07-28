@@ -423,23 +423,28 @@ def histogram_on_off_1mol(foldername= foldername, input_potential=[100], pointnu
             df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(f_datn_path, f_emplot_path)
             t_ons = np.array(df_ton);
             t_offs = np.array(df_toff)
+            n_on = []; n_off = []
             if plotting == True:
                 fig, axes = plt.subplots(1, 2, figsize=(10,4))
-                n,bins_on,patches = axes[0].hist(t_ons, range=range_on,bins=bins_on)
-                axes[0].set_xlabel(r'$\tau_{on}$')
-                axes[0].set_ylabel('#')
+                n_on,bins_on,patches = axes[0].hist(t_ons, range=range_on, bins=bins_on, color='k', alpha=0.5)
+                n_on,bins_on,patches = axes[0].hist(t_ons, range=range_on, bins=bins_on, color='k', histtype='step')
+                axes[0].set_xlabel(r'$\tau_{on}/s$')
+                axes[0].set_ylabel('PDF')
+                axes[0].set_xlim(0, None)
                 #axes[0].set_yscale('log')
                 axes[0].set_title("ON time histogram at %s mV" %input_potential[0])
-                n,bins_off,patches = axes[1].hist(t_offs, range=range_off,bins=bins_off)
-                axes[1].set_xlabel(r'$\tau_{off}$')
-                axes[1].set_ylabel('#')
+                n_off,bins_off,patches = axes[1].hist(t_offs, range=range_off,bins=bins_off, color='k', alpha=0.5)
+                n_off,bins_off,patches = axes[1].hist(t_offs, range=range_off,bins=bins_off, color='k', histtype='step')
+                axes[1].set_xlabel(r'$\tau_{off}/s$')
+                axes[1].set_ylabel('PDF')
+                axes[1].set_xlim(0, None)
                 #axes[1].set_yscale('log')
                 axes[1].set_title("OFF time histogram at %s mV" %input_potential[0])
         except:
             print('em.plot file: %s doesn''t contain proper data' %df_emplot_filename)
             #potential=np.nan # This row will be removed in later processing
             pass
-    return(t_ons, t_offs)
+    return(t_ons, t_offs, n_on, bins_on, n_off, bins_off)
 
 def histogram_on_off_folder(foldername= foldername, input_potential=[100], pointnumbers=range(100),
                           bins_on=50, range_on=[0, 0.2], bins_off=50, range_off=[0, 0.5], plotting=False):
@@ -466,10 +471,10 @@ def histogram_on_off_folder(foldername= foldername, input_potential=[100], point
         #axes[1].set_yscale('log')
         axes[1].set_title("OFF time histogram at %s mV" %input_potential[0])
     return(t_ons, t_offs)
-def hist2D_on_off(foldername=foldername, input_potential=[100], pointnumbers=[24], bins_on=40, range_on=[0, 0.01], bins_off=50, range_off=[0, 1], x_shift=10, plots=True):
+def hist2D_on_off(foldername=foldername, input_potential=[100], pointnumbers=[24], bins_on=40, range_on=[0, 0.01], bins_off=50, range_off=[0, 1], x_shift=10, plots=True, figsize=(16, 8)):
     t_ons = []; t_offs=[];
     for i in pointnumbers:
-        t_on_temp, t_off_temp = histogram_on_off_1mol(foldername= foldername, input_potential=input_potential, pointnumbers=[i], plotting=False)
+        t_on_temp, t_off_temp,n_on, bins_on, n_off, bins_off = histogram_on_off_1mol(foldername= foldername, input_potential=input_potential, pointnumbers=[i], plotting=False)
         t_ons = np.concatenate((t_ons, t_on_temp), axis=0)
         t_offs = np.concatenate((t_offs, t_off_temp), axis=0)
 
@@ -486,7 +491,7 @@ def hist2D_on_off(foldername=foldername, input_potential=[100], pointnumbers=[24
     if plots==True:
         import matplotlib as mpl
         colormap=mpl.cm.RdBu_r
-        fig = plt.figure(figsize=(16,8))
+        fig = plt.figure(figsize=figsize)
 
         ax1 = fig.add_subplot(2,3,1)#2,2,1
         C_on_1,Ex_on_1,Ey_on_1, figu = hist2d(t_on_shifted_1[1:], t_ons[1:], range=[range_on, range_on], bins=bins_on, norm=mpl.colors.LogNorm(), cmap=colormap)
