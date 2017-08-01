@@ -23,34 +23,33 @@
 
 \begin{document}
 
-%\author{
+\author{Authors
 %Biswajit Pradhan, Sebastiaan Van Mulken, Xueyan Miao, Gerard Canters, Michel Orrit\\\affaddr{Huygens-Kamerlingh Onnes Laboratory, Leiden University, 2300 RA Leiden, Netherlands}\\\email{orrit@physics.leidenuniv.nl}
-%}
+}
 
 \date{\vspace{1ex}} % Exclude date in the title.
-%\affiliation
- %\affil{Huygens-Kamerlingh Onnes Laboratory, Leiden University, 2300 RA Leiden, Netherlands} % This is only useful for authblk package.
- %\email{orrit@leidenuniv.nl}
+
 \title{\textbf{Single azurin redox switching}\\ \vspace{3ex} Supplementary Information \vspace{3ex}}
+
 \maketitle
 \tableofcontents
 \pagebreak
 %%%%%%%%%%%%%%%METHODS AND FIGURES%%%%%%
 \section{Protein synthesis and labeling}
-\subsection{Protein synthesis}
-Azurin (wild type) from Pseudomona aeruginosa was expressed in E. Coli and purified as described before \cite{kamp1990purification}. BL21 E.coli was transformed with PGK22 plasmid that has gene for azurin expression. The cells were cultured in luria broth (LB) medium. Then the cells were harvested and resuspended in 20 \% (w/v) sucrose solution in Tris pH 8 buffer containing 1 mM EDTA.Then the solution was centrifuged at 8000 rpm and the supernatant was collected. Copper sulfate was added to the solution for insertion into the active site of azurin. The unwanted proteins were precipitated by addition of acetic acid until pH 4. Again the turbid solution was centrifuged to separate azurin that remained in the supernatant. The azurin solution was loaded on a CM Sepharose fast flow column and elution was performed in an Akta purifier (GE Healthcare) with a pH gradient from 4 to 6.9 in 50 mM ammonium acetate. Fractions containing azurin collected and reduced with sodium dithionite. At this moment the solution both zinc and copper azurin. The azurins were putified in a DEAE sepharose column by a salt gradient of 0 to 50 mM NaCl in Tris pH8 buffer. Fractions containing copper azurin and zinc azurin collected and concentrated separately. The purity of the samples were checked by sodium dodecyl sulphate (SDS)-polyacrylamide gel electrophoresis (PAGE) and UV/Vis spectroscopy (Cary 50 spectrophotometer, Varian Inc., Agilent Technologies, USA). The azurins appeared on SDS gel page at \~14 kDa. Both zinc and copper azurin showed a characteristic peak at \~290 nm while Cu azurin showed an additional broad absorption peak at 620 nm as can be seen in figure S\ref{SIfig: switching} when oxidized. The ratio $O.D_{628 nm}/O.D_{280}$ for Cu azurin was 0.56 which indcated that all the azurin molecules had a Cu atom. The concentrated protein was stored at $-80^0 C$ until further use.
-\subsection{Fluorescent labeling}
-The labeling protocol was based on the previous work \cite{nicolardi2012topdown}. ATTO 655 NHS-ester was bought from ATTO-TEC GmbH. The buffer containing azurin was replaced with HEPES pH 8.3 and all the amine containg impurities were removed. A mixture of 200 $\mu$M azurin and ATTO 655 NHS-ester (ration 1:1) was incubated for 45 min. The NHS-ester group reacts to one of the amine group on the protein. The unreacted dyes were removed by a HiTrap desalting column. The labeled protein was concentrated in Tris pH 8.5 buffer by centrifusing in a 3 kDa Amicon ultra filter. The labeled protein further purified by an ion exchange chromatography in a 1 mL MonoQ column (GE Health). The different peaks obtained (see figure S\ref{SIfig: peak_sep}) corresponds to the different number and position of the dye on azurin. The peak-III corresponds to the protein labeled at Lysine122 position \cite{nicolardi2012topdown}. This fraction was choosen for our single-molecule experiemnt for the high switching ratio explained later. The same protocol was used for Zn azurin labeling and similar peak separation observed.
 %Peak separation
 \begin{figure}
   \centering
-  \includegraphics{Figure_SI/peak_separation.eps}
+  \includegraphics[width=0.8\textwidth]{Figure_SI/peak_separation.eps}
   \makeatletter
   \renewcommand{\fnum@figure}{\figurename~S\thefigure}
   \makeatother
-  \caption{Peak separation}
+  \caption{Peak separation: (a) Elution profile of Cu azurin sample after labeling and removal of free dye. 280 nm absorption that tells the presence of protein is shown in blue and 660 nm absrption that tells the presence of dye is shown in red. The protein structure with the dye at Lys 122 corresponding to peak-III is shown in the right. {A proper structure will be replaced}}
   \label{SIfig: peak_sep}
 \end{figure}
+\pagebreak
+
+\section{Fluorescence switching in bulk}
+Fluorescence measurements in bulk of different peaks of azurin-ATTO655 sample (Figure S\ref{SIfig: peak_sep}) were carried out to determine the FRET switching ratio. The measurements were done in Cary Eclipse Spectrometer (Varian Inc. Agilent Technology, USA). A 50 nM sample was excited with 665 nm and intensity was monitored above 675 nm. Sodium ascorbate (reductant) and Pottasium ferrocyanide (oxidant) were added alternatively. Among all the labeled position, peak-III showed maximum switching ratio and it's intensity change can be seen in Figure S\ref{SIfig: switching}. Similarly Zn Azurin-ATTO655 showed little or no change in intensity.
 %BULK Switching
 \begin{figure}
   \centering
@@ -58,7 +57,7 @@ The labeling protocol was based on the previous work \cite{nicolardi2012topdown}
   \makeatletter
   \renewcommand{\fnum@figure}{\figurename~S\thefigure}
   \makeatother
-  \caption{Bulk switching and spectral overlap}
+  \caption{Spectral overlap and Bulk switching: (a) Absorption spectrum of Cu(II)azurin (blue), Cu(I)azurin (black). The emission spectrum of ATTO655 (red) has a good overlap with the absorption of Cu(II)azurin to show high FRET. (b) Fluorescence intensity of 50 nM CuAzurin-ATTO655 shows high intensity in the presence of reductant and low intensity with oxidant. The switching ratio comes to be 90\% satisfying the requirement for single-molecule FRET.}
   \label{SIfig: switching}
 \end{figure}
 %\section{Time traces}
@@ -69,7 +68,7 @@ The labeling protocol was based on the previous work \cite{nicolardi2012topdown}
   \makeatletter
   \renewcommand{\fnum@figure}{\figurename~S\thefigure}
   \makeatother
-  \caption{Switching ratio from single-molecule data. lifetime corresponding to the bright state, dimmer state and instrument response function.}
+  \caption{Single-molecule azurin switching and lifetime. (a) Time trace of a single Cu azurin at 50 mV with a binning time of 50 ms. Notice the three different label indicated in the figure. Bright (Cu(I)) state as above the red line, oxidized state is between red and black and Dark counts are below the black line. The fact that the molecule doesn't go to the dark count label before being bleached shows that the transitions are due to Copper oxidation switching rather than triplet blinking of the dye. Once the fluorophore is bleached, no transitions were observavable. (b) The lifetime histogram corresponding to bright state (red), oxidized state (blue) and instrument response function (black). The lifetime of oxidized state is much shorter than the reduced state due to FRET quenching.}
   \label{SIfig: lifetime}
 \end{figure}
 %time trace Zn and Cu azurin
@@ -79,8 +78,18 @@ The labeling protocol was based on the previous work \cite{nicolardi2012topdown}
 	\makeatletter
 	\renewcommand{\fnum@figure}{\figurename~S\thefigure}
 	\makeatother
-  \caption{Time traces of Zn Azurin (left) and of Cu Azurin(right) labeled with ATTO655 at different potential.  Above 25 mV, Cu-Azurin show swiching in the intensity due to changes in the oxidation state of the Copper metal center and below 25 mV, triplet blinking contributes to the switching as can be seen in the redox inactive Zn-Azurin.}
+  \caption{Time traces of Zn Azurin (left) and of Cu Azurin(right) labeled with ATTO655 at different potential.  Above 25 mV, Cu-Azurin show swiching in the intensity due to changes in the oxidation state of the Copper metal center and below 25 mV, triplet blinking contributes to the switching as can be seen in the redox inactive Zn-Azurin. To keep the analysis simple, time traces above 40 mV were choosen for Cu azurin}
   \label{SIfig:tracecomparision}
+\end{figure}
+%FCS comparision
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth,keepaspectratio]{Figure_SI/fcs_comparision.eps}
+  \makeatletter
+  \renewcommand{\fnum@figure}{\figurename~S\thefigure}
+  \makeatother
+  \caption{Autocorrelation of time traces of Cuazurin-ATTO655 (a) and Znazurin-ATTO655 at different potential. At lower potential, Cuazurin-ATTO655 has longer correlation time (on time) which shows that the molecule spends more time on the Cu(I) state. But below 50 mV the dye (ATTO655) starts to show triplet blinking. As potential is lowered the triplet blinking dominates. The Cu azurin study is focussed in the safe window of potential more than 40 mV where triplet blinking is absent.}
+  \label{SIfig:fcscomparision}
 \end{figure}
 %mid point potential of ZnAzurin
 \begin{figure}
@@ -99,7 +108,7 @@ The labeling protocol was based on the previous work \cite{nicolardi2012topdown}
 	\makeatletter
 	\renewcommand{\fnum@figure}{\figurename~S\thefigure}
 	\makeatother
-  \caption{Fitting with Nernst equation with slope as variable parameters for  (a) Cu-Azurin ATTO655 (b) Zn-Azurin ATTO 655. The corresponding histogram of slopes obtained from the fitting shown in the right.}
+  \caption{Fitting with Nernst equation with slope as variable parameters for  (a) Cu-Azurin ATTO655 (b) Zn-Azurin ATTO 655. The corresponding histogram of slopes obtained from the fitting shown in the right. the distribution slope is centered around 0.059 indicating that both Cuazurin switching and ATTO655 blinking involves only one electron.}
   \label{SIfig:potential_slope}
 \end{figure}
 %Cyclic voltametry: Electrochemical measurement
@@ -109,7 +118,7 @@ The labeling protocol was based on the previous work \cite{nicolardi2012topdown}
   \makeatletter
   \renewcommand{\fnum@figure}{\figurename~S\thefigure}
   \makeatother
-  \caption{Cyclic voltametry for Cu-Azurin, Pottasium Ferricyanide and ATTO655 attached to ZnAzurin}
+  \caption{Cyclic voltametry for Cu-Azurin (red), Pottasium Ferricyanide (green) and ATTO655 attached to ZnAzurin (blue). The mid point potential of Cuazurin is 98 mV.}
   \label{SIfig: cyclic_voltametry}
 \end{figure}
 
