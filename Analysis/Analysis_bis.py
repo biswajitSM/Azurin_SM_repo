@@ -115,7 +115,7 @@ def dir_mV_molNo_pt3(foldername=foldername):
             pos_num_val_2 = filename[position_num-2]
             pos_num_val_3 = filename[position_num-3]
             if not pos_num_val_1.isdigit():
-                print('Point number in %s is not properly placed(found): ' %filename)
+                #print('Point number in %s is not properly placed(found): ' %filename)
                 point_number = 1000
             elif pos_num_val_2 in ['_']:
                 point_number = pos_num_val_1
@@ -131,7 +131,7 @@ def dir_mV_molNo_pt3(foldername=foldername):
             pos_pot_val_4 = filename[position_pot-4]
             pos_pot_val_5 = filename[position_pot-5]
             if not pos_num_val_1.isdigit():
-                print('potential value in %s is not properly defined' %filename)
+                #print('potential value in %s is not properly defined' %filename)
                 potentail_val = 1000
             elif pos_pot_val_2 in ['_']:
                 potentail_val = pos_pot_val_1
