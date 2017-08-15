@@ -8,3 +8,5 @@
 *.synnctex.gz
 *.ipynb_checkpoints
 *tempfiles/
+figs_profs/
+figs_for_profs-Long_single_trace_analysis.ipynb

@@ -365,7 +365,7 @@ def FCS_plot(foldername= foldername, input_potential=[0, 25, 50, 100],
             plt.xscale('log')
     return()
 #-----------------------------ON/OFF times from changepoint and FCS------------------------------------
-def t_on_off_fromCP(f_datn, f_emplot):
+def t_on_off_fromCP(f_emplot):
     #expt data
     # df = pd.read_csv(f_datn, header=None)
     # binpts=5000; mi=min(df[0]); ma=mi+10;
