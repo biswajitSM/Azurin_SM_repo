@@ -420,10 +420,12 @@ def histogram_on_off_1mol(foldername= foldername, input_potential=[100], pointnu
         f_emplot_path = df_specific['filepath[.em.plot]'].values[0]
     if os.path.isfile(f_emplot_path):
         try:
-            df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(f_datn_path, f_emplot_path)
+            df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(f_emplot_path)
             t_ons = np.array(df_ton);
             t_offs = np.array(df_toff)
             n_on = []; n_off = []
+            n_on,bins_on = histogram(t_ons, range=range_on,bins=bins_on);
+            n_off,bins_off = histogram(t_offs, range=range_off,bins=bins_off)
             if plotting == True:
                 fig, axes = plt.subplots(1, 2, figsize=(10,4))
                 n_on,bins_on,patches = axes[0].hist(t_ons, range=range_on, bins=bins_on, color='k', alpha=0.5)
@@ -441,7 +443,7 @@ def histogram_on_off_1mol(foldername= foldername, input_potential=[100], pointnu
                 #axes[1].set_yscale('log')
                 axes[1].set_title("OFF time histogram at %s mV" %input_potential[0])
         except:
-            print('em.plot file: %s doesn''t contain proper data' %df_emplot_filename)
+            print('em.plot file: %s doesn''t contain proper data' %f_emplot_path)
             #potential=np.nan # This row will be removed in later processing
             pass
     return(t_ons, t_offs, n_on, bins_on, n_off, bins_off)
@@ -578,7 +580,7 @@ def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potent
 
                 if os.path.isfile(df_em_path):
                     try:
-                        df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(df_datn_path, df_em_path)
+                        df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(df_em_path)
                         ratio_off_on = average_toff/average_ton;
                         ratio_off_on_err = (average_toff/average_ton)*sqrt(((average_toff_err/average_toff)**2)+((average_ton_err/average_ton)**2))
                     except:

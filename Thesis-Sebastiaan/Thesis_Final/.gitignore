@@ -1,0 +1,38 @@
+# compiled files:
+*.o
+*.so
+*.a
+# temporary files:
+*.bak
+*.swp
+*~
+.*~
+*.old
+tmp*
+.tmp*
+temp*
+.#*
+\#*
+# tex files:
+*.fls
+*.fdb_latexmk
+*.gz
+*.log
+*.dvi
+*.aux
+*.blg
+*.idx
+*.nav
+*.out
+*.toc
+*.snm
+*.vrb
+*.bbl
+*.ilg
+*.ind
+*.loe
+# eclipse files:
+*.cproject
+*.project
+# misc:
+.DS_Store
