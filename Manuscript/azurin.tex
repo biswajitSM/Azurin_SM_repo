@@ -52,7 +52,10 @@ All the measurements resulted a huge amount data ($1000$ time traces). Each time
 \end{scheme}
 %%%%%%---------------------RESULTS and DISCUSSION-----------------------%%%%%%%%%
 \section{Results and discussion\label{sec:results}}
+\subsection{Time traces at different potentials}
+Active Cu-azurin molecules were identified from their fluorescence intensity images at the oxidizing ($200~$mV) and reducing conditions($0~$mV). In reducing conditions, the image contains more brighter spots corresponding to Cu(I)-azurin-ATTO655 and more than $90~$\% of the molecules turned off in oxidizing conditions (Scheme-\ref{sch:setup}(9)). The azurins on each sample slide showed active switching during the course of our experiment (upto two days) without any noticeable degradation. A set of active azurins were marked for recording and time traces at different potentials (between 100 mV and -100 mV) were measured on the \texttt{same molecules} for $30~$s. Many of the labeled-protein bleached within recording at few potentials, but more than $50~$\% of the labeled-azurin survived atleast five measurements ($150~$s) at different potentials. Longer measurements were possible due to the scavenging of oxygen in the solution. Before the time trace recording, the solution was exposed to negative potential for at least $1~$hours. Ascorbate is known to  scavenge oxygen\cite{dave1997effectiveness} and get oxidized. The oxidized ascorbate is reduced by the electrode and was again available to scavenge other oxygen molecules. In addition to the absence of oxygen, the ROXS mechanism was also in play. The reduction and oxidation of Cu-azurin made the dye switch on and off, hence the fluorescent dye spent less time on the bright state where it is more prone to bleach. This made possible the measurement of some traces more than $1000~$s long.\\
 
+Figure-\ref{fig:timetrace} shows time traces of a single Cu-azurin-ATTO655 at three different potentials. Clearly the intensity changes bright and dark over the time which is also schematically shown in the left of Figure-\ref{fig:timetrace} with the protein structure. The dark state is due to the FRET from the dye to the Cu(II) absorption center\cite{kuznetsova2006a}. Bulk measurements of the fluorescence intensity at completely oxidizing and completely reducing condition shows $90~$\% switching ratio (Figure-S\ref{SIfig: switching}) for the lysine-122\cite{nicolardi2012topdown} labeled Cu-azurin-ATTO655. Also single-molecule measurement (Figure-S\ref{SIfig: lifetime}) at a higher laser power (\SI{0.7}{\micro\watt}) shows more than $90~$\% switching which is consistent with the bulk measurements. The intensity of Cu(II)-state is lower than Cu(I)-stae, but higher than the background (bleached state). Also the Cu(II)-state has a shorter lifetime($0.3~ns$ than Cu(I)-state ($1.9~ns$), but longer than the instrument response function ($0.1~ns$). Both intensity and life time information reassure us that the dim-state we looking at is FRET quenched. Other blinking mechanism appears at lower potentials which will be discussed later. The high FRET efficiency is due to the small distance of the dye to the absorption center. This clear distinction between the on and off state was very important for our low laser power and lower signal measurement. At higher potential ($100~$mV), the protein spends most of the time in dark state and as the potential is lowered, the molecule spends more and more time on the bright state.
 %time trace
 \begin{figure}
 	\includegraphics[width=\textwidth]{Figure/Figure_1_timetrace_CuAzu.eps}
@@ -60,35 +63,38 @@ All the measurements resulted a huge amount data ($1000$ time traces). Each time
 	\label{fig:timetrace}
 \end{figure}
 %Midpoint histogram
+\subsection{Midpoint potential of single-azurins}
 \begin{figure}
 	\includegraphics[width=\textwidth]{Figure/Figure_2_midpoint.eps}
 	\caption{Ratio between on and off time as a function of applied potential for the same single-molecule. Different color represents different single-molecules. And the line connecting the data points is the Nernst fit for all the data points above 25 mV. The plot in the right is the histogram of midpoint potentials for $132$ molecules with a Gaussian fit with center 4.5 mV with respect to calomel electrode.}
 	\label{fig:midpoint}
 \end{figure}
 %on-off 1D histogram
+\subsection{Intermediate detection from on-off histogram}
 \begin{figure}
 	\includegraphics[width=\textwidth]{Figure/Figure_3_on_off_1D.eps}
 	\caption{\textbf{On off histogram.} The histogram of on-times(a) and of off-times(b) of Cu-Azurin-ATTO655 showing rise time. This indicates that both oxidation and reduction of Cu-Azurin occurs through an intermediate step.}
 	\label{fig:onoff1D}
 \end{figure}
 %Dynamic rates. protein showing diiferent rates with time
+\subsection{Dynamics of ET rates}
 \begin{figure}
 	\includegraphics[width=\textwidth]{Figure/dynamic_rates.eps}
 	\caption{\textbf{Dynamics in the turnovers of the protein.}}
 	\label{fig:dynamic_rates}
+\end{figure}
+%Intramolecular electron transfer
+\subsection{Intramolecular elctron transfer}
+\begin{figure}
+	\includegraphics[width=\textwidth]{Figure/fcs_components.eps}
+	\caption{\textbf{Intra molecular electron transfer.} Shorter decay with time constant of around 30 us}
+	\label{fig:fcs_components}
 \end{figure}
 %on-off 2D histogram
 \begin{figure}
 	\includegraphics[width=\textwidth]{Figure/Figure_4_on_off_2D_100mV.png}
 	\caption{\textbf{2D histogram: Cu-Azurin.} 2D correlation plot of (a) on-times vs the next on-times (b) on-times vs the on-time after 100 turnovers (c) off-times vs next off-times (d) off-times vs the off-time after 100 turnovers.}
 	\label{fig:onoff2D}
-\end{figure}
-
-%Intramolecular electron transfer reaction
-\begin{figure}
-	\includegraphics[width=\textwidth]{Figure/fcs_components.eps}
-	\caption{\textbf{Intra molecular electron transfer.} Shorter decay with time constant of around 30 us}
-	\label{fig:fcs_components}
 \end{figure}
 %%%%%Experimental Section%%%%%%%%%%
 \section%{Experimental}
