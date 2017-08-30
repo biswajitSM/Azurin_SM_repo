@@ -146,6 +146,57 @@ def dir_mV_molNo_pt3(foldername=foldername):
             temp_pt3list = pd.DataFrame([[point_number, potentail_val, filename, foldername+'/'+dirpath+'/'+filename]], columns=columns)
             pt3_list = pt3_list.append(temp_pt3list, ignore_index = True)
     return(pt3_list)
+def phconvert_pt3_save_hdf5(filename):
+    import numpy as np
+    import phconvert as phc
+    # filename = 'data/Point_A2_000mV(7)_60.5__30s_1.pt3'
+    d, meta = phc.loader.nsalex_pt3(filename,
+                                    donor = 1,
+                                    acceptor = 0,
+                                    alex_period_donor = (4000, 5000),
+                                    alex_period_acceptor = (0, 3000),
+                                    excitation_wavelengths = (470e-9, 635e-9),
+                                    detection_wavelengths = (525e-9, 690e-9),
+                                    )
+    #remove overflow                                
+    nanotimes = d['photon_data']['nanotimes']
+    detectors = d['photon_data']['detectors']
+    timestamps = d['photon_data']['timestamps']
+
+    overflow_nanotimes = d['photon_data']['nanotimes'] != 0
+
+    detectors = detectors[overflow_nanotimes]
+    timestamps = timestamps[overflow_nanotimes]
+    nanotimes = nanotimes[overflow_nanotimes]
+    d['photon_data']['nanotimes'] = nanotimes
+    d['photon_data']['detectors'] = detectors
+    d['photon_data']['timestamps'] = timestamps
+    #Metadata
+    author = 'Biswajit'
+    author_affiliation = 'Leiden University'
+    description = 'pt3 data readin.'
+    sample_name = 'ttttt'
+    dye_names = 'ATTO655'
+    buffer_name = 'PBS pH7.4 with 100uM Ascorbate and 200 uM Ferricyanide'
+    #add metadata
+    d['description'] = description
+
+    d['sample'] = dict(
+        sample_name=sample_name,
+        dye_names=dye_names,
+        buffer_name=buffer_name,
+        num_dyes = len(dye_names.split(',')))
+
+    d['identity'] = dict(
+        author=author,
+        author_affiliation=author_affiliation)
+    # Remove some empty groups that may cause errors on saving
+    _ = meta.pop('dispcurve', None)
+    _ = meta.pop('imghdr', None)
+    d['user'] = {'picoquant': meta}
+    #Save to Photon-HDF5
+    phc.hdf5.save_photon_hdf5(d, overwrite=True)
+    return()    
 def dir_mV_molNo(foldername=foldername):
     pt3_list = dir_mV_molNo_pt3(foldername=foldername)
     extensions = [".dat", ".datn"]

@@ -11,3 +11,6 @@
 tempfiles/
 *.tempfiles/
 *tempfiles/
+*.sublime-project
+*.sublime-workspace
+*.bib~
