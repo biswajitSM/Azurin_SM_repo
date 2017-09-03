@@ -5,6 +5,7 @@
 \graphicspath{{Figure/}}		%FOLDER PATH for FIGURE
 \usepackage[T1]{fontenc} 		% Use modern font encodings
 \usepackage{siunitx}
+\usepackage{chemformula}
 \DeclareSIUnit\Molar{\textsc{m}}
 % !TeX root = ./azurin.tex
 \usepackage{xr} 
@@ -17,7 +18,7 @@
 \affiliation{Huygens-Kamerlingh Onnes Laboratory, Leiden University, RA, Leiden, The Netherlands}
 \email{corresponding_author@physics.leidenuniv.nl}
 \title[]
-{A single azurin reveals intermolecular, intramolecular electron transfer and dynamic turnovers.}
+{Dynamic electron transfer and intermediate detection in Azurin}
 
 \abbreviations{FCS}
 \keywords{American Chemical Society, \LaTeX}
@@ -35,7 +36,7 @@ Azurin (wild type) from Pseudomonas aeruginosa was expressed in E. Coli and puri
 \subsection{Fluorescent labeling}
 The labeling protocol was based on the previous work \cite{nicolardi2012topdown}. ATTO 655 NHS-ester was bought from ATTO-TEC GmbH. The buffer containing azurin was replaced with HEPES pH 8.3 and all the amine containing impurities were removed. ATTO655 was chosen to label the protein because of its stability and light insensitivity in the interested potential range. A mixture of 200~$\mu$M azurin and ATTO 655 NHS-ester (ration 1:1) was incubated for 45~min. The NHS-ester group reacts to one of the amine group on the protein. The unreacted dyes were removed by a HiTrap desalting column. The labeled protein was concentrated in Tris pH 8.5 buffer by centrifuging in a 3~kDa Amicon ultra filter. The labeled protein further purified by an ion exchange chromatography in a 1 mL MonoQ column (GE Health). The different peaks obtained (see figure S\ref{SIfig: peak_sep}) corresponds to the different number and position of the dye on azurin. The peak-III corresponds to the protein labeled at Lysine122 position \cite{nicolardi2012topdown}. For this position of the dye, the protein construct shows high fluorescence switching (90\%) ratio between oxidized and reduced condition as can be seen in Figure S\ref{SIfig: peak_sep}. This fraction was choosen for our single-molecule experiment as the two states can be observed easily. The same protocol was used for Zn azurin labeling and similar peak separation observed. The fluorescent labeled protein was then reacted with biotin-peg-NHS (MW 3400) in PBS pH 7.4 buffer with a ratio 1:5 to make sure each protein has at least one biotin. The free biotin was then remove centrifuging in a 3kDa Amicon ultra filter. The biotin on the protein will be used for immobilization on glass surface.
 \subsection{Functionalization of cover slips}
-Glass coverslips (Menzel-Glaser, $22~mm \times 40~mm$, no. 1 thickness) were used for immobilization.The cover slips were sonicated in water (15 min) and acetone(15 min). Then they were rinsed in Milli-Q water several timesand incubated in a H2O/NH4OH/H2O2(5:1:1) bath at \SI{70}{\celsius}. The coverslips were rinsed several times with water and ethanol and finally stored in ethanol. Before functionalization, the slides were flamed. Then they were treated for 30 min with a 1\% solution of [3-(2-aminoethyl)aminopropyl]trimethoxysilane in methanol containing 5\% glacial acetic acid. This results in the binding of the active hydroxyl groups. The silane is not yet covalently bound. This is obtained by baking the cover slips in an oven at \SI{65}{\celsius} for 3 hours. After this treatment, the cover slips were sonicated for 10 minutes and washed with methanol. Dried with clean nitrogen, they were left in a desiccator overnight. The next day they were treated with a mixture of 5~mg/mL methoxy-peg-N-hydroxysuccinimide (MW~2000, Laysan Bio) and 0.05~mg/mL
+The functionalization of glass surface was followed from a previous work with a little modification.\cite{gupta2012involvement} Glass coverslips (Menzel-Glaser, $22~mm \times 40~mm$, no. 1 thickness) were used for immobilization.The cover slips were sonicated in water (15 min) and acetone(15 min). Then they were rinsed in Milli-Q water several timesand incubated in a H2O/NH4OH/H2O2(5:1:1) bath at \SI{70}{\celsius}. The coverslips were rinsed several times with water and ethanol and finally stored in ethanol. Before functionalization, the slides were flamed. Then they were treated for 30 min with a 1\% solution of [3-(2-aminoethyl)aminopropyl]trimethoxysilane in methanol containing 5\% glacial acetic acid. This results in the binding of the active hydroxyl groups. The silane is not yet covalently bound. This is obtained by baking the cover slips in an oven at \SI{65}{\celsius} for 3 hours. After this treatment, the cover slips were sonicated for 10 minutes and washed with methanol. Dried with clean nitrogen, they were left in a desiccator overnight. The next day they were treated with a mixture of 5~mg/mL methoxy-peg-N-hydroxysuccinimide (MW~2000, Laysan Bio) and 0.05~mg/mL
 biotin-peg-N-hydroxysuccinimide (MW 3400, Laysan Bio) in 50 mM phosphate buffered saline (PBS) with pH 7.4. This creates a surface containing biotin and methoxy end groups. The PEG surface prevents nonspecific adsorption of the protein. The slides were dried with gentle flow of nitrogen and stored in a desiccator until further use.
 \subsection{Protein immobilization}
 The above biotin functionalized glass slide was incubated with $20~$mM PBS pH 7.4 buffer for $5~$min. $100~$nM of Neutravidin (Thermo Scientific) was incubated for another $15~$min and then washed to remove unbound Neutravidin. $100~$pM of the labeled protein was then incubated for $1~$min to get isolated proteins (20 per \SI{100}{\micro\meter} area) on the functionalized glass surface. The unbound proteins were then removed by replacing with a fresh PBS buffer.
@@ -80,26 +81,50 @@ Figure-\ref{fig:midpoint}a shows the ratio between average off-time and average 
 	E = E_0 + \frac{k_BT}{n e}\ln\left(\frac{\me{t}_{on}}{\me{t}_{off}}\right)\,
 	\label{eq:nernst}
 \end{equation}
-where $E$ is the applied potential, $E_0$ the mid-point potential, $k_B$ the Boltzmann constant, $T$ the absolute ambient temperature, $n$ the number of electrons involved in the reaction, $e$ the electron charge and $\me{t}_{on}$, $\me{t}_{off}$ the mean on and off times. The number of electrons involved in the electron transfer was set to $1$. The value of $n$ was also found to be one from the ratio plot when the slope in the Nernst equation kept as free parameter (see Figure-S\ref{SIfig:potential_slope}). Each color represents a single-azurin and the solid line connecting the points is the Nernst-fit. Labeled proteins surviving at least three potentials above $40~$mV were used for the fit. The potential at which the off-on ratio is $1$ called midpoint potential which means the probability of finding the protein in Cu(I) and Cu(II) state are the same. The distribution of mid-point potentials(Figure-\ref{fig:midpoint}b) from 132 molecules can be fitted by a Gaussian with a center value of $\left<E_0^{SM}\right>=4.5 \pm 1.2~$ mV and a fwhm of $\sigma^{SM}=30 \pm 6~$ mV.\\
-%Many single-molecule on-off histogram and their rates------Intermolecular Et
-\subsection{Intermolecular ET}
+where $E$ is the applied potential, $E_0$ the mid-point potential, $k_B$ the Boltzmann constant, $T$ the absolute ambient temperature, $n$ the number of electrons involved in the reaction, $e$ the electron charge and $\me{t}_{on}$, $\me{t}_{off}$ the mean on and off times. The number of electrons involved in the electron transfer was set to $1$. The value of $n$ was also found to be one from the ratio plot when the slope in the Nernst equation kept as free parameter (see Figure-S\ref{SIfig:potential_slope}). Each color represents a single-azurin and the solid line connecting the points is the Nernst-fit. Labeled proteins surviving at least three potentials above $40~$mV were used for the fit. The potential at which the off-on ratio is $1$ called midpoint potential which means the probability of finding the protein in Cu(I) and Cu(II) state are the same. The distribution of mid-point potentials(Figure-\ref{fig:midpoint}b) from 132 molecules can be fitted by a Gaussian with a center value of $\left<E_0^{SM}\right>=4.5 \pm 1.2~$ mV and a full width half maximum (fwhm) of $\sigma^{SM}=36 \pm 3~$ mV. The midpoint potential values are similar to previously reported values of $6\pm0.6~$mV with fwhm=$150~$mV where each $E_0$ was calculated from about $1000$ molecules.\cite{davis2006monitoring} Another work reported $E_0 = 16~mV$ with low surface coverage (100s of azurins) with a fwhm of $70~$mV.\cite{salverda2010fluorescent} Recently for truly single-azurin, $E_0=12\pm3$ was reported with fwhm of $92~$mV.\cite{akkilic2014chemically-induced}\\
+A small width of distribution ($36~$mV) for single-azurin potentials in this work is obtained probably because of the way the proteins are functionalized to the surface. The azurin is attached to a peg-chain of length ${\sim}20~$nm. The peg-chain is attached to the surface through neutravidin. Such functionalization minimizes the interaction of the protein to the surface. In all the previous experiment, the azurin was either non-specifically attached to the surface or attached through a very small linker (<$1~$nm).
+%====================Many single-molecule on-off histogram and their rates=================
+\subsection{Intermediate detection from on-off histogram}
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{many_sm_hist.eps}
 	\caption{\textbf{Electron transfer rates} The histogram of on-times (a) and of off-times (b) of all the single-Cu-Azurin-ATTO655 at $100~$mV with their zoomed in part in the inset. Notice the single exponential decay of on-times and bi-exponential (with rise time) for the off-times. This indicates that  reduction of Cu-Azurin occurs through an intermediate step while for oxidation the intermidiate state is not observable. The solid line is the corresponding fit to the distribution. (c) The rate constant of oxidation as a function of potential. (d) The rate of reduction as a function of redox potential, blue points correspond to the faster rate constant and the red represents the slow rate constant.}
 	\label{fig:many_sm_hist}
 \end{figure}
-The rate of oxidation and reduction were 
-%on-off 1D histogram
-\subsection{Intermediate detection from on-off histogram}
+The on and off times of all the molecules at a certain potential were put together to see over all distribution. Figure-\ref{fig:many_sm_hist}(a) shows the histogram of on times at $100~$mV and the solid line is a fit with a single exponential with a time constant ($k_{on}$) of $155~s^{-1}$. The on-time represents the time the protein takes to get oxidized which can be shown as following:
+\begin{align}
+	\ch{!(bright)(Cu(I)Azurin) + oxd <=>[ $k_1$ ][ $k_{-1}$ ] !(dark)(Cu(II)Azurin) + red }
+	\label{eq:oxidation}
+\end{align}
+In contrast, the distribution of off-times shows non-exponential distribution with a rise time Figure-\ref{fig:many_sm_hist}(a). In the inset, the zoomed in part shows clearly that the probability of finding the protein with very short off-time is smaller. This distribution can be explained by Michaelis-Menten mechanism:
+\begin{align}
+	\ch{!(dark)(Cu(II)Azurin) + red <=>[ $k_1$ ][ $k_{-1}$ ] !(dark)(Cu(II)Azurin*red) -> [ k2 ] !(bright)(Cu(I)Azurin) + oxd}
+	\label{eq:reduction}
+\end{align}
+where $k_1$ is the pseudo-first order rate constant which depends on the concentration of reductant and $k_2$ is the zero order rate constant which should be independent of the concentration of the substrate. By assuming $k_{-1}=0$, the probability of off time can be given as:\cite{lu1998single-molecule}
+\begin{equation}
+	P_{off}(t) = \frac{k_1k_2}{k_2-k_1} [exp(-k_1t)-exp(-k_2t)]
+	\label{eq:2exp_risetime}
+\end{equation}
+At $100~$mV, $k_1$ for the reduction is $4.1~s^{-1}$ while $k_2$ is $135~s^{-1}$. The rates were determined at different applied potential. A linear relationship is observed between the rate of oxidation and the solution potential (Figure-\ref{fig:many_sm_hist}(c)). This is in agreement with the first-order kinetic dependent on the concentration of substrate as the concentration of electron mediators vary exponentially with the solution potential. From the slope of the line, a rate constant of $9.4\times10^6~M^{-1}s^{-1}$ for the oxidation is obtained. Similar linear relationship was observed for the $k_1$ of the raduction process as expected with a rate constant of $1.7\times10^5M^{-1}s^{-1}$.\\
+The rate constant ($k_2$) for the second step in the reduction process has a weak dependence on the solution reduction potential(Figure-\ref{fig:many_sm_hist}(d, blue)). The value is around ${\sim}250s^{-1}$ which is more than an order of magnitude smaller than the rate of intermediate formation.\\
+%==================Dynamics: Single-azurin over time===================
+\subsection{Dynamics in ET rate}
+After looking at many single-azurins, we investigated a single-azurin for long time. Figure-\ref{fig:long_azurin_trace} shows the statistics of a single-azurin at $100~mV$ that survives for ${\sim}1250~s$. The distribution of on and off times are similar to that of many single-azurin distributions.
+%long_azurin_trace
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{Figure/Figure_3_on_off_1D.eps}
-	\caption{\textbf{On off histogram.} The histogram of on-times(a) and of off-times(b) of Cu-Azurin-ATTO655 showing rise time. This indicates that both oxidation and reduction of Cu-Azurin occurs through an intermediate step.}
-	\label{fig:onoff1D}
+	\includegraphics[width=\textwidth]{long_azurin_trace.eps}
+	\caption{The histogram of on-times(a) and of off-times(b) of Cu-Azurin-ATTO655 showing rise time similar to many single-azurin distributions. (b) the trace of average on-times (blue) and average off-times (red). The average was calculated every $20$ corresponding on or off times. The respective y-scales have the same color as the data points. (d) Autocorrelation of the traces in (c) and the color is matched to the color in the trace. (d) distribution of $E_0$ calculated from each average on and off time from the traces in (c)}
+	\label{fig:long_azurin_trace}
 \end{figure}
 
-%%%%%Experimental Section%%%%%%%%%%
+The time trace was divided into small parts and average was calculated over every $20$ on or off times. Figure-\ref{fig:long_azurin_trace}~(c) average on-times (blue) and average off-times (red) as a function of time. To our surprise, the fluctuations are not simply statistical noise rather seems correlated. The autocorrelations of the average traces show clear decay (Figure-\ref{fig:long_azurin_trace}(d)) with decay times around $10s$ of seconds. This means that the rate at which the azurin change between Cu(II) and Cu(I) state varies over time. Sometimes the frequency of the state-change is low and sometimes it is high. Such behaviors has been observed previously for other enzymes ($\beta$-galactosidase, flavoenzymes).\cite{lu1998single-molecule,kou2005single-molecule,english2006ever-fluctuating} which can be termed as breathing in enzymes. A short on-time is followed be a short on-time and a longer on-time is followed by a longer on-time with the memory lasting over a characteristic time scale of $10s$ of seconds. According to the previous report, the breathing is a result of slow fluctuations in the structure over time. Azurin is a very small protein ($14$kDa) and the observation of such variation in ET shows that the ET is very sensitive to the changes in the structure.\\
+
+Also mid-point potentials were calculated from each average on and average off times using Nernst equation(\ref{eq:nernst}). As both on and off times changes over time, mid-point potential too changes over time. The distribution of $E_0$ shows a center value of $2\pm0.2~$mV with a fwhm of $26~$mV. This distribution of midpoint potential of a single-azurin over a long time is similar to the value of $36~$mV obtained for many single-azurins.
+%=================CONCLUSION==================
+\section{Conclusion}
 % \bibliographystyle{achemso.bst}
+\pagebreak
 \bibliography{azurin}
 \end{document}

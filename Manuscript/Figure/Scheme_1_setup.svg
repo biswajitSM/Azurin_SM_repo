@@ -28,7 +28,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.9336488"
-     inkscape:cx="354.13861"
+     inkscape:cx="277.08222"
      inkscape:cy="143.78762"
      inkscape:document-units="px"
      inkscape:current-layer="layer3"
@@ -342,7 +342,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -606,7 +606,7 @@
          id="path4322"
          style="opacity:1;fill:#ffff00;fill-opacity:1;stroke:#000000;stroke-width:0.23610069;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
       <flowRoot
-         transform="matrix(0.18100091,0,0,0.19191959,258.68812,830.2612)"
+         transform="matrix(0.18100091,0,0,0.19191959,250.68812,830.2612)"
          style="font-style:normal;font-weight:normal;line-height:0.01%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          id="flowRoot5179"
          xml:space="preserve"><flowRegion
@@ -616,9 +616,9 @@
              height="102.51706"
              width="152.00806"
              id="rect5183" /></flowRegion><flowPara
-           style="font-size:58.9148941px;line-height:1.25"
+           style="font-size:67.06716919px;line-height:1.25"
            id="flowPara5185">1</flowPara></flowRoot>      <flowRoot
-         transform="matrix(0.18100091,0,0,0.19191959,280.6897,837.89914)"
+         transform="matrix(0.18100091,0,0,0.19191959,280.6897,839.89914)"
          style="font-style:normal;font-weight:normal;line-height:0.01%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          id="flowRoot5187"
          xml:space="preserve"><flowRegion
@@ -628,7 +628,7 @@
              height="187.35876"
              width="325.22653"
              id="rect5191" /></flowRegion><flowPara
-           style="font-size:58.9148941px;line-height:1.25"
+           style="font-size:67.06716919px;line-height:1.25"
            id="flowPara5193">2</flowPara></flowRoot>      <flowRoot
          transform="matrix(0.18100091,0,0,0.19191959,320.45872,829.16442)"
          style="font-style:normal;font-weight:normal;line-height:0.01%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -758,7 +758,7 @@
              width="97.640717"
              id="rect5227" /></flowRegion><flowPara
            style="font-size:58.9148941px;line-height:1.25"
-           id="flowPara5229">4</flowPara></flowRoot>      <flowRoot
+           id="flowPara5229" /></flowRoot>      <flowRoot
          transform="matrix(0.18100091,0,0,0.19191959,321.9228,827.70034)"
          style="font-style:normal;font-weight:normal;line-height:0.01%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          id="flowRoot5231"
@@ -770,7 +770,7 @@
              width="111.36328"
              id="rect5235" /></flowRegion><flowPara
            style="font-size:58.9148941px;line-height:1.25"
-           id="flowPara5237">5</flowPara></flowRoot>      <flowRoot
+           id="flowPara5237" /></flowRoot>      <flowRoot
          transform="matrix(0.18100091,0,0,0.19191959,320.91115,835.40099)"
          style="font-style:normal;font-weight:normal;line-height:0.01%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          id="flowRoot5239"
@@ -782,7 +782,7 @@
              width="107.48592"
              id="rect5243" /></flowRegion><flowPara
            style="font-size:58.9148941px;line-height:1.25"
-           id="flowPara5245">6</flowPara></flowRoot>      <flowRoot
+           id="flowPara5245" /></flowRoot>      <flowRoot
          transform="matrix(0.18100091,0,0,0.19191959,358.61635,883.87648)"
          style="font-style:normal;font-weight:normal;line-height:0.01%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          id="flowRoot5247"
@@ -1108,7 +1108,7 @@
              height="92.487892"
              width="127.48331"
              id="rect5259-32" /></flowRegion><flowPara
-           style="font-size:30.85868263px;line-height:1.25"
+           style="font-size:35.12871438px;line-height:1.25"
            id="flowPara5261-97">8</flowPara></flowRoot>      <rect
          y="768.77661"
          x="8.6323166"
@@ -1124,5 +1124,41 @@
          inkscape:connector-curvature="0"
          transform="translate(0,186)" />
     </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="93.674042"
+       y="935.34747"
+       id="text4428"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4430"
+         x="93.674042"
+         y="935.34747"
+         style="font-size:12.5px">5(Ref)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="160.97308"
+       y="936.00189"
+       id="text4432"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4434"
+         x="160.97308"
+         y="936.00189"
+         style="font-size:12.5px">6(Counter)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="1.1887512"
+       y="938.82355"
+       id="text4428-3"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4430-6"
+         x="1.1887512"
+         y="938.82355"
+         style="font-size:12.5px">4(Working)</tspan></text>
   </g>
 </svg>
