@@ -49,6 +49,7 @@ A $20$ by $20$ \SI{}{\micro\metre}$^2$ area of the sample surface functionalized
 All the measurements resulted a huge amount data (more than $1000$ time traces). Each time trace contains absolute arrival times of photons as well as arrival time with respect to excitation laser pulse. This enabled us to extract maximum information from the traces. To minimize human error and attain efficiency, codes were written (in python, matlab) to analyze all the trace exactly the same way. The code and data ca be found in the given link (will be provided during submission). Mainly three analysis were made on each trace. (i) Change points in the time traces were obtained using the changepoint algorithm\cite{watkins2005detection} kindly provided by Prof. Haw Yang (Princeton University, USA). This method is binning free and doesn't require any prior knowledge of the underline kinetics. It determines the location of intensity changes based on the photon arrival times and The algorithm is recursively applied through the whole trace to find all the changes. Bayesian information criterion is used to find the number of states. Two states were predicted from long time traces and many molecules (2500 changepoints each) with more than 90\% accuracy which was expected from FRET quenching mechanism and total signal that we have. For the rest of the traces, we set the number of states to be two in order to minimize the computation time. An example of change points and it's overlap with the real time trace can be seen in Figure-\ref{fig:timetrace}. (ii) Autocorrelation of the time traces were performed by using SymPhoTime(PicoQuant) software. (iii) Further analysis of changepoint output and autocorrelations were performed in Python. The details of the code including all the fitting functions can be found in the online repositories (will be provided during submission).
 %Scheme
 \begin{scheme}
+	\centering
 	\includegraphics[scale=0.8]{Scheme_1_setup.eps}
 	\caption{The scheme picture of the final setup. \textbf{(1)}  Objective through which light is irradiated on and collected from the sample. \textbf{(2)} The functionalized sample slide with on top the platinum grid
 	and another small glass slide to press the grid on the sample slide, resulting in small confined volumes in the order of nanoliters. \textbf{(3)} The electron mediator solution consisting of \SI{200}{\micro\Molar} ferricyanide, \SI{100}{\micro\Molar} ascorbate in PBS (PH 7.4) buffer with a total volume of 4 mL. \textbf{(4)} The working electrode (Platinum wire) that is in contact with the platinum grid. \textbf{(5)} The saturated calomel reference electrode. \textbf{(6)} The Platinum wire (not touching the grid) as counter electrode. \textbf{(7)} The potentiostat (Model 800B Series Electrochemical Detector, CH Instruments) to which the electrodes are connected. \textbf{(8)}, \textbf{(9)} Top view of the sample slide and two images are showing the labeled Cu-Azurin reduced(brighter) and oxidized(dimmer).}
@@ -60,7 +61,8 @@ All the measurements resulted a huge amount data (more than $1000$ time traces).
 Active Cu-azurin molecules were identified from their fluorescence intensity images at the oxidizing ($200~$mV) and reducing conditions($0~$mV). In reducing conditions, the image contains more brighter spots corresponding to Cu(I)-azurin-ATTO655 and more than $90~$\% of the molecules turned off in oxidizing conditions (Scheme-\ref{sch:setup}(9)). The azurins on each sample slide showed active switching during the course of our experiment (upto two days) without any noticeable degradation. A set of active azurins were marked for recording and time traces at different potentials (between $100~$mV and $-100~$mV) were measured on the \texttt{same molecules} for $30~$s. Many of the labeled-protein bleached within recording at few potentials, but more than $50~$\% of the labeled-azurin survived atleast five measurements ($150~$s) at different potentials. Longer measurements were possible due to the scavenging of oxygen in the solution. Before the time trace recording, the solution was exposed to negative potential for at least $1~$hours. Ascorbate is known to  scavenge oxygen\cite{dave1997effectiveness} and get oxidized. The oxidized ascorbate is reduced by the electrode and was again available to scavenge other oxygen molecules. In addition to the absence of oxygen, the ROXS mechanism was also in play. The reduction and oxidation of Cu-azurin made the dye switch on and off, hence the fluorescent dye spent less time on the bright state where it is more prone to bleach. This made possible the measurement of some traces more than $1000~$s long.\\
 %---time trace
 \begin{figure}
-	\includegraphics[width=\textwidth]{Figure_1_timetrace_CuAzu.eps}
+	\centering
+	\includegraphics[]{Figure_1_timetrace_CuAzu.eps}
 	\caption{Time traces of Cu-Azurin labeled with ATTO655 at different potentials. The structure of the protein with properly positioned dye can be seen in the schematic picture in the left. In Cu(II) state (shown in bluish atom in the protein structure), the dye is non fluorescent because of FRET and in Cu(I) state (shown in gray atom), the dye is fluorescent. Notice the amount of time the protein spends on bright and dark state at different potentials. At lower potentials (e.g 0 mV) the protein is brighter most of the time because of the higher concentration of reductant.}
 	\label{fig:timetrace}
 \end{figure}
@@ -68,7 +70,8 @@ Figure-\ref{fig:timetrace} shows time traces of a single Cu-azurin-ATTO655 at th
 %Midpoint histogram
 \subsection{Midpoint potential of single-azurins}
 \begin{figure}
-	\includegraphics[width=\textwidth]{Figure_2_midpoint.eps}
+	\centering
+	\includegraphics[]{Figure_2_midpoint.eps}
 	\caption{Ratio between on and off time as a function of applied potential for the same single-molecule. Different color represents different single-molecules. And the line connecting the data points is the Nernst fit for all the data points above 25 mV. The plot in the right is the histogram of midpoint potentials for $132$ molecules with a Gaussian fit with center 4.5 mV with respect to calomel electrode.}
 	\label{fig:midpoint}
 \end{figure}
@@ -81,41 +84,22 @@ where $E$ is the applied potential, $E_0$ the mid-point potential, $k_B$ the Bol
 %Many single-molecule on-off histogram and their rates------Intermolecular Et
 \subsection{Intermolecular ET}
 \begin{figure}
+	\centering
 	\includegraphics[width=\textwidth]{many_sm_hist.eps}
 	\caption{\textbf{Electron transfer rates} The histogram of on-times (a) and of off-times (b) of all the single-Cu-Azurin-ATTO655 at $100~$mV with their zoomed in part in the inset. Notice the single exponential decay of on-times and bi-exponential (with rise time) for the off-times. This indicates that  reduction of Cu-Azurin occurs through an intermediate step while for oxidation the intermidiate state is not observable. The solid line is the corresponding fit to the distribution. (c) The rate constant of oxidation as a function of potential. (d) The rate of reduction as a function of redox potential, blue points correspond to the faster rate constant and the red represents the slow rate constant.}
 	\label{fig:many_sm_hist}
 \end{figure}
 The rate of oxidation and reduction were 
-% Intra-molecular ET-----------
 %on-off 1D histogram
 \subsection{Intermediate detection from on-off histogram}
 \begin{figure}
+	\centering
 	\includegraphics[width=\textwidth]{Figure/Figure_3_on_off_1D.eps}
 	\caption{\textbf{On off histogram.} The histogram of on-times(a) and of off-times(b) of Cu-Azurin-ATTO655 showing rise time. This indicates that both oxidation and reduction of Cu-Azurin occurs through an intermediate step.}
 	\label{fig:onoff1D}
 \end{figure}
-%Dynamic rates. protein showing diiferent rates with time
-\subsection{Dynamics of ET rates}
-\begin{figure}
-	\includegraphics[width=\textwidth]{dynamic_rates.eps}
-	\caption{\textbf{Dynamics in the turnovers of the protein.}}
-	\label{fig:dynamic_rates}
-\end{figure}
-%Intramolecular electron transfer
-\subsection{Intramolecular elctron transfer}
-\begin{figure}
-	\includegraphics[width=0.6\textwidth]{fcs_components.eps}
-	\caption{\textbf{Intra molecular electron transfer.} Shorter decay with time constant of around 30 us}
-	\label{fig:fcs_components}
-\end{figure}
-%on-off 2D histogram
-\begin{figure}
-	\includegraphics[width=\textwidth]{Figure_4_on_off_2D_100mV.png}
-	\caption{\textbf{2D histogram: Cu-Azurin.} 2D correlation plot of (a) on-times vs the next on-times (b) on-times vs the on-time after 100 turnovers (c) off-times vs next off-times (d) off-times vs the off-time after 100 turnovers.}
-	\label{fig:onoff2D}
-\end{figure}
+
 %%%%%Experimental Section%%%%%%%%%%
-\section%{Experimental}
-\bibliographystyle{achemso.bst}
+% \bibliographystyle{achemso.bst}
 \bibliography{azurin}
 \end{document}

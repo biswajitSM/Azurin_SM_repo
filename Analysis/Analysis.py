@@ -2,18 +2,15 @@ import numpy as np
 import pandas as pd
 import os.path
 from pylab import *
-import glob
 import os
 import re
-from xlwt import Workbook
 from scipy.optimize import curve_fit
 global pointnumber
-from numpy import sqrt, pi, exp, linspace, loadtxt
 from lmfit import  Model, Parameter, Parameters
 import matplotlib.pyplot as plt
 mpl.rcParams["font.family"] = "sans-serif"
 mpl.rcParams["font.size"] = "14"
-#--------------Get the pointnumber, datn, emplot, FCS files with their filepath in a "GIVEN FOLDER"---------------------
+# =========Get the pointnumber, datn, emplot, FCS files with their filepath in a "GIVEN FOLDER"=====
 foldername = r'/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data/201702_S101toS104/S101d14Feb17_60.5_635_A2_CuAzu655'
 def dir_mV_molNo_temp(foldername=foldername):
     """input: Path of the Folder name as: foldername = r'D:\Research\Experimental\Analysis\2017analysis\201702\Analysis_Sebby_March_2017\S101d14Feb17_60.5_635_A2_CuAzu655'
@@ -287,7 +284,7 @@ def check_missingFCSfiles(foldername=foldername):
         if FCS.empty:
             print('FCS of %s with Point number %s with potential %s doesn''nt exist' %(file_name,point_number, potential) )
     return
-#---------get_point_specifics-----
+#=================get_point_specifics=======================
 def get_point_specifics(foldername= foldername, input_potential=[0, 25, 50, 100], pointnumbers=[1]):
     """bin=1 in millisecond
     foldername should be given as r'D:\Research\...'
@@ -343,7 +340,7 @@ def time_trace_plot(foldername= foldername, input_potential=[0, 25, 50, 100],
         legend(fontsize=16, framealpha=0.5)
     fig.text(0.04, 0.5, 'Fluorescence(kcps)', va='center', rotation='vertical', fontsize=16)
     return(fig)
-#--------FCS fit functions .....AND......FCS plot for a molecule(s) at different potentials-----------------
+#===FCS fit functions AND FCS plot for a molecule(s) at different potentials=======
 def FCS_mono_fit(filename,tmin,tmax):
     df_fcs = pd.read_csv(filename, index_col=False, names=None, skiprows=1, header=None, sep='\s+');
     df_fcs = df_fcs[df_fcs[0]>=tmin];
@@ -415,7 +412,7 @@ def FCS_plot(foldername= foldername, input_potential=[0, 25, 50, 100],
                 print('g(t) = %s + %s * exp(-t/%s) + %s * exp(-t/%s)' %(bifit[0], bifit[1], bifit[2], bifit[3], bifit[4]))
             plt.xscale('log')
     return()
-#-----------------------------ON/OFF times from changepoint and FCS------------------------------------
+#==============ON/OFF times from changepoint and FCS==================
 def t_on_off_fromCP(f_emplot):
     #expt data
     # df = pd.read_csv(f_datn, header=None)
@@ -425,7 +422,7 @@ def t_on_off_fromCP(f_emplot):
     df = pd.read_csv(f_emplot, header=None, sep='\t')
     df_diff= diff(df[0])
     #calculating Ton and Toff
-    df_tag = df[[0, 1]];# df_ton = df_ton[1:]
+    df_tag = df[[0, 1]]; # df_ton = df_ton[1:]
     df_tag = pd.DataFrame([df_tag[0][1:], diff(df_tag[1])]); df_tag = df_tag.T;
     df_tag.columns = [0, 1];
     df_tag = df_tag[df_tag[1] != 0];
@@ -440,7 +437,7 @@ def t_on_off_fromCP(f_emplot):
     t1=df_tag_pos[0][1:]; t1.reset_index(drop=True, inplace=True);
     t2=df_tag_neg[0]; t1.reset_index(drop=True, inplace=True);
     df_toff = t1 - t2; df_toff = df_toff[:df_toff.shape[0]-2];df_ton.reset_index(drop=True, inplace=True)
-    #remove NAN values:
+    # remove NAN values:
     df_ton = df_ton[~np.isnan(df_ton)];
     df_toff = df_toff[~np.isnan(df_toff)];
     average_ton = 1000 * np.average(df_ton);# also converts to millisecond
@@ -459,7 +456,7 @@ def t_on_off_fromCP(f_emplot):
     average_toff_err = (1/lambda_toff_low) - (1/lambda_toff_upp);
     average_toff_err = np.round(average_toff_err, 2)
     return(df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err)
-#------------------HISTOGRAM ON/OFF: given folder name, potential and list of point number, plot histogram at certain potentialof ------------------
+# ---HISTOGRAM ON/OFF: given folder name, potential and list of point number, plot histogram at certain potentialof ----
 def histogram_on_off_1mol(foldername= foldername, input_potential=[100], pointnumbers=[1],
                           bins_on=50, range_on=[0, 0.2], bins_off=50, range_off=[0, 0.5], plotting=False):
     df_datn_emplot, df_FCS, folder = dir_mV_molNo(foldername)
@@ -467,7 +464,6 @@ def histogram_on_off_1mol(foldername= foldername, input_potential=[100], pointnu
     df_specific = df_specific[df_specific['Potential'].isin(input_potential)]; df_specific.reset_index(drop=True, inplace=True)
     f_emplot_path = 'x'; f_datn_path='x'; t_ons=[];t_offs=[]
     if not df_specific.empty:
-        f_datn_path = df_specific['filepath[.datn]'].values[0]
         f_emplot_path = df_specific['filepath[.em.plot]'].values[0]
     if os.path.isfile(f_emplot_path):
         try:
@@ -478,7 +474,7 @@ def histogram_on_off_1mol(foldername= foldername, input_potential=[100], pointnu
             n_on,bins_on = histogram(t_ons, range=range_on,bins=bins_on);
             n_off,bins_off = histogram(t_offs, range=range_off,bins=bins_off)
             if plotting == True:
-                fig, axes = plt.subplots(1, 2, figsize=(10,4))
+                fig, axes = plt.subplots(1, 2, figsize= (10,4))
                 n_on,bins_on,patches = axes[0].hist(t_ons, range=range_on, bins=bins_on, color='k', alpha=0.5)
                 n_on,bins_on,patches = axes[0].hist(t_ons, range=range_on, bins=bins_on, color='k', histtype='step')
                 axes[0].set_xlabel(r'$\tau_{on}/s$')
@@ -508,7 +504,7 @@ def histogram_on_off_folder(foldername= foldername, input_potential=[100], point
     for i in range(len(df_specific)):
         f_datn_path = df_specific['filepath[.datn]'].values[i]
         f_emplot_path = df_specific['filepath[.em.plot]'].values[i]
-        df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(f_datn_path, f_emplot_path);
+        df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(f_emplot_path);
         t_ons = np.concatenate((t_ons, df_ton), axis=0);
         t_offs = np.concatenate((t_offs, df_toff));
     if plotting == True:
@@ -549,7 +545,7 @@ def hist2D_on_off(foldername=foldername, input_potential=[100], pointnumbers=[24
         ax1 = fig.add_subplot(2,3,1)#2,2,1
         C_on_1,Ex_on_1,Ey_on_1, figu = hist2d(t_on_shifted_1[1:], t_ons[1:], range=[range_on, range_on], bins=bins_on, norm=mpl.colors.LogNorm(), cmap=colormap)
         Ex_on_1,Ey_on_1 = meshgrid(Ex_on_1,Ey_on_1)
-        #ax1.pcolormesh(Ex_on_1, Ey_on_1, C_on_1, cmap=colormap)#,norm=mpl.colors.LogNorm()
+        # ax1.pcolormesh(Ex_on_1, Ey_on_1, C_on_1, cmap=colormap)#,norm=mpl.colors.LogNorm()
         colorbar()
         ax1.set_title('ON time Cu-Azu %smV' %input_potential)
         ax1.set_xlabel(r'$\tau_{on}/s$')
@@ -558,7 +554,7 @@ def hist2D_on_off(foldername=foldername, input_potential=[100], pointnumbers=[24
         ax2 = fig.add_subplot(2,3,2)#2,2,1
         C_on_x,Ex_on_x,Ey_on_x, figu = hist2d(t_on_shifted_x[x_shift:], t_ons[x_shift:], range=[range_on, range_on], bins=bins_on, norm=mpl.colors.LogNorm(), cmap=colormap)
         Ex_on_x,Ey_on_x = meshgrid(Ex_on_x,Ey_on_x)
-        #ax2.pcolormesh(Ex_on_x, Ey_on_x, C_on_x, cmap=colormap)#,norm=mpl.colors.LogNorm()
+        # ax2.pcolormesh(Ex_on_x, Ey_on_x, C_on_x, cmap=colormap)#,norm=mpl.colors.LogNorm()
         colorbar()
         ax2.set_title('ON time Cu-Azu %smV' %input_potential)
         ax2.set_xlabel(r'$\tau_{on}/s$')
@@ -593,7 +589,7 @@ def hist2D_on_off(foldername=foldername, input_potential=[100], pointnumbers=[24
         plt.tight_layout()
     return(t_ons, t_offs)
 
-#------------------TIME TRACE OUTPUT-------All parameters are calculaed from the time traces of molecule----t_on, t_off, t_ratio...............
+#====================TIME TRACE OUTPUT==============
 pointnumbers = linspace(1, 40, 40);pointnumbers = pointnumbers.astype(int);
 potentialist = linspace(-100, 200, 1+(200-(-100))/5);
 def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist=potentialist, kind=['timetrace']):
@@ -654,7 +650,7 @@ def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potent
             out_point[Point_number]=df_create
             out_total=pd.concat([out_total, out_point], axis=1);
     return(out_total)
-#------------------fcs output---------------All parameters are calculaed from the FCS of molecule----t_on, t_off, t_ratio.....
+#=====================fcs output=====================
 potential = 35
 def t_on_off_fromFCS(df_fcs, tmin=0.05,tmax=1000, V= potential, V_th=40):
     df_fcs = pd.read_csv(df_fcs, index_col=False, names=None, skiprows=1, header=None, sep='\s+');
@@ -780,3 +776,4 @@ def Mid_potentials(folderpath=foldername, pointnumbers=range(20), plotting=True,
                 tight_layout()
                 #legend(bbox_to_anchor=(0.9, 0.3), fontsize=16)
     return(E0_list)
+#================Autocorrelation function==========================
