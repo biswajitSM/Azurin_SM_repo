@@ -12195,10 +12195,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.0886364"
-     inkscape:cx="188.94259"
+     inkscape:cx="242.3267"
      inkscape:cy="144.91264"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="axes_2-6"
      showgrid="false"
      units="cm"
      inkscape:window-width="1920"
@@ -14141,6 +14141,7 @@
                  x="-4.8000002">τ<tspan
    style="font-size:51.99999809%;baseline-shift:sub;stroke-linecap:butt;stroke-linejoin:round"
    id="tspan10829">on</tspan>
+
 /s</text>
             </g>
           </g>
@@ -15248,6 +15249,7 @@
                  x="-3.2">τ<tspan
    style="font-size:51.99999809%;baseline-shift:sub;stroke-linecap:butt;stroke-linejoin:round"
    id="tspan10827">off</tspan>
+
 /s</text>
             </g>
           </g>
@@ -16235,7 +16237,14 @@
                y="58.25"
                x="19.385939"
                transform="matrix(0,-1,1,0,-38.864062,77.635938)"
-               style="font-style:normal;font-weight:400;font-size:10px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round">k1_on</text>
+               style="font-style:normal;font-weight:400;font-size:10px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round">
+              <tspan
+                 style="font-size:13.71599998px"
+                 id="tspan8251">k<tspan
+   style="font-size:59.43599991%;baseline-shift:sub"
+   id="tspan8253">1</tspan>
+_on</tspan>
+            </text>
           </g>
         </g>
         <g
@@ -16727,7 +16736,14 @@
                  transform="matrix(0,-1,1,0,170.14531,286.64531)"
                  x="228.39531"
                  y="58.25"
-                 id="text11059">k1_off</text>
+                 id="text11059">
+                <tspan
+                   style="font-size:13.7159996px;stroke-linecap:butt;stroke-linejoin:round"
+                   id="tspan8231">k<tspan
+   style="font-size:59.43599991%;baseline-shift:sub"
+   id="tspan8235">2</tspan>
+_off</tspan>
+              </text>
             </g>
           </g>
           <g
@@ -16910,7 +16926,8 @@
           </g>
           <g
              style="stroke-linecap:butt;stroke-linejoin:round"
-             id="legend_2">
+             id="legend_2"
+             transform="translate(-3.6576,3.6576)">
             <g
                style="stroke-linecap:butt;stroke-linejoin:round"
                id="patch_13-1">
@@ -16980,7 +16997,17 @@
                  style="font-style:normal;font-weight:400;font-size:10px;font-family:'DejaVu Sans';text-anchor:start;stroke-linecap:butt;stroke-linejoin:round"
                  x="297.84064"
                  y="90.842186"
-                 id="text11135">k1_off</text>
+                 id="text11135">
+                <tspan
+                   style="font-size:11.43000031px;stroke-linecap:butt;stroke-linejoin:round"
+                   id="tspan8239">k</tspan>
+                <tspan
+                   style="font-size:59.43599939%;baseline-shift:sub;stroke-linecap:butt;stroke-linejoin:round"
+                   id="tspan8245">2</tspan>
+                <tspan
+                   style="font-size:11.43000031px;stroke-linecap:butt;stroke-linejoin:round"
+                   id="tspan8241">_off</tspan>
+              </text>
             </g>
           </g>
         </g>
@@ -17094,7 +17121,14 @@
                  transform="matrix(0,-1,1,0,381.22969,497.72969)"
                  x="439.47968"
                  y="58.25"
-                 id="text11170">k2_off</text>
+                 id="text11170">
+                <tspan
+                   style="font-size:13.7159996px;stroke-linecap:butt;stroke-linejoin:round"
+                   id="tspan8227">k<tspan
+   style="font-size:59.43599991%;baseline-shift:sub"
+   id="tspan8237">1</tspan>
+_off</tspan>
+              </text>
             </g>
           </g>
           <g
@@ -17355,7 +17389,14 @@
                  style="font-style:normal;font-weight:400;font-size:10px;font-family:'DejaVu Sans';text-anchor:start;stroke-linecap:butt;stroke-linejoin:round"
                  x="375.20624"
                  y="30.898438"
-                 id="text11249">k2_off</text>
+                 id="text11249">
+                <tspan
+                   style="font-size:11.42999998px"
+                   id="tspan8247">k<tspan
+   style="font-size:59.43599991%;baseline-shift:sub"
+   id="tspan8249">2</tspan>
+_off</tspan>
+              </text>
             </g>
           </g>
         </g>

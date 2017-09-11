@@ -10,10 +10,12 @@
 \usepackage[a4paper,top=2cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
 % \usepackage{authblk} % For affiliation. This package is not preinstalled.
 \graphicspath{{Figure_SI/}}
+\usepackage{xr} 
+\externaldocument{azurin} 
+
 \newcommand*\commentauthor[1]{\textbf{{\textit{#1}}}}
 \newcommand*\me[1]{\ensuremath{\bar{#1}\,}}
 \newcommand*\chem[1]{\ensuremath{\mathrm{#1}}}
-
 \newcommand*{\affaddr}[1]{#1} % No op here. Customize it for different styles.
 \newcommand*{\affmark}[1][*]{\textsuperscript{#1}}
 \newcommand*{\email}[1]{\texttt{#1}} % These three commands are for author affilations.
@@ -34,7 +36,7 @@
 \tableofcontents
 \pagebreak
 %=====================METHODS AND FIGURES===========================
-\section{Protein and labeling}
+% \section{Protein and labeling}
 %Peak separation
 \begin{figure}
   \centering
@@ -45,10 +47,10 @@
   \caption{Peak separation: (a) Elution profile of Cu azurin sample after labeling and removal of free dye. 280 nm absorption that tells the presence of protein is shown in blue and 660 nm absrption that tells the presence of dye is shown in red. The protein structure with the dye at Lys 122 corresponding to peak-III is shown in the right. {A proper structure will be replaced}}
   \label{SIfig: peak_sep}
 \end{figure}
-\pagebreak
-
+% \pagebreak
 \section{Fluorescence switching in bulk}
 %BULK Switching
+Fluorescence measurements in bulk of different peaks of azurin-ATTO655 sample (Figure S\ref{SIfig: peak_sep}) were carried out to determine the FRET switching ratio. The measurements were done in Cary Eclipse Spectrometer (Varian Inc. Agilent Technology, USA). A 50 nM sample was excited with 665 nm and intensity was monitored above 675 nm. Sodium ascorbate (reductant) and Pottasium ferrocyanide (oxidant) were added alternatively. Among all the labeled position, peak-III showed maximum switching ratio and it's intensity change can be seen in Figure S\ref{SIfig: switching}. Similarly Zn Azurin-ATTO655 showed little or no change in intensity.
 \begin{figure}
   \centering
   \includegraphics{spectral_overlap_switching.eps}
@@ -58,7 +60,6 @@
   \caption{Spectral overlap and Bulk switching: (a) Absorption spectrum of Cu(II)azurin (blue), Cu(I)azurin (black). The emission spectrum of ATTO655 (red) has a good overlap with the absorption of Cu(II)azurin to show high FRET. (b) Fluorescence intensity of 50 nM CuAzurin-ATTO655 shows high intensity in the presence of reductant and low intensity with oxidant. The switching ratio comes to be 90\% satisfying the requirement for single-molecule FRET.}
   \label{SIfig: switching}
 \end{figure}
-Fluorescence measurements in bulk of different peaks of azurin-ATTO655 sample (Figure S\ref{SIfig: peak_sep}) were carried out to determine the FRET switching ratio. The measurements were done in Cary Eclipse Spectrometer (Varian Inc. Agilent Technology, USA). A 50 nM sample was excited with 665 nm and intensity was monitored above 675 nm. Sodium ascorbate (reductant) and Pottasium ferrocyanide (oxidant) were added alternatively. Among all the labeled position, peak-III showed maximum switching ratio and it's intensity change can be seen in Figure S\ref{SIfig: switching}. Similarly Zn Azurin-ATTO655 showed little or no change in intensity.
 %time trace Zn and Cu azurin
 \begin{figure}
   \centering
@@ -74,15 +75,15 @@ Fluorescence measurements in bulk of different peaks of azurin-ATTO655 sample (F
   \centering
   \includegraphics{lifetime.eps}
   \makeatletter
-  \renewcommand{\fnum@figure}{\figurename~S\thefigure}
-  \makeatother
+  \renewcommand{\fnum@figure}{\figurename~S\thefigure
+}  \makeatother
   \caption{Single-molecule azurin switching and lifetime. (a) Time trace of a single Cu azurin at 50 mV with a binning time of 50 ms. Notice the three different label indicated in the figure. Bright (Cu(I)) state as above the red line, oxidized state is between red and black and Dark counts are below the black line. The fact that the molecule doesn't go to the dark count label before being bleached shows that the transitions are due to Copper oxidation switching rather than triplet blinking of the dye. Once the fluorophore is bleached, no transitions were observavable. (b) The lifetime histogram corresponding to bright state (red), oxidized state (blue) and instrument response function (black). The lifetime of oxidized state is much shorter than the reduced state due to FRET quenching.}
   \label{SIfig: lifetime}
 \end{figure}
 %FCS comparision
 \begin{figure}
   \centering
-  \includegraphics[width=\textwidth,keepaspectratio]{fcs_comparision.eps}
+  \includegraphics[]{fcs_comparision.eps}
   \makeatletter
   \renewcommand{\fnum@figure}{\figurename~S\thefigure}
   \makeatother
@@ -96,7 +97,7 @@ Fluorescence measurements in bulk of different peaks of azurin-ATTO655 sample (F
 	\makeatletter
 	\renewcommand{\fnum@figure}{\figurename~S\thefigure}
 	\makeatother
-  \caption{Fitting with Nernst equation with slope as variable parameters for  (a) Cu-Azurin ATTO655 (b) Zn-Azurin ATTO 655. The corresponding histogram of slopes obtained from the fitting shown in the right. the distribution slope is centered around 0.059 indicating that both Cuazurin switching and ATTO655 blinking involves only one electron.}
+  \caption{Fitting with Nernst equation with slope as variable parameters for  (a) Cu-Azurin ATTO655. (b) The corresponding histogram of slopes obtained from the fitting shown in the left. the distribution of slope is centered around $59~$mV indicating that Cuazurin switching  involves only one electron.}
   \label{SIfig:potential_slope}
 \end{figure}
 %Rate fit at all potential
@@ -106,11 +107,20 @@ Fluorescence measurements in bulk of different peaks of azurin-ATTO655 sample (F
   \makeatletter
   \renewcommand{\fnum@figure}{\figurename~S\thefigure}
   \makeatother
-  \caption{(a) Fitting of $on$ time distribution with monoexponential. (a) Fitting of $off$ time distribution with bi-exponential equation with rise time as shown in the main text.}
+  \caption{(a) Fitting of $on$ time distribution with monoexponential at different potential. (a) Fitting of $off$ time distribution with bi-exponential equation with rise time as shown in the main text at different potential. the output rate constants were plotted against potential (see main text)}
   \label{SIfig: rate_fit_all_potential}
 \end{figure}
-
-\pagebreak
-\bibliographystyle{ieeetr} % For a list of bibliography styles, see https://www.sharelatex.com/learn/Bibtex_bibliography_styles
-\bibliography{Sup_info}
+%No of averaging points
+\begin{figure}
+  \centering
+  \includegraphics[scale=1.5]{N_avgpoints_vs_fwhmwidth.eps}
+  \makeatletter
+  \renewcommand{\fnum@figure}{\figurename~S\thefigure}
+  \makeatother
+  \caption{Variation of midpoint potential and fwhm with the number of on and off times taken for averaging for the long trace shown in the main text (Figure-\ref{fig:long_azurin_trace}). At around $20~$ events, both $E_0$ and fwhm reaches palteu. The averaging of on-time and off-times for correlation and midpoint distribution were done every $20$ events.}
+  \label{SIfig: N_avgpoints_vs_fwhmwidth}
+\end{figure}
+% \pagebreak
+% \bibliographystyle{ieeetr} % For a list of bibliography styles, see https://www.sharelatex.com/learn/Bibtex_bibliography_styles
+% \bibliography{Sup_info}
 \end{document}
