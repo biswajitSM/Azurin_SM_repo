@@ -223,6 +223,65 @@ def time_trace_plot(foldername= foldername, input_potential=[0, 25, 50, 100],
         legend(fontsize=16, framealpha=0.5)
     fig.text(0.04, 0.5, 'Fluorescence(kcps)', va='center', rotation='vertical', fontsize=16)
     return(fig)
+#===============getting all tags fo each photon===================
+def lifetime_dig(foldername= foldername, input_potential=[0, 25, 50, 100], pointnumbers=[1], bintime = 10e-3):
+    """bin=1 in millisecond
+    foldername should be given as r'D:\Research\...'
+    """
+    def find_closest(A, target):
+        # https://stackoverflow.com/questions/8914491/finding-the-nearest-value-and-return-the-index-of-array-in-python
+        #A must be sorted
+        idx = A.searchsorted(target)
+        idx = np.clip(idx, 1, len(A)-1)
+        left = A[idx-1]
+        right = A[idx]
+        idx -= target - left < right - target
+        return idx
+    df_datn_emplot, df_FCS, folder = dir_mV_molNo(foldername)
+    df_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
+    df_specific = df_specific[df_specific['Potential'].isin(input_potential)];
+    df_specific=df_specific.sort(['Potential'], ascending=[1]);df_specific.reset_index(drop=True, inplace=True)
+    for i in range(len(df_specific)):
+        given_potential = df_specific['Potential'][i]
+        f_emplot = df_specific['filepath[.em.plot]'][i]
+        f_hdf5 = df_specific['filepath[.hdf5]'][i]
+        if os.path.isfile(f_emplot):
+            df_emplot = pd.read_csv(f_emplot, header=None, sep='\t') #change-point
+            df_tag = df_emplot[[0, 1]]
+            df_tag = pd.DataFrame({'time': df_tag[0][1:],
+                                   'diff_count': diff(df_tag[1])});
+            df_tag = df_tag[df_tag['diff_count'] != 0]
+            df_tag.reset_index(drop=True, inplace=True)
+            h5 = h5py.File(f_hdf5)
+            unit = h5['photon_data']['timestamps_specs']['timestamps_unit'][...]
+            tcspc_unit = h5['photon_data']['nanotimes_specs']['tcspc_unit'][...]
+            timestamps = unit * h5['photon_data']['timestamps'][...];
+            nanotimes = tcspc_unit * h5['photon_data']['nanotimes'][...]
+            mask = np.logical_and(timestamps>=min(df_tag['time']), timestamps<=max(df_tag['time']))
+            timestamps = timestamps[mask]
+            nanotimes = nanotimes[mask]
+            h5.close()
+            idx_closest = find_closest(timestamps, df_tag['time']);
+            timestamps_closest = timestamps[idx_closest]
+            dig_cp = np.digitize(timestamps, timestamps_closest);
+            dig_uniq = np.unique(dig_cp)
+            #dig_uniq_count = np.unique(uniq)
+            bins = int((max(timestamps)-min(timestamps))/bintime)
+            binned_trace = np.histogram(timestamps, bins=bins)
+            dig_bin = np.digitize(timestamps, binned_trace[1][:-1]); # digitize every bintime
+            
+            df_dig = pd.DataFrame({'timestamps': timestamps,
+                                   'dig_bin': dig_bin,
+                                   'dig_cp': dig_cp,
+                                   'count_rate': dig_cp,
+                                   'nanotimes': nanotimes
+                                  })
+            df_dig['count_rate'] = df_dig['count_rate'].replace(dig_uniq, df_tag['time'])
+            df_dig['count_rate'] = df_dig['count_rate'].replace(df_tag['time'].values, df_tag['diff_count'].values)
+            real_count = [min(df_emplot[[1]].values), max(df_emplot[[1]].values)]
+            tagged_count = [min(df_dig['count_rate']), max(df_dig['count_rate'])]
+            df_dig['count_rate'] = df_dig['count_rate'].replace(tagged_count, real_count)
+            return(df_dig)
 #===FCS fit functions AND FCS plot for a molecule(s) at different potentials=======
 def FCS_mono_fit(filename,tmin,tmax):
     df_fcs = pd.read_csv(filename, index_col=False, names=None, skiprows=1, header=None, sep='\s+');
