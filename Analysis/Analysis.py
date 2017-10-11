@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+pd.set_option('precision', 9)
 import h5py
 import os.path
 from pylab import *
@@ -224,7 +225,7 @@ def time_trace_plot(foldername= foldername, input_potential=[0, 25, 50, 100],
     fig.text(0.04, 0.5, 'Fluorescence(kcps)', va='center', rotation='vertical', fontsize=16)
     return(fig)
 #===============getting all tags fo each photon===================
-def lifetime_dig(foldername= foldername, input_potential=[0, 25, 50, 100], pointnumbers=[1], bintime = 10e-3):
+def lifetime_dig(foldername= foldername, input_potential=[0, 25, 50, 100], pointnumbers=[1], bintime = 5e-3):
     """bin=1 in millisecond
     foldername should be given as r'D:\Research\...'
     """
@@ -237,6 +238,7 @@ def lifetime_dig(foldername= foldername, input_potential=[0, 25, 50, 100], point
         right = A[idx]
         idx -= target - left < right - target
         return idx
+
     df_datn_emplot, df_FCS, folder = dir_mV_molNo(foldername)
     df_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
     df_specific = df_specific[df_specific['Potential'].isin(input_potential)];
@@ -247,41 +249,59 @@ def lifetime_dig(foldername= foldername, input_potential=[0, 25, 50, 100], point
         f_hdf5 = df_specific['filepath[.hdf5]'][i]
         if os.path.isfile(f_emplot):
             df_emplot = pd.read_csv(f_emplot, header=None, sep='\t') #change-point
-            df_tag = df_emplot[[0, 1]]
-            df_tag = pd.DataFrame({'time': df_tag[0][1:],
-                                   'diff_count': diff(df_tag[1])});
+            time = np.array(df_emplot[0], dtype=float64)
+            df_tag = pd.DataFrame({'time': df_emplot[0][1:],
+                                    'diff_count': diff(df_emplot[1])});
             df_tag = df_tag[df_tag['diff_count'] != 0]
             df_tag.reset_index(drop=True, inplace=True)
             h5 = h5py.File(f_hdf5)
             unit = h5['photon_data']['timestamps_specs']['timestamps_unit'][...]
             tcspc_unit = h5['photon_data']['nanotimes_specs']['tcspc_unit'][...]
             timestamps = unit * h5['photon_data']['timestamps'][...];
-            nanotimes = tcspc_unit * h5['photon_data']['nanotimes'][...]
+            nanotimes = h5['photon_data']['nanotimes'][...]
             mask = np.logical_and(timestamps>=min(df_tag['time']), timestamps<=max(df_tag['time']))
-            timestamps = timestamps[mask]
-            nanotimes = nanotimes[mask]
+
+            timestamps = timestamps[mask];
+            nanotimes = nanotimes[mask];
             h5.close()
-            idx_closest = find_closest(timestamps, df_tag['time']);
-            timestamps_closest = timestamps[idx_closest]
+            # closest_limit = 
+            idx_closest = find_closest(timestamps, df_tag['time'].values);
+            timestamps_closest = timestamps[idx_closest];
+            val, co = np.unique(timestamps_closest, return_counts=True)
+            repeat_value = timestamps_closest[co > 1]
+            repeat_indices = df_tag['time'][co>1].index.values
+            indices = timestamps.searchsorted(repeat_value)
+            timestamps_closest[repeat_indices] = timestamps[indices]
+            timestamps_closest[repeat_indices +1] = timestamps[indices+5]
+            # print(indices)
+            print(repeat_value)
+            print(timestamps_closest[repeat_indices[1]-5 : repeat_indices[1]+5])
+
+            # print(df_tag['time'][repeat_value])
+            idx_closest = find_closest(timestamps, df_tag['time'].values);
+            timestamps_closest = timestamps[idx_closest];            
             dig_cp = np.digitize(timestamps, timestamps_closest);
             dig_uniq = np.unique(dig_cp)
-            #dig_uniq_count = np.unique(uniq)
-            bins = int((max(timestamps)-min(timestamps))/bintime)
-            binned_trace = np.histogram(timestamps, bins=bins)
-            dig_bin = np.digitize(timestamps, binned_trace[1][:-1]); # digitize every bintime
+            print(len(timestamps_closest), len(dig_uniq))
+            # bins = int((max(timestamps)-min(timestamps))/bintime)
+            # binned_trace = np.histogram(timestamps, bins=bins)
+            # dig_bin = np.digitize(timestamps, binned_trace[1][:-1]); # digitize every bintime
             
-            df_dig = pd.DataFrame({'timestamps': timestamps,
-                                   'dig_bin': dig_bin,
-                                   'dig_cp': dig_cp,
-                                   'count_rate': dig_cp,
-                                   'nanotimes': nanotimes
-                                  })
-            df_dig['count_rate'] = df_dig['count_rate'].replace(dig_uniq, df_tag['time'])
-            df_dig['count_rate'] = df_dig['count_rate'].replace(df_tag['time'].values, df_tag['diff_count'].values)
-            real_count = [min(df_emplot[[1]].values), max(df_emplot[[1]].values)]
-            tagged_count = [min(df_dig['count_rate']), max(df_dig['count_rate'])]
-            df_dig['count_rate'] = df_dig['count_rate'].replace(tagged_count, real_count)
-            return(df_dig)
+            # df_dig = pd.DataFrame({'timestamps': timestamps,
+            #                        'dig_bin': dig_bin,
+            #                        'dig_cp': dig_cp,
+            #                        'count_rate': dig_cp,
+            #                        'nanotimes': nanotimes
+            #                       })
+            # df_dig['count_rate'] = df_dig['count_rate'].replace(dig_uniq, df_tag['time'])#
+            # df_dig['count_rate'] = df_dig['count_rate'].replace(df_tag['time'].values, df_tag['diff_count'].values)
+            # real_count = [min(df_emplot[[1]].values), max(df_emplot[[1]].values)]
+            # tagged_count = [min(df_dig['count_rate']), max(df_dig['count_rate'])]
+            # df_dig['count_rate'] = df_dig['count_rate'].replace(tagged_count, real_count)
+            # interphoton = np.diff(timestamps)
+            # df_dig = df_dig[1:]
+            # df_dig['int_photon'] = interphoton
+            return(df_tag, timestamps_closest)
 #===FCS fit functions AND FCS plot for a molecule(s) at different potentials=======
 def FCS_mono_fit(filename,tmin,tmax):
     df_fcs = pd.read_csv(filename, index_col=False, names=None, skiprows=1, header=None, sep='\s+');
@@ -355,7 +375,7 @@ def FCS_plot(foldername= foldername, input_potential=[0, 25, 50, 100],
             plt.xscale('log')
     return()
 #==============ON/OFF times from changepoint and FCS==================
-def t_on_off_fromCP(f_emplot):
+def t_on_off_fromCP(f_emplot, time_lim = [0, 1e5]):
     #expt data
     # df = pd.read_csv(f_datn, header=None)
     # binpts=5000; mi=min(df[0]); ma=mi+10;
@@ -366,6 +386,8 @@ def t_on_off_fromCP(f_emplot):
     #calculating Ton and Toff
     df_tag = df[[0, 1]]; # df_ton = df_ton[1:]
     df_tag = pd.DataFrame([df_tag[0][1:], diff(df_tag[1])]); df_tag = df_tag.T;
+    df_tag = df_tag[df_tag[0][:] > time_lim[0]]
+    df_tag = df_tag[df_tag[0][:] < time_lim[1]]    
     df_tag.columns = [0, 1];
     df_tag = df_tag[df_tag[1] != 0];
     df_tag.reset_index(drop=True, inplace=True);
@@ -398,44 +420,6 @@ def t_on_off_fromCP(f_emplot):
     average_toff_err = (1/lambda_toff_low) - (1/lambda_toff_upp);
     average_toff_err = np.round(average_toff_err, 2)
     return(df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err)
-# ---HISTOGRAM ON/OFF: given folder name, potential and list of point number, plot histogram at certain potentialof ----
-def histogram_on_off_1mol(foldername= foldername, input_potential=[100], pointnumbers=[1],
-                          bins_on=50, range_on=[0, 0.2], bins_off=50, range_off=[0, 0.5], plotting=False):
-    df_datn_emplot, df_FCS, folder = dir_mV_molNo(foldername)
-    df_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
-    df_specific = df_specific[df_specific['Potential'].isin(input_potential)]; df_specific.reset_index(drop=True, inplace=True)
-    f_emplot_path = 'x'; f_datn_path='x'; t_ons=[];t_offs=[];n_on = []; n_off = []
-    if not df_specific.empty:
-        f_emplot_path = df_specific['filepath[.em.plot]'].values[0]
-    if os.path.isfile(f_emplot_path):
-        try:
-            df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(f_emplot_path)
-            t_ons = np.array(df_ton);
-            t_offs = np.array(df_toff)
-            n_on = []; n_off = []
-            n_on,bins_on = histogram(t_ons, range=range_on,bins=bins_on);
-            n_off,bins_off = histogram(t_offs, range=range_off,bins=bins_off)
-            if plotting == True:
-                fig, axes = plt.subplots(1, 2, figsize= (10,4))
-                n_on,bins_on,patches = axes[0].hist(t_ons, range=range_on, bins=bins_on, color='k', alpha=0.5)
-                n_on,bins_on,patches = axes[0].hist(t_ons, range=range_on, bins=bins_on, color='k', histtype='step')
-                axes[0].set_xlabel(r'$\tau_{on}/s$')
-                axes[0].set_ylabel('PDF')
-                axes[0].set_xlim(0, None)
-                #axes[0].set_yscale('log')
-                axes[0].set_title("ON time histogram at %s mV" %input_potential[0])
-                n_off,bins_off,patches = axes[1].hist(t_offs, range=range_off,bins=bins_off, color='k', alpha=0.5)
-                n_off,bins_off,patches = axes[1].hist(t_offs, range=range_off,bins=bins_off, color='k', histtype='step')
-                axes[1].set_xlabel(r'$\tau_{off}/s$')
-                axes[1].set_ylabel('PDF')
-                axes[1].set_xlim(0, None)
-                #axes[1].set_yscale('log')
-                axes[1].set_title("OFF time histogram at %s mV" %input_potential[0])
-        except:
-            print('em.plot file: %s doesn''t contain proper data' %f_emplot_path)
-            #potential=np.nan # This row will be removed in later processing
-            pass
-    return(t_ons, t_offs, n_on, bins_on, n_off, bins_off)
 
 def histogram_on_off_folder(foldername= foldername, input_potential=[100], pointnumbers=range(100),
                           bins_on=50, range_on=[0, 0.2], bins_off=50, range_off=[0, 0.5], plotting=False):
@@ -558,16 +542,17 @@ def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potent
             col = pd.MultiIndex.from_arrays(arrays)
             length=(len(df_datnem_specific))#for defining dimension of out_mat
             out_point = pd.DataFrame(zeros((length, len(subgroup))), columns=col)#create zeroes which will be replaced by proper values
-
+            
             #---------Pandas array created to save outputs----
-            out_point[Point_number]['Potential']=df_datnem_specific['Potential']
+            out_point[Point_number]['Potential']=df_datnem_specific['Potential'];
+            out_point_xyz = out_point
             poten_array = [];t_onav=[];t_onaverr=[]; t_offav=[]; t_offaverr=[]; t_ratio=[]; t_ratioerr=[] #Empty forms for timetrace output
             for i in range(length):
-                potential = out_point[Point_number]['Potential'][i]
+                #potential = out_point[Point_number]['Potential'][i]
+                potential = df_datnem_specific['Potential'][i]
                 df_datn_path = df_datnem_specific['filepath[.datn]'][i]
                 df_em_path = df_datnem_specific['filepath[.em.plot]'][i]
                 df_emplot_filename = df_datnem_specific['filename[.em.plot]'][i]
-
                 if os.path.isfile(df_em_path):
                     try:
                         df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err = t_on_off_fromCP(df_em_path)
@@ -646,7 +631,8 @@ def fcs_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist
             out_point[Point_number]['Potential']=df_fcs_specific['Potential']
             poten_array = [];t_onav=[];t_onaverr=[]; t_offav=[]; t_offaverr=[]; t_ratio=[]; t_ratioerr=[] #Empty forms for timetrace output
             for i in range(length):
-                potential = out_point[Point_number]['Potential'][i]
+                # potential = out_point[Point_number]['Potential'][i]
+                potential = df_fcs_specific['Potential'][i]
                 df_fcs_path = df_fcs_specific['filepath[FCS]'][i]
 
                 if os.path.isfile(df_fcs_path):
