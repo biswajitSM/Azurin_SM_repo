@@ -17,7 +17,7 @@
    version="1.1"
    inkscape:version="0.91 r13725"
    sodipodi:docname="Figure_1_timetrace_CuAzu.svg"
-   inkscape:export-filename="/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/Azurin_SM_repo/Manuscript/Figure/Figure_2_timetrace_CuAzu"
+   inkscape:export-filename="/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/Azurin_SM_repo/Manuscript/Figure/Figure_2_timetrace_CuAzu.png"
    inkscape:export-xdpi="600"
    inkscape:export-ydpi="600">
   <defs
@@ -469,7 +469,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4214976"
-     inkscape:cx="261.18097"
+     inkscape:cx="142.64401"
      inkscape:cy="180"
      inkscape:document-units="cm"
      inkscape:current-layer="layer1"
@@ -488,7 +488,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
