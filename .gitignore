@@ -15,5 +15,6 @@ tempfiles/
 *.sublime-workspace
 *.bib~
 *temp/
+*data/
 *__pycache__/
 *temp.py
