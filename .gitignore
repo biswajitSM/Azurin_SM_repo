@@ -16,5 +16,6 @@ tempfiles/
 *.bib~
 *temp/
 *data/
+*data_simulated/
 *__pycache__/
 *temp.py
