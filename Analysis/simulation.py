@@ -1,19 +1,22 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
-def simulate_on_off_times(ton1=0.01, ton2=0.002, toff1=0.250, toff2=0.005, time_len=60, plotting=True):
+from scipy.optimize import curve_fit
+def simulate_on_off_times(ton1=0.01, ton2=0.002, toff1=0.250, toff2=0.005, time_len=60, plotting=False):
     '''ton, toff1, toff2 are in seconds
     Keep toff2 > toff1
     '''
     #on time pdfs
     k1=1/ton1; k2=1/ton2;
-    tons_pdf = np.linspace(0, ton1*10, 1000);
+    t_pdf = np.random.uniform(0,1, 1e6);
+    tons_pdf = t_pdf*ton1*10# np.linspace(0, ton1*10, 100000);
     pdf_on_exp = k1*np.exp(-k1*tons_pdf);
     pdf_on_exp = pdf_on_exp/sum(pdf_on_exp);
     pdf_on_rise = (k1*k2/(k1-k2))*(np.exp(-k2*tons_pdf) - np.exp(-k1*tons_pdf));
     pdf_on_rise = pdf_on_rise/sum(pdf_on_rise);#probability sums to 1
     #off time pdfs
     k3 = 1/toff1; k4=1/toff2;
-    toffs_pdf = np.linspace(0, toff1*10, 1000)
+    toffs_pdf = t_pdf*toff1*10#np.linspace(0, toff1*10, 100000)
     pdf_off_exp = k3*np.exp(-k3*toffs_pdf);
     pdf_off_exp = pdf_off_exp/sum(pdf_off_exp);
     pdf_off_rise = (k3*k4/(k3-k4))*(np.exp(-k4*toffs_pdf) - np.exp(-k3*toffs_pdf));
@@ -43,9 +46,9 @@ def simulate_on_off_times(ton1=0.01, ton2=0.002, toff1=0.250, toff2=0.005, time_
         hist_exp, trace_exp = np.histogram(ontimes_exp_1, bins=bins_default)
         hist_rise, trace_rise = np.histogram(ontimes_exp_rise, bins=bins_default)
         ax20.plot(trace_exp[:-1], hist_exp/max(hist_rise), label='ontimes exp: simulated')
-        ax20.plot(tons_pdf, pdf_on_exp/max(pdf_on_rise), label='ontimes exp: analytical')
+        ax20.plot(tons_pdf, pdf_on_exp/max(pdf_on_rise), '.', ms=0.5, label='ontimes exp: analytical')
         ax20.plot(trace_rise[:-1], hist_rise/max(hist_rise), label='ontimes rise: simulated')
-        ax20.plot(tons_pdf, pdf_on_rise/max(pdf_on_rise), label='ontimes rise: analytical')
+        ax20.plot(tons_pdf, pdf_on_rise/max(pdf_on_rise), '.', ms=0.5, label='ontimes rise: analytical')
         # offtimes exponential
         time = np.cumsum(ontimes_exp_1+offtimes_exp_1)
         ax01.plot(time, offtimes_exp_1, label='offtimes exponential')
@@ -54,19 +57,71 @@ def simulate_on_off_times(ton1=0.01, ton2=0.002, toff1=0.250, toff2=0.005, time_
         hist_exp, trace_exp = np.histogram(offtimes_exp_1, bins=bins_default)
         hist_rise, trace_rise = np.histogram(offtimes_exp_rise, bins=bins_default)
         ax21.plot(trace_exp[:-1], hist_exp/max(hist_rise), label='offtimes exp: simulated')
-        ax21.plot(toffs_pdf, pdf_off_exp/max(pdf_off_rise), label='offtimes exp: analytical')
+        ax21.plot(toffs_pdf, pdf_off_exp/max(pdf_off_rise), '.',ms=0.5, label='offtimes exp: analytical')
         ax21.plot(trace_rise[:-1], hist_rise/max(hist_rise), label='offtimes rise: simulated')
-        ax21.plot(toffs_pdf, pdf_off_rise/max(pdf_off_rise), label='offtimes rise: analytical')
+        ax21.plot(toffs_pdf, pdf_off_rise/max(pdf_off_rise), '.',ms=0.5, label='offtimes rise: analytical')
         
         ax00.legend();ax01.legend();
         ax10.legend(); ax11.legend();
         ax20.legend(); ax21.legend();
     return ontimes_exp_1, ontimes_exp_rise, offtimes_exp_1, offtimes_exp_rise
+def timestamps_from_onofftrace(ontimes, offtimes,
+                          i_on_mu=2000, i_off_mu=200,
+                          plotting=False):
+    '''
+    Arguments:
+    ontimes, offtimes: array of on and off times in 'seconds' of eqal length
+    i_on_mu: average (mean) counts/seconds in on-state (bright)
+    i_off_mu: average counts in off state(dim state)
+    Return:
+    An array of photon arrival times
+    If needed, array of interphoton times on on and off times can be generated 
+    '''
+    t_int = np.random.uniform(0, 1, 1e6);
+    #pdf for poissonian on counts
+    t_int_on_pdf = 10*t_int/i_on_mu;
+    pdf_int_on = i_on_mu * np.exp(-i_on_mu*t_int_on_pdf);
+    pdf_int_on = pdf_int_on/sum(pdf_int_on);#Normalization
+    #pdf for poissonian on counts
+    t_int_off_pdf = 10*t_int/i_off_mu;    
+    pdf_int_off = i_off_mu * np.exp(-i_off_mu*t_int_off_pdf);
+    pdf_int_off = pdf_int_off/sum(pdf_int_off);
+    #number of photons on each on or off levels
+    ontimes_counts = np.round(ontimes * i_on_mu);
+    offtimes_counts = np.round(offtimes * i_off_mu);
+    #geting time stamps
+    intphoton_on = []; intphoton_off = [];
+    timestamps = []; 
+    timestamps_start = 0;
+    timestamps_marker=np.array([], dtype=np.uint8);
+    for i in range(len(ontimes_counts)):
+        on_counts_i = ontimes_counts[i];
+        off_counts_i = offtimes_counts[i];
+        intphoton_on_i = np.random.choice(t_int_on_pdf, on_counts_i, p=pdf_int_on);
+        intphoton_off_i = np.random.choice(t_int_off_pdf, off_counts_i, p=pdf_int_off);
+        timestamps_i = np.append(intphoton_on_i, intphoton_off_i);
+        timestamps_i = np.cumsum(timestamps_i) + timestamps_start;
+        timestamps = np.append(timestamps, timestamps_i);
+        timestamps_start = timestamps[-1];
+        timestamps_marker_i = np.append(np.ones_like(intphoton_on_i),
+                                        np.zeros_like(intphoton_off_i));
+        timestamps_marker_i = timestamps_marker_i.astype(np.uint8)
+        timestamps_marker = np.append(timestamps_marker, timestamps_marker_i);
+        #intphoton_on = np.append(intphoton_on, intphoton_on_i);
+        #intphoton_off = np.append(intphoton_off, intphoton_off_i);
+    if plotting:
+        #plotting the pdfs
+        plt.figure()
+        plt.plot(t_int_on_pdf, pdf_int_on, '.')
+        plt.plot(t_int_off_pdf, pdf_int_off, '.')
+
+    return timestamps, timestamps_marker
 def timetrace_from_onofftrace(ontimes, offtimes, bintime=1e-3,
                              i_on_mu=2000, i_on_sig=1000,
                              i_off_mu=200, i_off_sig=240,
                              plotting=True):
     '''
+    !!! Works well high countrate trace e.g ~1e4 kcps
     Arguments:
     ontimes and offtimes should be given in 'seconds' (unit) and they should be equal length
     bintime: in sec
@@ -92,6 +147,78 @@ def timetrace_from_onofftrace(ontimes, offtimes, bintime=1e-3,
             off_int_temp = np.random.normal(counts_off_mu, counts_off_sig, t_off)
             intensity = np.append(intensity, off_int_temp);
             intensity = np.append(intensity, on_int_temp);
+            ontimes_upd = np.append(ontimes_upd, t_on);
+            offtimes_upd = np.append(offtimes_upd, t_off);
     intensity = np.absolute(intensity)
     intensity = np.round(intensity)#.astype(int);
-    return intensity, bintime
+    if plotting:
+        time_bin = bintime * np.linspace(0, len(intensity), len(intensity))
+        fig = plt.figure(figsize=(10, 5))
+        nrows=2; ncols=2;
+        ax00 = plt.subplot2grid((nrows, ncols), (0,0))
+        ax01 = plt.subplot2grid((nrows, ncols), (0,1))
+        ax10 = plt.subplot2grid((nrows, ncols), (1,0))
+        ax11 = plt.subplot2grid((nrows, ncols), (1,1))
+
+        ax00.plot(time_bin, intensity*1e-3/bintime);
+        # mask = intensity != 0
+        ax01.hist(intensity, bins=100);
+        ax01.set_yscale('log');
+        hist,trace = np.histogram(ontimes, bins=20);
+        ax10.plot(trace[:-1], hist, label='ontime hist')
+        hist,trace = np.histogram(ontimes_upd*bintime, bins=20)
+        ax10.plot(trace[:-1], hist, '.', label='updated ontime hist')
+
+        hist,trace = np.histogram(offtimes, bins=200)
+        ax11.plot(trace[:-1], hist, label='offtime hist')
+        hist,trace = np.histogram(offtimes_upd*bintime, bins=200)
+        ax11.plot(trace[:-1], hist, '.', label='updated offtime hist');
+
+        ax10.legend();ax11.legend()        
+    return intensity, bintime, ontimes_upd, offtimes_upd
+def intensity_fit(phtoton_arrtimes, bintime):
+    '''
+    '''
+    df = phtoton_arrtimes;
+    del phtoton_arrtimes;
+    tt_length=max(df)-min(df);
+    tt_length = round(tt_length, 0);
+    binpts=tt_length/bintime;
+    hist, trace = np.histogram(df, bins=binpts, range=(min(df), max(df)));
+    count_hist, counts = np.histogram(hist, bins=100);
+    #=======plotting==========
+    fig = plt.figure(figsize=(16, 8));
+    nrows=2; ncols=2;
+    ax00 = plt.subplot2grid((nrows, ncols), (0,0));
+    ax01 = plt.subplot2grid((nrows, ncols), (0,1));
+    ax10 = plt.subplot2grid((nrows, ncols), (1,0), colspan=2)
+
+    ax00.plot(trace[:-1], hist);
+    ax00.set_title('bintime: ' + str(bintime))
+    ax01.bar(counts[:-1], count_hist/sum(count_hist)    )
+    # mu1, sig1, mu2, sig2 = two_gaussian_fit(ax01, counts[:-1], count_hist)
+    ax01.set_yscale('log')
+    # ax01.set_title('mu1: '+str(np.round(mu1, 1)) +
+    #               '    sig1: '+str(np.round(sig1, 1)) + '\n'
+    #                 'mu2: '+str(np.round(mu2, 1)) +
+    #               '    sig2: '+str(np.round(sig2, 1)))
+    ax10.plot(trace[:-1], hist);
+    ax10.set_xlim(0, 10)
+    return    
+def two_gaussian_fun(x, a1, b1, c1, a2, b2, c2):
+    '''
+    b = mean; sigma=c;
+    '''
+    gauss1 = a1*np.exp((-(x-b1)**2)/(2*c1**2))
+    gauss2 = a2*np.exp((-(x-b2)**2)/(2*c2**2))
+    return gauss1 + gauss2
+def two_gaussian_fit(axis, x, pdf):
+    fit, pcov = curve_fit(two_gaussian_fun, xdata=x, ydata=pdf,
+                          p0=[10, 2, 5, 11, 30, 20], bounds=(-np.inf, np.inf));
+    mu1 = fit[1]; sig1 = fit[2];
+    mu2 = fit[4]; sig2 = fit[5]
+    fitrange = np.linspace(min(x), max(x), 100);
+    #fitrange = x;
+    axis.bar(x, pdf);
+    axis.plot(fitrange, two_gaussian_fun(fitrange, *fit))
+    return mu1, sig1, mu2, sig2
