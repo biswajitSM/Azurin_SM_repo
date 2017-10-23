@@ -14,6 +14,8 @@ tempfiles/
 *.sublime-project
 *.sublime-workspace
 *.bib~
+*.html
+*.dat
 *temp/
 *data/
 *data_simulated/

@@ -135,7 +135,7 @@ def save_simulated_trace(ton1=0.016, ton2=0.002, toff1=0.250,
         data_folder_sim = os.path.abspath(data_folder_sim)
     else:
         data_folder_sim = os.makedirs(data_folder_sim)
-        data_folder_sim = os.getcwd();
+        data_folder_sim = os.path.abspath(data_folder_sim);
     #creating hdf5 file name where data will be saved
     import datetime
     date = datetime.datetime.today().strftime('%Y%m%d_%H%M')
@@ -266,7 +266,7 @@ def intensity_fit(phtoton_arrtimes, bintime):
     #               '    sig1: '+str(np.round(sig1, 1)) + '\n'
     #                 'mu2: '+str(np.round(mu2, 1)) +
     #               '    sig2: '+str(np.round(sig2, 1)))
-    ax10.plot(trace[:-1], hist);
+    ax10.plot(trace[:-1], hist*1e-3/bintime);
     ax10.set_xlim(0, 10)
     return    
 def two_gaussian_fun(x, a1, b1, c1, a2, b2, c2):
