@@ -21,3 +21,4 @@ tempfiles/
 *data_simulated/
 *__pycache__/
 *temp.py
+*changepoint_program/
