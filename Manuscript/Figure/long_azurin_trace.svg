@@ -16,7 +16,10 @@
    id="svg3704"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="long_azurin_trace.svg">
+   sodipodi:docname="long_azurin_trace.svg"
+   inkscape:export-filename="/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/Azurin_SM_repo/Manuscript/Figure/long_azurin_trace.svg.png"
+   inkscape:export-xdpi="300"
+   inkscape:export-ydpi="300">
   <defs
      id="defs3706">
     <clipPath
@@ -18305,16 +18308,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.5374073"
-     inkscape:cx="63.147068"
-     inkscape:cy="275.17448"
+     inkscape:zoom="2.1290139"
+     inkscape:cx="283.46457"
+     inkscape:cy="182.48032"
      inkscape:document-units="px"
      inkscape:current-layer="figure_1"
      showgrid="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="1056"
+     inkscape:window-width="1680"
+     inkscape:window-height="1024"
      inkscape:window-x="0"
-     inkscape:window-y="24"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
      units="cm" />
   <metadata
@@ -19007,6 +19010,7 @@
                            y="-3.1999998">t<tspan
    style="font-size:51.99999809%;baseline-shift:sub"
    id="tspan13249">on</tspan>
+
 
 
 /s</text>
@@ -19727,6 +19731,7 @@
                            y="-3.1999998">t<tspan
    style="font-size:51.99999809%;baseline-shift:sub"
    id="tspan13251">off</tspan>
+
 
 
 /s</text>
