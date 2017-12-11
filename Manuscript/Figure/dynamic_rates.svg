@@ -3390,14 +3390,14 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.5232757"
-     inkscape:cx="239.17323"
+     inkscape:cx="178.33961"
      inkscape:cy="124.01575"
      inkscape:document-units="px"
      inkscape:current-layer="g8112"
      showgrid="false"
      units="cm"
-     inkscape:window-width="1680"
-     inkscape:window-height="1024"
+     inkscape:window-width="1920"
+     inkscape:window-height="1047"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1" />
@@ -3931,12 +3931,14 @@
         <text
            id="text8436"
            style="font-variant:normal;font-weight:normal;font-size:11px;font-family:'DejaVu Sans';-inkscape-font-specification:DejaVuSans;writing-mode:lr-tb;fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:none"
-           transform="matrix(0,1,1,0,26.40625,40.571449)">
+           transform="matrix(0,1,1,0,0,0)"
+           x="40.571449"
+           y="32.806252">
           <tspan
              id="tspan8438"
              sodipodi:role="line"
-             y="0"
-             x="0 4.3119998 11.044 14.916 18.788 24.288 31.031 37.542999 41.25">toff_av/s</tspan>
+             y="32.806252"
+             x="40.571449 44.88345 51.615448 55.48745 59.359447 64.859451 71.602448 78.114449 81.821449">toff_av/s</tspan>
         </text>
       </g>
       <g
