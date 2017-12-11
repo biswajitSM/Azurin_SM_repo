@@ -577,7 +577,6 @@ def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potent
             df_create = pd.DataFrame(df_create.T, columns=subgroup)
             out_point[Point_number]=df_create
             out_total=pd.concat([out_total, out_point], axis=1);
-    return(out_total)
 #=====================fcs output=====================
 potential = 35
 def t_on_off_fromFCS(df_fcs, tmin=0.05,tmax=1000, V= potential, V_th=40):
