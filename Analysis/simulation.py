@@ -10,7 +10,7 @@ def simulate_on_off_times(ton1=0.01, ton2=0.002, toff1=0.250, toff2=0.005, time_
     '''
     #on time pdfs
     k1=1/ton1; k2=1/ton2;
-    t_pdf = np.random.uniform(0,1, 1e6);
+    t_pdf = np.random.uniform(0,1, 1e7);
     tons_pdf = t_pdf*ton1*10# np.linspace(0, ton1*10, 100000);
     pdf_on_exp = k1*np.exp(-k1*tons_pdf);
     pdf_on_exp = pdf_on_exp/sum(pdf_on_exp);

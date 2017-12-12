@@ -39,19 +39,19 @@ def histogram_on_off_1mol(foldername= foldername, input_potential=[100],
         ax30 = plt.subplot2grid((nrows,ncols), (3,0));
         ax31 = plt.subplot2grid((nrows, ncols), (3,1), colspan=3)
         timetrace_real(ax01, f_hdf5, f_emplot_path, time_lim,
-                        y_lim_max = 5e3, bintime= 5e-3);
-        waitime_hist_inset(t_ons, ax10, bins_on, range_on, [0, 0.01], risetime_fit,xlabel='t_ons');
+                        y_lim_max = 7e3, bintime= 5e-3);
+        waitime_hist_inset(t_ons, ax10, bins_on, range_on, [0, 0.02], risetime_fit,xlabel='t_ons');
         t_av_on, t_av_off, t_abs = trace_on_off_times(ax11, t_ons, t_offs, sum_points,
                                                  on_ylim =range_on, off_ylim =range_off, 
                                                  time_lim=time_lim, plotting=True,
                                                  trace_on=True, trace_off=False)
-        waitime_hist_inset(t_offs, ax20, bins_off, range_off, [0, 0.1], risetime_fit, xlabel='t_off/s')        
+        waitime_hist_inset(t_offs, ax20, bins_off, range_off, [0, 0.035], risetime_fit, xlabel='t_off/s')        
         t_av_on, t_av_off, t_abs = trace_on_off_times(ax21, t_ons, t_offs, sum_points, 
                                                 on_ylim =range_on, off_ylim =range_off,
                                                 time_lim=time_lim, plotting=True,
                                                 trace_on=False, trace_off=True)
         E0_list = trace_E0(ax31, t_av_on, t_av_off, t_abs, input_potential[0], E0range, time_lim)
-        out_E0fit = E0_gaussfit(ax30, E0_list, 40, E0range);
+        out_E0fit = E0_gaussfit(ax30, E0_list, 50, E0range);
         #defining =====FIGURE-2=====
         fig2 = plt.figure(figsize=(6.3, 6.3))
         nrows=2; ncols= 2;
@@ -60,14 +60,38 @@ def histogram_on_off_1mol(foldername= foldername, input_potential=[100],
         ax10 = plt.subplot2grid((nrows, ncols), (1,0))
         ax11 = plt.subplot2grid((nrows, ncols), (1,1))
         # waitime_hist_inset(waitimes, axis, bins, binrange, insetrange, fit_func)
-        waitime_hist_inset(t_ons, ax00, bins_on, range_on, [0, 0.01], risetime_fit);
-        waitime_hist_inset(t_offs, ax01, bins_off, range_off, [0, 0.1], risetime_fit, xlabel='t_off/s')
+        waitime_hist_inset(t_ons, ax00, bins_on, range_on, [0, 0.02], risetime_fit);
+        waitime_hist_inset(t_offs, ax01, bins_off, range_off, [0, 0.035], risetime_fit, xlabel='t_off/s')
         # Autocorrelation of trace of average on and average off times
         G = corr_onoff_av(ax10, t_av_on, t_av_off, tlag_lim, G_lim) #averaged
         # fit of e0 values with a gaussian
         out_E0fit = E0_gaussfit(ax11, E0_list, 40, [-100, 100])
 
     return fig1, fig2
+def plot_tt_zoomin(foldername= foldername, input_potential=[100],
+                    pointnumbers=[1], time_lim_1 = [0, 1e2], time_lim_2 = [2e2, 3e2], bintime=5e-3):
+    df_datn_emplot, df_FCS, folder = dir_mV_molNo(foldername)
+    df_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
+    df_specific = df_specific[df_specific['Potential'].isin(input_potential)]; df_specific.reset_index(drop=True, inplace=True)
+    f_emplot_path = 'x'; f_datn_path='x'; t_ons=[];t_offs=[]
+    if not df_specific.empty:
+        f_datn_path = df_specific['filepath[.datn]'].values[0]
+        f_emplot_path = df_specific['filepath[.em.plot]'].values[0]
+        f_hdf5 = df_specific['filepath[.hdf5]'].values[0]
+    if os.path.isfile(f_emplot_path):
+        plt.close('all')
+        fig1 = plt.figure(figsize=(8, 4))
+        nrows=2; ncols= 2;
+        ax00 = plt.subplot2grid((nrows,ncols), (0,0), colspan=3);
+        ax10 = plt.subplot2grid((nrows,ncols), (1,0));
+        ax11 = plt.subplot2grid((nrows,ncols), (1,1));
+        timetrace_real(ax00, f_hdf5, f_emplot_path, time_lim=[0, 350],
+                        y_lim_max = 7e3, bintime= bintime);
+        timetrace_real(ax10, f_hdf5, f_emplot_path, time_lim=time_lim_1,
+                        y_lim_max = 7e3, bintime= bintime);
+        timetrace_real(ax11, f_hdf5, f_emplot_path, time_lim=time_lim_2,
+                        y_lim_max = 7e3, bintime= bintime);                                
+    return        
 #=================plot time trace Original======================
 def timetrace_real(axis, f_hdf5, f_emplot_path, time_lim, 
                 y_lim_max, bintime, show_changepoint=False):
@@ -93,9 +117,9 @@ from mpl_toolkits.axes_grid.inset_locator import inset_axes
 def waitime_hist_inset(waitimes, axis, bins, binrange, insetrange, fit_func, xlabel='t_on/s'):
     '''waitimes: list of on-times or off-times
     '''
-    n,bins_hist = np.histogram(waitimes, bins=bins, range=binrange)
+    n,bins_hist = np.histogram(waitimes, bins=bins, range=(min(waitimes) , binrange[1]))#avoiding zero
     t=bins_hist[:-1]; n = n[:];
-    t_fit = np.linspace(binrange[0], binrange[1], 1000)
+    t_fit = np.linspace(min(waitimes), binrange[1], 1000)
     binwidth = np.mean(np.diff(t))
     if fit_func.__code__.co_code == mono_exp.__code__.co_code:
     	p0 = [10,1.1]
@@ -164,6 +188,7 @@ def trace_on_off_times(axis, t_ons, t_offs, sum_points, on_ylim, off_ylim, time_
         axis.legend(loc='center right');
     axis.yaxis.set_label_position("right")
     axis.yaxis.tick_right()
+    axis.set_xlim(min(t_abs), max(t_abs))
     return t_av_on, t_av_off, t_abs# def corr_onoff_av(axis)
 #===================trace E0======================
 def trace_E0(axis, t_av_on, t_av_off, t_abs, potential, E0range, time_lim):

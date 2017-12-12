@@ -14,6 +14,7 @@ To generate the pdf manuscript, go to the Manuscript folder and run the followin
 	make svgtopdf #Run it once to convert svg files to pdf
 	make build-all
 The first command converts the svg files to pdf. This requires Python and Inkscape installed.
+
 To clean the auxillary files:
 
 	make clean
