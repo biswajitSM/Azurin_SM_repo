@@ -52,10 +52,10 @@ multi-part-units = single]{siunitx}
 
 \date{\vspace{1ex}} % Exclude date in the title.
 
-\title{\textbf{Single azurin redox switching}\\ \vspace{3ex} Supplementary Information{} \vspace{3ex}}
+\title{\textbf{Dynamic Heterogeneity in Single Electron-Transfer-Proteins}\\ \vspace{3ex} Supplementary Information{} \vspace{3ex}}
 
 \maketitle
-\tableofcontents
+% \tableofcontents
 \pagebreak
 %=====================METHODS AND FIGURES===========================
 % \section{Protein and labeling}
@@ -73,9 +73,8 @@ multi-part-units = single]{siunitx}
   \label{SIfig: peak_sep}
 \end{figure}
 % \pagebreak
-\section{Fluorescence switching in bulk}
 %==================BULK Switching=========================
-Fluorescence measurements in bulk of different peaks of azurin-ATTO655 sample (Figure S\ref{SIfig: peak_sep}) were carried out to determine the FRET switching ratio.
+\paragraph*{Fluorescence switching in bulk} Fluorescence measurements in bulk of different peaks of azurin-ATTO655 sample (Figure S\ref{SIfig: peak_sep}) were carried out to determine the FRET switching ratio.
 The measurements were done in Cary Eclipse Spectrometer (Varian Inc. Agilent Technology, USA).
 A \SI{50}{\nM} sample was excited with \SI{665}{\nm} and intensity was monitored above \SI{675}{\nm}.
 Sodium ascorbate (reductant) and pottasium ferricyanide (oxidant) were added alternatively.
@@ -83,7 +82,7 @@ Among all the labeled position, peak-III showed maximum switching ratio and it's
 Similarly Zn Azurin-ATTO655 showed little or no change in intensity.
 \begin{figure}
   \centering
-  \includegraphics{spectral_overlap_switching}
+  \includegraphics[width=\textwidth]{spectral_overlap_switching}
   \makeatletter
   \renewcommand{\fnum@figure}{\figurename~S\thefigure}
   \makeatother
@@ -109,7 +108,7 @@ Similarly Zn Azurin-ATTO655 showed little or no change in intensity.
 %===================lifetime and switching ration from time trace================
 \begin{figure}
   \centering
-  \includegraphics{lifetime}
+  \includegraphics[width=\textwidth]{lifetime}
   \makeatletter
   \renewcommand{\fnum@figure}{\figurename~S\thefigure
 }  \makeatother
@@ -123,7 +122,7 @@ Similarly Zn Azurin-ATTO655 showed little or no change in intensity.
 %=====================FCS comparision=========================
 \begin{figure}
   \centering
-  \includegraphics[]{fcs_comparision}
+  \includegraphics[width=\textwidth]{fcs_comparision}
   \makeatletter
   \renewcommand{\fnum@figure}{\figurename~S\thefigure}
   \makeatother
@@ -149,7 +148,7 @@ Similarly Zn Azurin-ATTO655 showed little or no change in intensity.
 %===================================Rate fit at all potential=============================
 \begin{figure}
   \centering
-  \includegraphics{rate_fit_all_potential}
+  \includegraphics[width=\textwidth]{rate_fit_all_potential}
   \makeatletter
   \renewcommand{\fnum@figure}{\figurename~S\thefigure}
   \makeatother
@@ -161,39 +160,47 @@ Similarly Zn Azurin-ATTO655 showed little or no change in intensity.
 %===================================No of averaging points=================================
 \begin{figure}
   \centering
-  \includegraphics[scale=1.5]{N_avgpoints_vs_fwhmwidth}
+  \includegraphics[width=\textwidth]{N_avgpoints_vs_fwhmwidth}
   \makeatletter
   \renewcommand{\fnum@figure}{\figurename~S\thefigure}
   \makeatother
-  \caption{Variation of midpoint potential and fwhm with the number of on and off times taken for averaging for the long trace shown in the main text (Figure-\ref{fig:long_azurin_trace}). At around $20~$ events, both $E_0$ and fwhm reaches palteu.
+  \caption{\textbf{No correlation dynamics.} Variation of midpoint potential and fwhm with the number of on and off times taken for averaging for the long trace shown in the main text (Figure-\ref{fig:long_azurin_trace}). At around $20~$ events, both $E_0$ and fwhm reaches palteu.
   The averaging of on-time and off-times for correlation and midpoint distribution were done every $20$ events.}
-  \label{SIfig: N_avgpoints_vs_fwhmwidth}
+  \label{fig: N_avgpoints_vs_fwhmwidth}
+\end{figure}
+\paragraph*{}
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{dynamic_trace_steps}
+  \caption{\textbf{Two conformational state dynamics}}
+  \label{SIfig:dynamic_trace_steps}
 \end{figure}
 %============on-off 2D histogram=============
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{Figure_4_on_off_2D_100mV}
   \caption{\textbf{2D histogram: Cu-Azurin.}Two-dimensional correlation plot of a single azurin at \SI{50}{\mV} of(a) adjacent waiting time for oxidation ($t_{n}~and~t_{n+1}$) (b) two waiting times at a large separation of 100 ($t_{n}~and~t_{n+100}$) (c) The difference two dimensional histogram of (a) and (b).}
-  \label{fig:onoff2D}
+  \label{SIfig:onoff2D}
 \end{figure}
 
 \begin{figure}
   \centering
-  \includegraphics[width=\textwidth]{dynamic_trace_steps}
-  \caption{\textbf{dynamic trace steps}}
-  \label{fig:dynamic_trace_steps}
-\end{figure}
-\begin{figure}
-  \centering
   \includegraphics[width=\textwidth]{dynamic_Point_20_75mV_S105}
   \caption{\textbf{dynamic Point 20 75mV S105}}
-  \label{fig:dynamic_Point_20_75mV_S105}
+  \label{SIfig:dynamic_Point_20_75mV_S105}
 \end{figure}
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{dynamic_Point_21_75mV_S105}
   \caption{\textbf{dynamic Point 20 75mV S105}}
-  \label{fig:dynamic_Point_21_75mV_S105}
+  \label{SIfig:dynamic_Point_21_75mV_S105}
+\end{figure}
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{Dynamic_corr_many}
+  \caption{\textbf{More examples of Dynamic correlation.} 
+  }
+  \label{SIfig:Dynamic_corr_many}
 \end{figure}
 % \pagebreak
 \bibliographystyle{ieeetr} % For a list of bibliography styles, see https://www.sharelatex.com/learn/Bibtex_bibliography_styles

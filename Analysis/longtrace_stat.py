@@ -121,17 +121,21 @@ def waitime_hist_inset(waitimes, axis, bins, binrange, insetrange, fit_func, xla
     t=bins_hist[:-1]; n = n[:];
     t_fit = np.linspace(min(waitimes), binrange[1], 1000)
     binwidth = np.mean(np.diff(t))
+    #fit
     if fit_func.__code__.co_code == mono_exp.__code__.co_code:
     	p0 = [10,1.1]
     elif fit_func.__code__.co_code == risetime_fit.__code__.co_code:
     	p0=[10,1.1, 0.1]
     fit, pcov = curve_fit(fit_func, t, n, p0=p0, bounds=(0, np.inf))
     print('k1:'+str(fit[0]))
+    #fit streched
+    # fit_str, pcov_str = curve_fit(streched_exp, t[5:], n[5:], p0=[10, 0.3, 100], bounds=(-np.inf, np.inf))
     #plot as bar
     from matplotlib import pyplot, transforms
     rot = transforms.Affine2D().rotate_deg(90)
     axis.bar(t, n, width=binwidth, color='k', alpha=0.5)
     axis.plot(t_fit, fit_func(t_fit, *fit), 'k',lw=1,label='k1:'+str(fit[0])+'\n'+str(fit[1]))
+    # axis.plot(t_fit, streched_exp(t_fit, *fit_str), '--k',lw=1,label='k1:'+str(fit_str[0])+'\nb:'+str(fit_str[1]))
     axis.set_xlim(0, None)
     axis.set_ylim(1e0, None)
     axis.set_yscale('log')
@@ -271,3 +275,5 @@ def mono_exp(t, k1, A):
     return A*exp(-k1*t)
 def gaussian(x, a, b, c):
     return a*exp((-(x-b)**2)/(2*c**2))    
+def streched_exp(t, k, b, A):
+    return A*np.exp(-(k**b)*t)

@@ -152,10 +152,13 @@ def make_loglags(exp_min, exp_max, points_per_base, base=10):
     bins = np.logspace(exp_min, exp_max, num_points, base=base)
     return bins
 def normalize_G(t, u, bins):
-    G = pcorrelate(t, u, bins)
+    """Normalize ACF and CCF.
+    """
+    G = pcorrelate(t, u, bins)    
     duration = max((t.max(), u.max())) - min((t.min(), u.min()))
     Gn = G.copy()
     for i, tau in enumerate(bins[1:]):
-        Gn[i] /= (t >= tau).sum() * (u <= (u.max() - tau)).sum()
-        Gn[i] *= duration - tau
+        Gn[i] *= ((duration - tau) 
+                  / (float((t >= tau).sum()) * 
+                     float((u <= (u.max() - tau)).sum())))
     return Gn

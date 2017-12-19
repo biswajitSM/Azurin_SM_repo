@@ -39,7 +39,7 @@ multi-part-units = single]{siunitx}
 \affiliation{Huygens-Kamerlingh Onnes Laboratory, Leiden University, RA, Leiden, The Netherlands}
 \email{corresponding_author@physics.leidenuniv.nl}
 \title[]
-{Dynamic electron transfer and intermediate detection in Azurin}
+{Dynamic Heterogeneity in Single-Electron Transfer Proteins}
 
 \abbreviations{FCS}
 \keywords{American Chemical Society, \LaTeX}
@@ -47,8 +47,23 @@ multi-part-units = single]{siunitx}
 %%%%%%% Start the main part of the manuscript here.%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
+\begin{abstract}
+	Protein conformational dynamics play a crucial role in the activity of biological functions. Single-molecule studies have revealed the spread of kinetic rates of enzymes which was not accessible in ensemble measurements.
+	The energy landscape of an enzymatic reactions consists a large number of substates with a rugged energy surface.
+	However, the presence of dynamics obtained from the analysis of songle-molecule traces has been questioned time and agian. Here we convincingly provide the evidence of conformational heterogeneity in the complex formation of an electron transfer protein azurin and its redox couples. We Time traces, hisograms, correlation of the redox events have been used to 
+	However, the presence of dynamics obtained from the analysis of songle-molecule traces has been questioned time and agian. Here we convincingly provide the evidence of conformational heterogeneity in the complex formation of an electron transfer(ET) protein azurin and its redox couples. We characterize the dynamics of ET activities from time traces, hisograms, correlation of the redox events. 
+\end{abstract}
 \section{Introduction}
-Introduction here.
+\begin{itemize}
+	\item Dynamic properties of enzymes have been focus of much research.
+	\item Also the dynamic properties of ET proteins are of high interest.
+	\item Characteristic of ET-redox proteins are E0 and ET kinetics.
+	\item Question: are these properties distributed in an ensemble and if so in what sense.
+	\item We have investigated this by studying the E0 and the k's by SM techniques
+	\item Do this by applying electric potential and looking at life times of reduced and oxidized state.
+	\item Can do this by fluorescent labeling because the fluorescence is strongly dependent on the oxidation state through FRET.
+	\item We will show that $...$
+\end{itemize}
 %%%%%%%%%%%%%%----------EXPERIMENTAL SECTION----------%%%%%%%%%%%%%%%%%%%%
 \section{Experimental Section}
 
@@ -314,17 +329,26 @@ The rate of complex formation can be modeled as:
 $[R]$ is the concentration of reductant (equivalent to ``substrate'' in enzymology), $R_0$ is the starting concentration of reductant in the potentiometry which is equal to the concentration of Ascorbate in this case, $E_0^R$ is the standard redox potential of Ascorbate that is \SI{30}{\mV} and $E$ is the applied potential. The value $0.059$ stands for $\frac{RT}{nF}$ similar to the slope in the Nernst equation(Eq. \ref{eq:nernst}) with $n=1$.
 Similarly $[O]$ represents the concentration of the oxidant (Ferricyanide) at different applied potential.
 The maximum rate constant of reduction ($k_3^0$) was obtained to be $3.3\times10^5~M^{-1}s^{-1}$ while the maximum rate constant oxidation was $1.3\times10^8~M^{-1}s^{-1}$.
+
+\textit{However, Terentyeva et. al. have shown that the presence of rise time in the off-time distribution can be an artifact in the change point analysis. Our initial simulations and change point analysis too indicates the underestimation of short off times. Our quest for the detection of intermediate is under investigation.}
 %==================Dynamics: Single-azurin over time===================
-\section{Dynamical heterogeneity}
-\paragraph*{Dynamics in ET rate.}
-After looking at many single-azurins, we investigated a single-azurin for long time. 
-Figure \ref{fig:long_azurin_trace} shows the statistics of a single-azurin at \SI{100}{\mV} that survived for ${\sim}\SI{1250}{\s}$.
-The distribution of on-and off-times are similar to the distribution of many single-azurin.
+\paragraph*{Dynamical heterogeneity.}
+After looking at ${\sim}150$ single-azurins together in an ensemble fashion, we investigated single azurins for as long time as their fluorescence survived.
+Figure \ref{fig:long_azurin_trace} shows the statistics of a single-azurin at \SI{100}{\mV} that survived for \SI{\sim350}{\s}.
+Zoom-in of two different parts of the original time trace are shown in Figure \ref{fig:long_azurin_trace}A and B with the respective part color-shaded in the trace Figure in \ref{fig:long_azurin_trace}C.
+The two zoom-in traces have very different on-off characteristics, the one on the left has short on-times and long off-times while the one on the right has long on-times and short off-times.
+The time trace was divided into small parts and the average was calculated over every $10$ consecutive on- and off-times (Figure \ref{fig:long_azurin_trace}E,G).
+The averaging was done to smooth out the noise and to show few number of points on the whole trace which makes it easy to observe the difference.
+Unlike random (Gaussian) noise, spikes and correlated high-low events are observed on the on-and off-trace which is also reflected in the density of points per unit time, longer on and off-times resulting lower density of points.
+The histogram of on- and off-times are shown on the left side of the on-off-trace without any averaging and the fit is shown with a single exponential function.
+The distribution is clearly non-exponential as can be seen from the big deviation from an exponential fit.
+The trace of midpoint potential (Figure \ref{fig:long_azurin_trace}I) is calculated from each point on the on-off-trace and the applied potential based on the Nernst equation.
+The midpoint potentials in the trace also fluctuates in a non-random way which can also be seen in its non-Gaussian distribution (Figure \ref{fig:long_azurin_trace}H) with an average value of \SI{42.2}{\mV}.
 %long_azurin_trace
 \begin{figure}
 	\centering
 	\includegraphics{long_azurin_trace}
-	\caption{\textbf{Dynamic heterogeneity}A long time trace (C) of Cu-azurin-ATTO655 at \SI{100}{\mV} with zoom-in (A, B) at different point of its time course.
+	\caption{\textbf{Dynamic heterogeneity.} A long time trace (C) of Cu-azurin-ATTO655 at \SI{100}{\mV} with zoom-in (A, B) at different point of its time course.
 	Variation of on-rates(E) and off-rates(G) of the same azurin is shown with their histogram on the left.
 	The rates were averaged over every five consecutive rates to get rid off the noise and for easy visualization.
 	The trace of midpoint potential(I) calculated from the on- and off-times and the the histogram(H) of midpoint potential is shown on its left with an average value of \SI{42}{\mV}.
@@ -332,38 +356,60 @@ The distribution of on-and off-times are similar to the distribution of many sin
 	\label{fig:long_azurin_trace}
 \end{figure}
 
-The time trace was divided into small parts and the average was calculated over every $20$ consecutive on-or off-times. 
-Figure \ref{fig:long_azurin_trace}~(c) shows the average on-times (blue) and average off-times (red) as a function of time.
-Surprisingly, the fluctuations are not simply statistical noise but rather seems to be correlated. 
-The autocorrelations of the average traces show clear decay (Figure \ref{fig:long_azurin_trace}(d)) with decay times around tens of seconds.
-This means that the rate at which the azurin changes between Cu(II) and Cu(I) state varies over time.
-Sometimes the frequency at which the state changes is low and sometimes it is high.
-Such behaviour has been observed previously for other enzymes ($\beta$-galactosidase, flavoenzymes)\cite{lu1998single-molecule,kou2005single-molecule,english2006ever-fluctuating} which is termed as `breathing' in enzymes.
-A short on-time is followed by a short on-time and a longer on-time is followed by a longer on-time with the memory lasting over a characteristic time scale of tens of seconds.
-According to the previous report, breathing is a result of slow fluctuations in the structure over time.
-Azurin is a very small protein (\SI{14}{kDa}) and the observation of such variation in ET shows that the ET is very sensitive to the changes in the structure.\\
+The heterogeneity in the on- and off-times is related to the heterogeneity in the rate of electron transfer particularly the longer on-off-times which is the rate of intermediate-complex formation.
+The first reason we should consider is the effect of surface.
+Previous study shows that the azurin can stick to the hydrophobic surface through the different hydrophobic patches on the protein surface.\cite{patil2010visualizing,salverda2010fluorescent,akkilic2014chemically-induced}
+However, special care was taken to keep the protein as separated as possible from the surface thorough non-interacting PEG-surface and through a long (\SI{\sim20}{\nm}) linker.
+Indeed no azurin was found attached to the surface of the substrate when the labeled azurin was flown onto the surface without Neutravidin or Biotin (everything else in the functionalization method kept same) indicating the non-sticky nature of the surface.
+The narrow distribution (narrower than any measurement before) of midpoint potentials among the 132 single azurins (Figure \ref{fig:midpoint}) also indicates the absence of interaction with the surface.
+From these observations, the surface contribution to the heterogeneity can safely be ignored.
+Also the solution potential controlled by the potentiostat is very stable and the concentration of the reductant and oxidant can be considered non-changing and in steady state.
+
+The heterogeneity in the rates can now only attributed to the changes in the conformation in the protein.
+These changes are much smaller(\SI{<4}{\kJ\per\mole}) in comparison with the change in the free energy(\SI{-23}{\kJ\per\mole}, $\Delta{G}=-nEF$) related to the change in the oxidation state of azurin.
+Such small changes can be attributed subtle changes in the structure of the protein, each of these sub-structure are called conformational sub-states.
+
+The protein remains in a certain conformational sub-states for a duration of time which can be observed in the time trace.
+A short on-time followed by short on-time represents one state while a long on-time followed by long on-time represents another sub-state.
+The residence time in each of these conformational sub-states can be characterized by autocorrelating the time trace of on- and off-times (Figure \ref{fig:Dynamic_corr} A).
+The characteristic decay times are in the order of $10s$ of seconds, however the decay time for on- and off-events are not the same.
+The signature of the changes in the rates can also be seen in the intensity correlation (Figure \ref{fig:Dynamic_corr}B) with a decay at round \SI{\sim50}{\s} which basically has both the information about the on- and off-rates.
+However, the individual rates related to on- and off-time can't be extracted from the intensity correlation unless the underlying the kinetics is known.
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{Dynamic_corr}
-	\caption{\textbf{Dynamic correlation}}
+	\caption{\textbf{Dynamic correlation.} (A) Autocorrelation of the on- and off-times in the trace showed in Figure \ref{fig:long_azurin_trace}E, G. (B) Autocorrelation of the intensity trace showed in Figure \ref{fig:long_azurin_trace}C. The inset shows the zoom-in of the intensity correlation in the longer time scale.}
 	\label{fig:Dynamic_corr}
 \end{figure}
-Also midpoint potentials were calculated from each average on and average off times using the Nernst equation(\ref{eq:nernst}).
-As both on-and off-times change over time, the midpoint potential too changes over time. 
-The distribution of $E_0$ shows a center value of $2\pm0.2~mV$ with a fwhm of \SI{26}{\mV}.
-This distribution of midpoint potential of a single-azurin over a long time is similar to the value of \SI{36}{\mV} obtained from many single-azurins.
 
+In 1980s, conformational sub-states were observed in the association and dissociation of carbon monoxide (CO) with myoglobin in bulk experiment where sub-populations were found with different binding rates of CO.
+The time scales of binding were stretched from microseconds to seconds indicating all possible conformations of myoglobin.
+Indication of heterogeneity has also been observed for single-enzymes with some success($\beta$-galactosidase, flavoenzymes)\cite{lu1998single-molecule,kou2005single-molecule,english2006ever-fluctuating}.
+Here the dynamic rates can be observed for single azurin in the time scale of 10s of seconds which varies from protein to protein as can be seen in SI Fig. S\ref{SIfig:Dynamic_corr_many}
+As the rate of oxidation and reduction occur in the range of 100s of milliseconds, conformational changes in the shorter times scale can't be determined.
+Among the proteins that were recorded, no two proteins seemed to have the same dynamics indicating the vast number of conformational sub-states that a protein can take.
+It was almost impossible to experimentally build a map of such a large number of states.
+
+% Some proteins were also found to have no decay in the correlation (e.g. Figure \ref{fig: N_avgpoints_vs_fwhmwidth}C), primarily indicating the absence of dynamical heterogeneity.
+% Looking back at the histogram of midpoint potentials obtained from 132 single azurins, can the contribution of dynamical heterogeneity be estimated to the distribution (fwhm=\SI{36}{\mV}) for all the single-azurins.
+
+% Also midpoint potentials were calculated from each average on and average off times using the Nernst equation(\ref{eq:nernst}).
+% As both on-and off-times change over time, the midpoint potential too changes over time. 
+% The distribution of $E_0$ shows a center value of $2\pm0.2~mV$ with a fwhm of \SI{26}{\mV}.
+% This distribution of midpoint potential of a single-azurin over a long time is similar to the value of \SI{36}{\mV} obtained from many single-azurins.
 %=================CONCLUSION==================
 \section{Conclusion}
-The results presented here shows how to controllably switch the solution potential and determine the switching ratio of redox active azurin.
+The results presented here show how to controllably switch the solution potential and determine the switching ratio of redox active azurin.
 By introducing non-interacting surface and long linker, very narrow distribution in the midpoint potential obtained.
 The distribution over many single-azurin was found to be very close to the distribution of a single-azurin over long time.
 The rate of intermediate formation for the reduction process has been observed conferring to Michaelis-Menten mechanism.
 The intermediate formation for the oxidation was too fast to be detected with our signal to noise ratio.
-In principle similar measurement at higher laser power and for many molecule should enable the detection of the intermediate if their is any.
-For the first time, correlated dynamics observed in the ET of very small azurin whose molecular mechanism still need to be deciphered.
+In principle similar measurement at higher laser power and for many molecules should enable the detection of the intermediate if there is any.
+For the first time, correlated dynamic heterogeneity is observed in the complex formation ET azurin and its redox couple.
+We showed several ways like non-exponential distribution rates of ET, non-Gaussian distribution of midpoint potentials, correlations of the rates of ET and correlation of intensities to  characterize the dynamic-heterogeneity in the activity of the protein.
+Our study convincingly proves the evidence for the presence of conformational heterogeneity in an enzyme and we expect to have similar heterogeneity in all types enzymes and electron transfer proteins in the nature.
 
 % \bibliographystyle{achemso.bst}
-\pagebreak
+% \pagebreak
 \bibliography{azurin}
 \end{document}
