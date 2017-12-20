@@ -48,17 +48,16 @@ multi-part-units = single]{siunitx}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
 \begin{abstract}
-	Protein conformational dynamics play a crucial role in the activity of biological functions. Single-molecule studies have revealed the spread of kinetic rates of enzymes which was not accessible in ensemble measurements.
-	The energy landscape of an enzymatic reactions consists a large number of substates with a rugged energy surface.
-	However, the presence of dynamics obtained from the analysis of songle-molecule traces has been questioned time and agian. Here we convincingly provide the evidence of conformational heterogeneity in the complex formation of an electron transfer protein azurin and its redox couples. We Time traces, hisograms, correlation of the redox events have been used to 
-	However, the presence of dynamics obtained from the analysis of songle-molecule traces has been questioned time and agian. Here we convincingly provide the evidence of conformational heterogeneity in the complex formation of an electron transfer(ET) protein azurin and its redox couples. We characterize the dynamics of ET activities from time traces, hisograms, correlation of the redox events. 
+	Protein conformational dynamics play a crucial role in their biological activity. Single-molecule studies have revealed the spread of kinetic rates of enzymes which was not accessible in ensemble measurements.
+	The energy landscape of an enzymatic reactions consists a large number of substates with a rugged energy landscape.
+	However, the heterogeneous nature of dynamics obtained from the analysis of single-molecule traces and their generality is still hotly debated. Here we provide evidence of conformational heterogeneity in the complex formation of an electron transfer protein, azurin, with redox-active partners. We characterize the electron transfer dynamics activity of single azurin molecules from time traces, histograms of bright and dark times, and correlation functions of redox events. 
 \end{abstract}
 \section{Introduction}
 \begin{itemize}
-	\item Dynamic properties of enzymes have been focus of much research.
-	\item Also the dynamic properties of ET proteins are of high interest.
+	\item Dynamic properties of enzymes have been focus of much research: Frauenfelder, Eaton, Onuchic, Kern. Single molecule: Xie HP Lu, H. Yang, van Oijen, Hofkens, Blank, Goldsmith
+	\item Also the dynamic properties of ET proteins are of high interest: Canters, Eaton, Marcus
 	\item Characteristic of ET-redox proteins are E0 and ET kinetics.
-	\item Question: are these properties distributed in an ensemble and if so in what sense.
+	\item Question: are these properties distributed in an ensemble and if so in what sense. Ergodicity, time and ensemble averages: Barkai
 	\item We have investigated this by studying the E0 and the k's by SM techniques
 	\item Do this by applying electric potential and looking at life times of reduced and oxidized state.
 	\item Can do this by fluorescent labeling because the fluorescence is strongly dependent on the oxidation state through FRET.
@@ -79,61 +78,61 @@ The turbid solution was centrifuged at \SI{8000}{ rpm} for \SI{20}{\minute}.
 The supernatant was loaded on a CM Sepharose fast flow column and elution was performed in an Akta purifier (GE Healthcare) with a pH gradient from 4 to 6.9 in 
 \SI{50}{\mM} ammonium acetate.
 Fractions containing azurin (inferred from the absorbance at \SI{290}{\nm} and \SI{620}{\nm}) were collected and reduced with sodium dithionite.
-At this moment the solution contained both zinc and copper azurin.
+At this stage the solution contained both zinc and copper azurin.
 The azurins were purified in a DEAE sepharose column by a salt gradient of 0 to \SI{50}{\mM} NaCl in Tris pH8 buffer. 
 Fractions containing copper azurin and zinc azurin were collected and concentrated separately.
-The purity of the samples was checked by sodium dodecyl sulphate (SDS)-polyacrylamide gel electrophoresis (PAGE) and UV/Vis spectroscopy (Cary 50 spectrophotometer, Varian Inc., Agilent Technologies, USA).
-The azurins appeared on SDS gel page at $\sim$\SI{14}{ kDa}.
+The purity of the samples was checked by gel electrophoresis (PAGE, on polyacrylamide gel with sodium dodecyl sulphate, SDS) and by UV/Vis spectroscopy (Cary 50 spectrophotometer, Varian Inc., Agilent Technologies, USA).
+The azurins appeared on SDS gel PAGE at $\sim$\SI{14}{ kDa}.
 Both zinc and copper azurin showed a characteristic shoulder at ${\sim}$\SI{290}{\nm} while Cu azurin showed an additional 
-broad absorption peak at \SI{620}{\nm} when oxidized as can be seen in Figure-S\ref{SIfig: switching}. 
+broad absorption peak at \SI{620}{\nm} when oxidized, as can be seen in Figure-S\ref{SIfig: switching}. 
 The ratio $O.D_{\SI{628}{\nm}}/O.D_{\SI{280}{\nm}}$ for Cu azurin was 0.56 which indicated that all the azurin molecules had a Cu atom. 
-The concentrated protein was stored at \SI{80}{\celsius} until further use.
+The concentrated protein was stored at \SI{-80}{\celsius} until further use.
 
 \paragraph*{Fluorescent labeling.}
 The labeling protocol was based on previous work \cite{nicolardi2012topdown}.
-ATTO655 NHS-ester was bought from ATTO-TEC GmbH and used without further putification.
-The azurin solution was equillibrated with HEPES pH 8.3 for higher efficiency of amine-NHSester reaction.
+ATTO655 NHS-ester was bought from ATTO-TEC GmbH and used without further purification.
+The azurin solution was equilibrated with HEPES pH 8.3 for a higher efficiency of the amine-NHS-ester reaction.
 ATTO655 was chosen to label the protein because of its photostability and inertness (unreactive) to the redox chemicals used in the study.
 A mixture of \SI{200}{\uM} azurin and ATTO 655 NHS-ester (1:1) was incubated for \SI{45}{\minute}.
 The NHS-ester group reacts with one of the amine groups on the protein.
 The unreacted dyes were removed with a HiTrap desalting column.
-The labeled protein was concentrated in Tris pH 8.5 buffer by centrifuging in a \SI{3}{ kDa} Amicon ultra filter.
-The labeled protein was further purified by an ion exchange chromatography in a \SI{1}{\ml} MonoQ column (GE Health).
+The labeled protein was concentrated in Tris pH 8.5 buffer by centrifuging in a \SI{3}{ kDa} Amicon ultra-filter.
+The labeled protein was further purified by ion exchange chromatography in a \SI{1}{\mL} MonoQ column (GE Health).
 The different peaks obtained (see Figure S\ref{SIfig: peak_sep}) correspond to different numbers and positions of the dye on the azurin surface. 
-The peak-III corresponds to the protein labeled at Lysine122 position \cite{nicolardi2012topdown}.
-For this position of the dye, the protein construct shows a high fluorescence switching \SI{90}{\percent} ratio between oxidized and reduced condition as can be seen in Figure S\ref{SIfig: peak_sep}. This fraction was chosen for our single-molecule experiment as the two states can be observed easily.
-The same protocol was used for Zn azurin labeling and similar peak separations were observed.
+Peak III corresponds to proteins labeled at Lysine122 position \cite{nicolardi2012topdown}.
+For this position of the dye, the protein construct shows a high fluorescence switching ratio \SI{90}{\percent} between oxidized and reduced conditions as can be seen in Figure S\ref{SIfig: peak_sep}. This fraction was chosen for our single-molecule experiment as the two states can be distinguished easily.
+The same protocol was used for Zn-azurin labeling and similar peak separations were observed.
 The fluorescently labeled proteins were then reacted with biotin-PEG-NHS (MW 3400) in phosphate-buffered saline (PBS) pH 7.4 buffer with a ratio 1:5 to make sure each protein has at least one biotin.
-The free biotin was then removed by centrifuging in a \SI{3}{ kDa} Amicon ultra filter.
+The free biotin was then removed by centrifuging in a \SI{3}{ kDa} Amicon ultra-filter.
 The biotin on the protein will be used for immobilization on the glass surface.
 
-\paragraph*{Functionalization of cover slips.}
-The functionalization of glass surface was achieved according to previous work with a little modification.\cite{gupta2012involvement}
+\paragraph*{Functionalization of coverslips.}
+The functionalization of glass surface was achieved according to previous work with slight modifications.\cite{gupta2012involvement}
 Glass coverslips (Menzel-Glaser, $\SI{22}{\mm} \times \SI{40}{\mm}$, no. 1 thickness) were used for immobilization.
-The cover slips were sonicated in water (\SI{15}{\minute}) and acetone (\SI{15}{\minute}).
-Then they were rinsed in Milli-Q water several times and incubated in a \ce{H2O}/\ce{NH4OH}/\ce(H2O2)(5:1:1) bath at \SI{70}{\celsius} for removing organic impurities on the surface.
+The coverslips were sonicated in water (\SI{15}{\minute}) and acetone (\SI{15}{\minute}).
+Then they were rinsed in Milli-Q water several times and incubated in a \ce{H2O}/\ce{NH4OH}/\ce(H2O2)(5:1:1) bath at \SI{70}{\celsius} for removing organic impurities from the surface.
 The coverslips were rinsed several times with water and ethanol and finally stored in ethanol.
-Before functionalization, the slides were flamed and treated for \SI{30}{\minute} with a \SI{1}{\percent} solution of [3-(2-aminoethyl)aminopropyl]trimethoxysilane in methanol containing \SI{5}{\percent} glacial acetic acid. This results in the binding of the silane to active hydroxyl groups.
+Before functionalization, the slides were flamed and treated for \SI{30}{\minute} with a \SI{1}{\percent} solution of [3-(2-aminoethyl)aminopropyl] trimethoxysilane in methanol containing \SI{5}{\percent} glacial acetic acid. This results in the binding of the silane to active hydroxyl groups.
 At this stage the silane is not yet covalently bound, but this is achieved by baking the cover slips in an oven at \SI{65}{\celsius} for \SI{3}{\hour}.
-After this treatment, the cover slips were sonicated for \SI{10}{\minute} and washed with methanol.
+After this treatment, the coverslips were sonicated for \SI{10}{\minute} and washed with methanol.
 Dried with clean nitrogen, they were left in a desiccator overnight. 
-The next day they were treated with a mixture of \SI{5}{\mg\per\ml} methoxy-PEG-N-hydroxysuccinimide (MW~2000, Laysan Bio) and \SI{0.05}{\mg\per\ml} biotin-peg-N-hydroxysuccinimide (MW 3400, Laysan Bio) in \SI{50}{\mM} phosphate buffered saline (PBS), pH 7.4.
+The next day they were treated with a mixture of \SI{5}{\mg\per\ml} methoxy-PEG-N-hydroxysuccinimide (MW~2000, Laysan Bio) and \SI{0.05}{\mg\per\ml} biotin-PEG-N-hydroxysuccinimide (MW 3400, Laysan Bio) in \SI{50}{\mM} phosphate buffered saline (PBS), pH 7.4.
 This creates a surface containing biotin and methoxy end groups.
 The PEG surface prevents nonspecific adsorption of the protein.
 The slides were dried with a gentle flow of nitrogen and stored in a desiccator until further use.
 
 \paragraph*{Protein immobilization.}
-The biotin functionalized glass slide was incubated with \SI{20}{\mM} PBS pH 7.4 buffer for \SI{5}{\minute}.
+The biotin-functionalized glass slide was incubated with \SI{20}{\mM} PBS pH 7.4 buffer for \SI{5}{\minute}.
 \SI{100}{\nM} of NeutrAvidin (Thermo Scientific) was incubated for another \SI{15}{\minute} and then washed to remove unbound Neutravidin. 
 Then \SI{100}{\pM} of the labeled protein was incubated for \SI{1}{\minute} to get isolated proteins (20 per \SI{100}{\um} area) to bind to the functionalized glass surface.
 The unbound proteins were then removed by washing with fresh PBS buffer.
 
 \paragraph*{Electrochemical-potential control.}
 Once the unbound proteins were removed, a new mixture containing \SI{0.1}{\mM} sodium ascorbate (\ce{C6H7O6-Na+}) and \SI{0.2}{\mM} potassium ferricyanide (\ce{[Fe(CN)6^3-]}) in \SI{4}{\ml} PBS pH 7.4 was added to the sample.
-The redox potential of the solution was further controlled by a potentiostat (Model 800B Series Electrochemical Detector, CH Instruments) with the same electrochemical set up as previously described\cite{zhang2017gold} with little modification.
-A platinum rectangular grid (the total length/ width of the grid is around \SI{2.5}{\cm}) was used as working electrode and pressed onto the sample slide with the help of a small glass slide.
-Not only is the pressure evenly applied on the grid, but also small confined volumes are formed where the sample slide and glass slide form the `floor' and `roof' and the platinum grid forms the `walls'.
-These confined volumes are in the order of nanoliters, which makes switching of the elctrochemical potential of the solution possible in a matter of minutes.
+The redox potential of the solution was further controlled by a potentiostat (Model 800B Series Electrochemical Detector, CH Instruments) with the same electrochemical setup as previously described\cite{zhang2017gold} with little modification.
+A square platinum grid (grid side \SI{2.5}{\cm}) was used as working electrode and pressed onto the sample slide with the help of a small glass slide.
+The voids of the grid are closed by the glass slides, forming small confined volumes where the sample slide and glass slide are the `floor' and `roof' and the platinum grid forms the `walls'.
+These confined volumes are in the order of nanoliters, which makes switching of the electrochemical potential of the solution possible in a matter of minutes.
 The change in the solution potential changes the concentration of reductant and oxidant based on the Nernst equation.
 
 \paragraph*{Confocal Microscope.}
@@ -143,27 +142,26 @@ The laser beam was passed through a narrow-band cleanup filter (Semrock LD01-640
 The output beam was collimated and reflected by a polychroic mirror (z488/633rpc) onto the back aperture of an oil immersion objective (NA=1.4, Olympus UPLSApo 100x).
 The sample holder with the glass slide and electrodes was mounted on a scanning stage (Physik Instrumente P-517.3CD) controlled by a nanopositioning system (Physik Instrumente E-710.3CD). 
 The epifluorescence light was collected back through the same objective and focussed on a \SI{50}{\um} pinhole for spatial filtering, then the light passed through an emission filter (z488/635m "dual"-band emission filter, Chroma). 
-The fluorescence beam was re-collimated and focussed on a single-photon avalanche photo diode (SPCM AQRH-15, Perkin Elmer Inc., USA).
-The signal from the photo diode was recorded by a PicoHarp 300 (PicoQuant GmBH, Berlin, Germany) in time-tagged-time-resolved mode.
+The fluorescence beam was re-collimated and focussed on a single-photon avalanche photodiode (SPCM AQRH-15, Perkin Elmer Inc., USA).
+The signal from the photodiode was recorded by a PicoHarp 300 (PicoQuant GmBH, Berlin, Germany) in time-tagged-time-resolved mode.
 
 %Scheme
-\begin{scheme}
+\begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{Scheme_1_setup}
-	\caption{Schematic of the confocal and electrochemical setup.
+	\caption{Scheme of the confocal and electrochemical setup.
 	\textbf{(1)} Objective through which light is irradiated on and collected from the sample.
-	\textbf{(2)} Functionalized sample slide with on top the platinum grid another small glass slide to press the grid on the sample slide, resulting in small confined 
-	volumes in the order of nanoliters.
+	\textbf{(2)} Functionalized sample slide with another small glass slide on top the platinum grid.
 	\textbf{(3)} Electron mediator solution containing \SI{200}{\uM} ferricyanide, \SI{100}{\uM} ascorbate in PBS (pH 7.4) buffer with a total volume of 4 mL.
 	\textbf{(4)} Working electrode (platinum wire) that is in contact with the platinum grid (yellow blocks) with a height of \SI{50}{\um}.
-	\textbf{(5)} Saturated calomel reference electrode.
+	\textbf{(5)} Saturated calomel reference electrode (SCE).
 	\textbf{(6)} The platinum wire (not touching the grid) as counter electrode.
 	\textbf{(7)} Potentiostat (Model 800B Series Electrochemical Detector, CH Instruments) to which the electrodes are connected.
 	Zoom-in picture shows the functionalization method and the working electrode around it. 
-	\textbf{(8, 9)} Confocal scanning images of the surface of the substrate at \SI{100}{\mV} (Oxidizing) and \SI{0}{\mV} (Reducing).
+	\textbf{(8, 9)} Confocal scanning images of the surface of the substrate at \SI{100}{\mV} (oxidizing) potential and \SI{0}{\mV} (reducing) potential.
 	}
   	\label{sch:setup}
-\end{scheme}
+\end{figure}
 \paragraph*{Data recording.}
 A \SI[product-units=repeat]{20x20}{\um} area of the sample surface functionalized with sparsely distributed ATTO655-labeled azurin was scanned with \SI{50}{\nm} per pixel and with a dwell time of \SI{1}{\ms} per pixel.
 A typical fluorescence intensity image can be seen in Scheme \ref{sch:setup}.
@@ -172,8 +170,8 @@ Typically within one minute, the solution potential of the mixture of \SI{0.1}{\
 Another image of this same area was recorded at \SI{0}{\mV} (reducing).
 The two images were compared to identify the molecules that switch on and off at the two potentials (Scheme-\ref{sch:setup} (8 \& 9)).
 The coordinates of the switching molecules were registered and an automatic recording was started.
-For each molecule, time traces were recorded for \SI{30}{\s} at different potentials between \SI{-100}{\mV} and \SI{-100}{\mV}.
-To observe the dynamics of a single-molecule over longer period, time traces were recorded until the dye was  bleached or the protein was denaturated.
+For each molecule, time traces were recorded for \SI{30}{\s} at different potentials between \SI{-100}{\mV} and \SI{100}{\mV}.
+To observe the dynamics of a single molecule over longer times, time traces were recorded until the dye was  bleached or the protein was denaturated.
 Zn-azurin-ATTO655 was used as a control since it doesn't show switching at the above potentials.
 Time traces at the same potentials for the same durations were recorded as for the Cu-azurin.
 
@@ -185,38 +183,38 @@ To minimize accidental variation and improve efficiency, codes were written (in 
 % The codes and data can be found in the given link (will be provided during submission).
 Each trace was analyzed in three ways (i) Intensity change points in the time traces were obtained using the Change-Point algorithm\cite{watkins2005detection} provided by prof. Haw Yang 
 (Princeton University, USA).
-This method is bin free and doesn't require any prior knowledge of the underlying kinetics.
+This method is bin-free and doesn't require any prior knowledge of the underlying kinetics.
 It determines the location of intensity changes based on the photon arrival times and the algorithm is recursively applied over the whole time trace to find all the changes.
 A Bayesian information criterion is used to find the number of states.
-In the present case two states were identified from long time traces of many molecules (2500 changepoints each) with more than \SI{90}{\percent} accuracy.
-This was in agreement with our prediction of two states namely a FRET quenched (low intensity) and a non-quenched state (bright).
-Consequently the number of states for the other time traces have been set to two to minimize the computation time.
+In the present case two states were identified from long time traces of many molecules (2500 change points each) with a reported accuracy of more than \SI{90}{\percent}.
+This is in agreement with our expectation of two states, namely a Cu(II)-quenched (low intensity) and a non-quenched state (bright).
+Consequently the number of states for the other time traces has been set to two to minimize the computation time.
 An example of a trace with change points and its overlap with the real time trace can be seen in Figure-\ref{fig:timetrace}.
-(ii) Autocorrelation of the time traces were calculated using SymPhoTime(PicoQuant) software.
+(ii) Autocorrelation of the time traces were calculated using the SymPhoTime(PicoQuant) software.
 (iii) Further analysis of Change-Point outputs and the autocorrelation outputs were performed in Python.
 % The details of the code including all the fitting functions can be found in the online repositories (will be provided during submission).
 
 %%%%%%---------------------RESULTS and DISCUSSION-----------------------%%%%%%%%%
 \section{Results and discussion\label{sec:results}}
 \paragraph*{Time traces at different potentials.}
-Active Cu-azurin molecules were identified from their fluorescence intensity images at the oxidizing (\SI{200}{\mV}) and reducing conditions(\SI{0}{\mV}).
-In reducing conditions, the image contains many bright spots corresponding to Cu(I)-azurin-ATTO655 and more than \SI{90}{\percent} of the molecules are turned off in oxidizing conditions 
+Active Cu-azurin molecules were identified from their fluorescence intensity images at the oxidizing (\SI{200}{\mV}) and reducing conditions (\SI{0}{\mV}).
+In reducing conditions, the image contains many bright spots corresponding to Cu(I)-azurin-ATTO655 and more than \SI{90}{\percent} of these molecules are turned off in oxidizing conditions 
 (Scheme-\ref{sch:setup}(8)).
 The azurins on each sample slide showed active switching during the course of the experiment (up to two days) without any noticeable degradation.
-A set of active azurins were marked for recording and time traces at different potentials (between \SI{100}{\mV} and \SI{100}{\mV}) were measured on the \texttt{same molecules} 
+A set of active azurins were marked for recording and time traces at different potentials (between \SI{-100}{\mV} and \SI{100}{\mV}) were measured on the \texttt{same molecules} 
 for \SI{30}{\s}.
-Many of the labeled proteins bleached within the recording at a few potentials, but more than \SI{50}{\percent} of the labeled-azurin survived at least five measurements (\SI{150}{\s}  total) at different potentials.
+Many of the labeled proteins bleached during the recording at the first few potentials, but more than \SI{50}{\percent} of the labeled azurins survived at least five measurements (\SI{150}{\s}  total) at different potentials.
 Longer measurements were possible thanks to the scavenging of oxygen in the solution.
-Before recording the time trace, the solution was exposed to a negative potential for at least \SI{1}{\hour}.
+Indeed, before recording the time trace, the solution was exposed to a negative potential for at least \SI{1}{\hour}.
 Ascorbate is known to  scavenge oxygen\cite{dave1997effectiveness} and get oxidized.
 The oxidized ascorbate is then reduced by the electrode and is again available to scavenge other oxygen molecules.
-In addition to the absence of oxygen, the  oxidizing-and-reducing-system(ROXS) mechanism was also at play.\cite{cordes2009on}
-The reduction and oxidation of Cu-azurin made the dye switch on and off, hence the fluorescent dye spent less time in the bright state, and thus was less prone to bleaching.
+In addition to the absence of oxygen, the  oxidizing-and-reducing-system (ROXS) mechanism was also at play.\cite{cordes2009on}
+The reduction and oxidation of Cu-azurin made the dye switch from bright to dark fluorescent states. Under oxidizing conditions, the dye spent less time in the bright state, and the bleaching rate was reduced.
 We could measure some fluorescence time traces for more than \SI{1000}{\s}.\\
 %---time trace
 \begin{figure}
 	\centering
-	\includegraphics[]{Figure_1_timetrace_CuAzu}
+	\includegraphics[width=\textwidth]{Figure_1_timetrace_CuAzu}
 	\caption{Time traces of the same Cu-azurin-ATTO655 at different potentials (0, 50 and \SI{100}{\mV} with respect to SCE).
 	The structure of the protein with properly positioned dye can be seen in the schematic picture in the left.
 	In the Cu(II) state (shown as blue dot in the protein structure), the dye is non fluorescent because of FRET and in the Cu(I) state (shown as as a gray dot), the dye is fluorescent. Notice the amount of time the protein spends in the bright and the dark state at different potentials.
@@ -226,78 +224,66 @@ We could measure some fluorescence time traces for more than \SI{1000}{\s}.\\
 
 Figure \ref{fig:timetrace} shows time traces of a single Cu-azurin-ATTO655 molecule at three different potentials. 
 The intensity changes from bright to dark and vice versa over time (Figure \ref{fig:timetrace}).
-The dark state is due to FRET from the dye to the Cu(II) absorption center\cite{kuznetsova2006a}.
-Bulk (ensemble) measurements of the fluorescence intensity at completely oxidizing and completely reducing condition shows \SI{90}{\percent} switching ratio (Figure S\ref{SIfig: switching}) for the lysine-122 labeled Cu-azurin-ATTO655.\cite{nicolardi2012topdown}
-In the single-molecule traces in Figure \ref{fig:timetrace}, the quenched state is same as the background signal in absence of the protein.
-A measurement (Figure S\ref{SIfig: lifetime}) at a higher laser power(\SI{0.7}{\uW}) show that single azurin too show \SI{90}{\percent} switching in their fluorescence, which is consistent with the bulk measurements.
-The intensity of the Cu(II)-state is lower than the intensity of the Cu(I)-state, but higher than the background (bleached state).
-Also the Cu(II)-state has a shorter lifetime (\SI{0.3}{\ns}) than the Cu(I)-state (\SI{1.9}{\ns}), but longer than the instrument response function (\SI{0.2}{\ns}). 
-Both intensity and life time confirm that the dim state is FRET-quenched.
-The high FRET efficiency is due to the small distance of the dye to the absorption center.
-This clear distinction between the on and off state was very important for the low laser power and lower signal measurements.
-At higher potential (\SI{100}{\mV}), the protein spends most of its time in its dark state and as the potential is lowered, the molecule spends more and more time in bright state.
-This longer on-times at lower potentials is due to the increase in the concentration of the reductant species in the solution.
-A control study with Zn-azurin-ATTO655 (Figure S\ref{SIfig:tracecomparision} and Figure S\ref{SIfig:fcscomparision}) shows that the dye itself blinks below \SI{40}{\mV}.
-Zn-azurin is inert to redox changes and thus the blinking can only originate from the interaction of the dye with the reductant through photo excited electron transfer.
-To simplify the analysis, therefore only potentials above \SI{40}{\mV} were considered for the Cu-azurin-ATTO655 study.\\
+In the dark state, the dye fluorescence is quenched by energy transfer to the absorbing Cu(II) center\cite{kuznetsova2006a}. The high FRET efficiency is due to the small distance of the dye to the absorption center. This clear distinction between the dark and bright states is very important to clearly distinguish redox states, even for low laser power and low signals.
+At higher potential (\SI{100}{\mV}), the protein spends most of its time in its dark state and as the potential is lowered, the molecule spends more and more time in its bright state.
+Bulk (ensemble) measurements of the fluorescence intensity at completely oxidizing and completely reducing conditions shows \SI{90}{\percent} switching ratio (Figure S\ref{SIfig: switching}) for the lysine-122 labeled Cu-azurin-ATTO655.\cite{nicolardi2012topdown}
+In the single-molecule traces in Figure \ref{fig:timetrace}, no clear fluorescence signal from the quenched state could be detected. However, residual fluorescence from the quenched state can be observed at higher laser power (\SI{0.7}{\uW}) as can be seen in (Figure S\ref{SIfig: lifetime}). This proves that the observed intensity changes are not due to blinking of the dye, but due to uncomplete (\SI{90}{\percent}) quenching by the copper center. 
+We also note that the Cu(II)-state has a much shorter lifetime (\SI{0.3}{\ns}) than the Cu(I)-state (\SI{1.9}{\ns}), but still significantly longer than the instrument response function (\SI{0.2}{\ns}). 
+Both measurements of intensity and lifetime indicate that the dim state is quenched by energy transfer to Cu(II), in agreement with bulk fluorescence measurements on Cu-azurin.
+
+Figure \ref{fig:timetrace} also shows that bright times shorten at larger electrochemical potential. This agrees with the higher oxidant concentration in the solution. 
+A control study with Zn-azurin-ATTO655 (Figure S\ref{SIfig:tracecomparision} and Figure S\ref{SIfig:fcscomparision}) shows that the dye itself blinks below \SI{40}{\mV}. Zn-azurin is inert to redox changes and thus the blinking can only originate from the interaction of the dye with the reductant through photo excited electron transfer. To exclude redox reactions of the dye itself, we only considered potentials above \SI{40}{\mV} for the Cu-azurin-ATTO655 study.\\
 
 %Midpoint histogram
 \paragraph*{Midpoint potential of single azurins.}
-Figure \ref{fig:midpoint}a shows the ratio between the average off-time ($\me{t}_{off}$) and average on-time($\me{t}_{on}$) plotted against the applied potential.
+Figure \ref{fig:midpoint}a shows the ratio between the average dark time ($\me{t}_{d}$) and average bright time($\me{t}_{b}$) plotted against the applied potential.
 The relationship of this ratio with the potential is given by the Nernst equation: 
 \begin{equation}
-	E = E_0 - \frac{k_BT}{n e}\ln\left(\frac{\me{t}_{on}}{\me{t}_{off}}\right)\,
+	E = E_0 - \frac{k_BT}{n e}\ln\left(\frac{\me{t}_{b}}{\me{t}_{d}}\right)\,
 	\label{eq:nernst}
 \end{equation}
 where $E$ is the applied potential, $E_0$ the midpoint potential, $k_B$ the Boltzmann constant, $T$ the absolute temperature, $n$ the number of electrons involved in the reaction and $e$ the electron charge.
-The value of $n$ was found to be $1$ from the data analysis when the slope in the Nernst equation is kept as a free parameter (see Figure-S\ref{SIfig:potential_slope}).
-Each color represents a single-azurin and the solid line connecting the points is the fit with the Nernst equation.
+The value of $n$ was found to be $1$ from the data analysis when the slope in the Nernst equation was kept as a free parameter (see Figure-S\ref{SIfig:potential_slope}).
+Each color represents a single azurin molecule and the solid line connecting the points is the fit with the Nernst equation.
 Labeled proteins surviving at least three potentials above \SI{40}{\mV} were used for the fit.
 The potential at which the off-on ratio equals $1$ is the midpoint potential.
-The distribution of midpoint potentials (Figure \ref{fig:midpoint}b) from \SI{132}{ molecules} can be fitted by a Gaussian with a center value of $\left<E_0^{SM}\right>=4.5 \pm 1.2~mV$ and a full width half maximum (fwhm) of $\sigma^{SM}=36 \pm 3~mV$. 
-The midpoint potentials are similar to previously reported values of $6\pm0.6~mV$ with $fwhm=\SI{150}{\mV}$ where each $E_0$ was calculated from a cluster of about \SI{1000}{ molecules}.\cite{davis2006monitoring}
-Another work reported $E_0 = \SI{16}{\mV}$ with low surface coverage (\SI{100}{\s} of azurins) with a fwhm of \SI{70}{\mV}.\cite{salverda2010fluorescent} 
-Recently, for truly single azurin, a midpoint potential of $E_0=12\pm3$ was reported with fwhm of \SI{92}{\mV}.\cite{akkilic2014chemically-induced}\\
+The distribution of midpoint potentials (Figure \ref{fig:midpoint}b) from \SI{132}{ molecules} can be fitted by a Gaussian with a center value of $\left<E_0^{SM}\right>=4.5 \pm 1.2~mV$ and a full width half maximum (FWHM) of $\sigma^{SM}=36 \pm 3~mV$. 
+The midpoint potentials are similar to previously reported values of $6\pm0.6~mV$ with $FWHM=\SI{150}{\mV}$ where each $E_0$ was calculated from a cluster of about \SI{1000}{ molecules}.\cite{davis2006monitoring}
+Another work reported $E_0 = \SI{16}{\mV}$ with low surface coverage (\SI{100}{\s} of azurins) with a FWHM of \SI{70}{\mV}.\cite{salverda2010fluorescent} 
+Recently, for single azurin molecules, a midpoint potential of $E_0=12\pm3$ was reported with a FWHM of \SI{92}{\mV}.\cite{akkilic2014chemically-induced}\\
 \begin{figure}
 	\centering
-	\includegraphics[]{Figure_2_midpoint}
-	\caption{Ratio between on and off times as a function of applied potential for the same single azurin.
+	\includegraphics[width=\textwidth]{Figure_2_midpoint}
+	\caption{Ratio between bright and dark times as a function of applied potential for the same single azurin.
 	Different colors represent different single molecules.
 	The line connecting the data points is the Nernst fit with $n=1$ for all the data points above \SI{40}{\mV}.
-	The plot at the right is the histogram of midpoint potentials for \SI{132}{ molecules} with a Gaussian fit with a center value of \SI{4.5}{\mV} with respect to calomel electrode.}
+	The plot at the right is the histogram of midpoint potentials for \SI{132}{ molecules} with a Gaussian fit with a center value of \SI{4.5}{\mV} with respect to the calomel electrode.}
 	\label{fig:midpoint}
 \end{figure}
 
-The small width of the distribution (\SI{36}{\mV}) of single-azurin midpoint potentials in this work is obtained probably because of the way the proteins are functionalized to the surface.
-The azurin is attached to a PEG-chain with a length of ${\sim}\SI{20}{\nm}$.
-The PEG chain is attached to the surface through NeutrAvidin.
-Such functionalization minimizes the interaction of the protein with the surface.
-Indeed, no proteins was bound to the surface if the Neutravidin is taken out showing the non-sticking nature of the protein.
-In previous experiments, the azurin was either non-specifically attached to the surface or attached through a very short linker (\SI{<1}{\nm}).
-Surface interactions with different hydrophobic and charged patches on the protein can alter the ET functionality of the enzyme.
+The distribution of midpoint potentials we find for single azurin is narrower (FWHM \SI{36}{\mV}) than in earlier measurements. We attribute this narrow distribution to a weaker interaction with the surface. Indeed, in our experiment, the proteins were functionalized through a PEG tether with a length of ${\sim}\SI{20}{\nm}$ itself attached to the surface by a NeutrAvidin. The total tether length is much longer than in earlier experiments, where the azurin was either non-specifically attached to the surface, or attached through a very short linker (\SI{<1}{\nm}).
+In addition, the PEG passivation of the glass surface minimizes the interaction of the protein with the surface. Indeed, no protein was found to bind to the surface if the Neutravidin was taken out, showing the absence of non-specific interactions.
 
 %====================Many single-molecule on-off histogram and their rates=================
-\paragraph*{Intermediate detection from on-off histogram.}
+\paragraph*{Redox reaction rates from histograms of bright and dark times.}
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{many_sm_hist}
-	\caption{\textbf{Electron transfer rates (many molecules)} The histogram of on-times (a) and off-times (b) obtained from 132 single-Cu-azurin-ATTO655 molecules at \SI{100}{\mV} with their zoomed in part in the inset.
-	Notice the single exponential decay of on-times and the bi-exponential (with rise time) for the off-times.
-	This indicates that  reduction of Cu-azurin occurs through an intermediate step while for oxidation the intermediate state is not observable.
-	The solid line is the corresponding single-exponential fit to the distribution.
-	(c) The rate constant for oxidation as a function of the potential. 
-	(d) The rate constant for reduction as a function of redox potential: blue points correspond to the faster rate constant (rise, $k_2$) while the red points represent the slow rate constant ($k_3$).}
+	\caption{\textbf{Electron transfer rates (many molecules)} The histogram of bright times (a) and dark times (b) obtained from 132 single-Cu-azurin-ATTO655 molecules at \SI{100}{\mV}. The inset shows a magnified part for short times.
+	The histogram of bright times shows a single non-exponential decay, whereas the histogram of dark times shows a buildup and non-exponential decay. A possible interpretation is that reduction of Cu-azurin occurs through an intermediate step while for oxidation no intermediate state is observable.
+	(c) Oxidation rate constant as a function of potential. 
+	(d) Reduction rate constant as a function of potential: blue points correspond to the faster rate constant (rise, $k_2$) while the red points represent the slow rate constant ($k_3$).}
 	\label{fig:many_sm_hist}
 \end{figure}
-The number of on-off events for a single azurin was limited by fluoresce bleaching and led to noisy distribution.
-For this reason we first analyzed the overall distribution of on- and off-times of all the single molecules obtained at a certain potential which basically can be considered as ensemble measurement.
+The number of bright-dark switching events for a single azurin molecule was limited by fluorescence bleaching and led to noisy distributions.
+For this reason we first analyzed the overall distribution of on- and off-times of all the single molecules obtained at a certain potential which basically can be considered as an ensemble measurement.
 Figure \ref{fig:many_sm_hist}(a) shows the histogram of on-times at \SI{100}{\mV} and the solid line is the fit of a single exponential with a time constant ($k_{1}$) of \SI{155}{\per\s}.
 The on-time represents the time the protein spends in the reduced state before getting oxidized according to the following reaction scheme:
 \begin{align}
 	\ch{!(bright)(Cu(I)Az) + oxd <=>[ $k_1$ ][ $k_{-1}$ ] !(dark)(Cu(II)Az) + red }
 	\label{eq:oxidation}
 \end{align}
-In contrast, the distribution of off-times shows a non-exponential distribution with a rise time (Figure \ref{fig:many_sm_hist}(a)).
+In contrast, the distribution of off-times shows a maximum with a buildup and decay (Figure \ref{fig:many_sm_hist}(a)).
 The inset with binning time \SI{5}{\ms} clearly shows that the probability of finding very short off-times is relatively small.
 This distribution can be explained with the Michaelis-Menten mechanism:
 \begin{align}
@@ -312,10 +298,10 @@ When assuming $k_{-2}=0$, the probability distribution of off times is given by\
 \end{equation}
 At \SI{100}{\mV}, $k_2$ for the reduction is \SI{4.1}{\per\s} while $k_3$ is \SI{135}{\per\s}.
 The data doesn't match with a single component distribution which is not surprising as the distribution is built from many single azurins and each azurin has its own decay.
-Similar to the distribution in midpoint potential, the non-exponential distribution is a reflection of the statistical heterogeneity among the azurins.
+Similar to the distribution in midpoint potential, the non-exponential decay is a reflection of the statistical heterogeneity among the azurins.
 
-The rates were determined at different applied potentials.
-As expected the rate constant for the intermediate complex formation ($k_3$) is dependent on the substrate concentration thereby the potential while the rate constant for electron transfer in the intermediate is independent of the potential (Figure \ref{fig:many_sm_hist}(c)).
+The oxidation and reduction rates were determined at different applied potentials.
+As expected, the rate constant for the intermediate complex formation ($k_3$) is dependent on the substrate concentration thereby the potential while the rate constant for electron transfer in the intermediate is independent of the potential (Figure \ref{fig:many_sm_hist}(c)).
 The rate of complex formation can be modeled as:
 \begin{equation}
 	k_3 =k_3^0\times[R] \text{ and } k_1 =k_1^0\times[Ox]
@@ -323,72 +309,71 @@ The rate of complex formation can be modeled as:
 \end{equation}
 \begin{equation}
 	[R] = \frac{R_0exp(\frac{E_0^R-E}{0.059})}{1+exp(\frac{E_0^R-E}{0.059})}
-	\text{ and } [O] = \frac{O_0}{1+exp(\frac{E_0^O-E}{0.059})}
+	\text{ and } [Ox] = \frac{O_0}{1+exp(\frac{E_0^O-E}{0.059})}
 	\label{eq:conc_potential}
 \end{equation}
 $[R]$ is the concentration of reductant (equivalent to ``substrate'' in enzymology), $R_0$ is the starting concentration of reductant in the potentiometry which is equal to the concentration of Ascorbate in this case, $E_0^R$ is the standard redox potential of Ascorbate that is \SI{30}{\mV} and $E$ is the applied potential. The value $0.059$ stands for $\frac{RT}{nF}$ similar to the slope in the Nernst equation(Eq. \ref{eq:nernst}) with $n=1$.
-Similarly $[O]$ represents the concentration of the oxidant (Ferricyanide) at different applied potential.
+Similarly $[Ox]$ represents the concentration of the oxidant (Ferricyanide) at different applied potentials.
 The maximum rate constant of reduction ($k_3^0$) was obtained to be $3.3\times10^5~M^{-1}s^{-1}$ while the maximum rate constant oxidation was $1.3\times10^8~M^{-1}s^{-1}$.
 
-\textit{However, Terentyeva et. al. have shown that the presence of rise time in the off-time distribution can be an artifact in the change point analysis. Our initial simulations and change point analysis too indicates the underestimation of short off times. Our quest for the detection of intermediate is under investigation.}
+\textit{However, Terentyeva et. al. have shown that the presence of a rise time in the off-time distribution can be an artifact in the change point analysis. Our initial simulations and change point analysis too indicates the underestimation of short off times. Our interpretation of the buildup in the histograms is thus under further investigation.}
 %==================Dynamics: Single-azurin over time===================
 \paragraph*{Dynamical heterogeneity.}
-After looking at ${\sim}150$ single-azurins together in an ensemble fashion, we investigated single azurins for as long time as their fluorescence survived.
-Figure \ref{fig:long_azurin_trace} shows the statistics of a single-azurin at \SI{100}{\mV} that survived for \SI{\sim350}{\s}.
-Zoom-in of two different parts of the original time trace are shown in Figure \ref{fig:long_azurin_trace}A and B with the respective part color-shaded in the trace Figure in \ref{fig:long_azurin_trace}C.
-The two zoom-in traces have very different on-off characteristics, the one on the left has short on-times and long off-times while the one on the right has long on-times and short off-times.
-The time trace was divided into small parts and the average was calculated over every $10$ consecutive on- and off-times (Figure \ref{fig:long_azurin_trace}E,G).
-The averaging was done to smooth out the noise and to show few number of points on the whole trace which makes it easy to observe the difference.
-Unlike random (Gaussian) noise, spikes and correlated high-low events are observed on the on-and off-trace which is also reflected in the density of points per unit time, longer on and off-times resulting lower density of points.
-The histogram of on- and off-times are shown on the left side of the on-off-trace without any averaging and the fit is shown with a single exponential function.
-The distribution is clearly non-exponential as can be seen from the big deviation from an exponential fit.
-The trace of midpoint potential (Figure \ref{fig:long_azurin_trace}I) is calculated from each point on the on-off-trace and the applied potential based on the Nernst equation.
-The midpoint potentials in the trace also fluctuates in a non-random way which can also be seen in its non-Gaussian distribution (Figure \ref{fig:long_azurin_trace}H) with an average value of \SI{42.2}{\mV}.
+After looking at ${\sim}150$ single azurins together in an ensemble fashion, we investigated single azurins for as long as their fluorescence survived.
+Figure \ref{fig:long_azurin_trace} shows the statistics of a single azurin at \SI{100}{\mV} that survived for \SI{\sim350}{\s}.
+Two different parts of the original time trace (\ref{fig:long_azurin_trace}C), indicated by colored blocks, are magnified and shown in Figure \ref{fig:long_azurin_trace}A and B.
+The two zoomed-in traces have very different on-off characteristics. The one on the left has short on-times and long off-times while the one on the right has long on-times and short off-times.
+The time trace was divided into small parts and the average was calculated over every $10$ consecutive bright and dark times (Figure \ref{fig:long_azurin_trace}E,G).
+We averaged over 10 points to reduce noise and highlight the difference between the two parts of the trace.
+Unlike random (Gaussian) noise, spikes and correlated high-low events are observed on the trace which is also reflected in the density of points per unit time. Longer bright and dark times result in a lower density of points.
+The histograms of bright and dark times are shown on the left side of the trace without any averaging and the fit is shown with a single exponential function.
+The distribution is clearly non-exponential as can be seen from the big deviation from the exponential fit.
+The trace of midpoint potential (Figure \ref{fig:long_azurin_trace}I) is calculated through the Nernst equation for each point on the trace and with the applied potential.
+The midpoint potential in the trace also fluctuates in a non-Gaussian way which can also be seen in the shape of its distribution (Figure \ref{fig:long_azurin_trace}H) with an average value of \SI{42.2}{\mV}.
 %long_azurin_trace
 \begin{figure}
 	\centering
-	\includegraphics{long_azurin_trace}
+	\includegraphics[width=\textwidth]{long_azurin_trace}
 	\caption{\textbf{Dynamic heterogeneity.} A long time trace (C) of Cu-azurin-ATTO655 at \SI{100}{\mV} with zoom-in (A, B) at different point of its time course.
-	Variation of on-rates(E) and off-rates(G) of the same azurin is shown with their histogram on the left.
-	The rates were averaged over every five consecutive rates to get rid off the noise and for easy visualization.
+	Variation of bright times (E) and dark times(G) of the same azurin with their histogram on the left.
+	The times were averaged over every ten consecutive ones to get rid of noise and for easy visualization.
 	The trace of midpoint potential(I) calculated from the on- and off-times and the the histogram(H) of midpoint potential is shown on its left with an average value of \SI{42}{\mV}.
 	}
 	\label{fig:long_azurin_trace}
 \end{figure}
 
-The heterogeneity in the on- and off-times is related to the heterogeneity in the rate of electron transfer particularly the longer on-off-times which is the rate of intermediate-complex formation.
-The first reason we should consider is the effect of surface.
-Previous study shows that the azurin can stick to the hydrophobic surface through the different hydrophobic patches on the protein surface.\cite{patil2010visualizing,salverda2010fluorescent,akkilic2014chemically-induced}
-However, special care was taken to keep the protein as separated as possible from the surface thorough non-interacting PEG-surface and through a long (\SI{\sim20}{\nm}) linker.
-Indeed no azurin was found attached to the surface of the substrate when the labeled azurin was flown onto the surface without Neutravidin or Biotin (everything else in the functionalization method kept same) indicating the non-sticky nature of the surface.
-The narrow distribution (narrower than any measurement before) of midpoint potentials among the 132 single azurins (Figure \ref{fig:midpoint}) also indicates the absence of interaction with the surface.
-From these observations, the surface contribution to the heterogeneity can safely be ignored.
-Also the solution potential controlled by the potentiostat is very stable and the concentration of the reductant and oxidant can be considered non-changing and in steady state.
+The heterogeneity in the bright and dark times is related to the heterogeneity in the rate of electron transfer particularly the longer times which presumably is the rate of intermediate-complex formation.
+The first explanation of heterogeneity we should consider is the effect of surface.
+Previous studies show that the azurin can stick to hydrophobic surfaces through the different hydrophobic patches on the protein surface.\cite{patil2010visualizing,salverda2010fluorescent,akkilic2014chemically-induced}
+However, special care was taken to keep the protein as far as possible from the surface through a long (\SI{\sim20}{\nm}) PEG-linker, and to passivate the surface with short PEG ligands.
+Indeed, no azurin was found attached to the surface of the substrate when the labeled azurin was flown onto the surface without Neutravidin or Biotin (everything else in the functionalization method kept same) indicating the absence non-specific interactions between the protein and the surface.
+The narrow distribution (narrower than any previous measurements) of midpoint potentials among the 132 single azurins (Figure \ref{fig:midpoint}) also confirms the absence of interaction with the surface.
+From these observations, we conclude that the surface contribution to the heterogeneity can be ignored.
+We can also rule out concentration fluctuations of reductant and oxidant, as the solution potential is precisely controlled by the potentiostat.
 
-The heterogeneity in the rates can now only attributed to the changes in the conformation in the protein.
-These changes are much smaller(\SI{<4}{\kJ\per\mole}) in comparison with the change in the free energy(\SI{-23}{\kJ\per\mole}, $\Delta{G}=-nEF$) related to the change in the oxidation state of azurin.
-Such small changes can be attributed subtle changes in the structure of the protein, each of these sub-structure are called conformational sub-states.
+The heterogeneity in the rates can now only be attributed to conformational changes of the protein.
+Midpoint potential changes (\SI{<4}{\kJ\per\mole}) are much smaller than the changes in the free energy(\SI{-23}{\kJ\per\mole}, $\Delta{G}=-nEF$) related to the change in the oxidation state of azurin. Such small changes can be attributed to subtle changes in the structure of the protein, each of these sub-structure are called conformational sub-states. XXXX Think about the argument XXXX
 
-The protein remains in a certain conformational sub-states for a duration of time which can be observed in the time trace.
+The protein remains in certain conformational sub-states for a duration of time which can be observed in the time trace.
 A short on-time followed by short on-time represents one state while a long on-time followed by long on-time represents another sub-state.
-The residence time in each of these conformational sub-states can be characterized by autocorrelating the time trace of on- and off-times (Figure \ref{fig:Dynamic_corr} A).
-The characteristic decay times are in the order of $10s$ of seconds, however the decay time for on- and off-events are not the same.
-The signature of the changes in the rates can also be seen in the intensity correlation (Figure \ref{fig:Dynamic_corr}B) with a decay at round \SI{\sim50}{\s} which basically has both the information about the on- and off-rates.
-However, the individual rates related to on- and off-time can't be extracted from the intensity correlation unless the underlying the kinetics is known.
+The residence time in each of these conformational sub-states can be characterized by autocorrelating the time trace of bright and dark times (Figure \ref{fig:Dynamic_corr} A).
+The characteristic correlation times are in the order of $1-10$ of seconds, and the correlation times for bright and dark times are different.
+The signature of changes in the reaction rates can also be seen in the fluorescence intensity correlation (Figure \ref{fig:Dynamic_corr}B) with a decay at round \SI{\sim50}{\s} which basically has both the information about the redox reaction rates.
+However, the individual rates related to bright and dark times can't be extracted from the intensity correlation unless the underlying kinetics is known.
 \begin{figure}
 	\centering
 	\includegraphics[width=\textwidth]{Dynamic_corr}
-	\caption{\textbf{Dynamic correlation.} (A) Autocorrelation of the on- and off-times in the trace showed in Figure \ref{fig:long_azurin_trace}E, G. (B) Autocorrelation of the intensity trace showed in Figure \ref{fig:long_azurin_trace}C. The inset shows the zoom-in of the intensity correlation in the longer time scale.}
+	\caption{\textbf{Dynamic correlation.} (A) Autocorrelation of the bright and dark times in the trace showed in Figure \ref{fig:long_azurin_trace}E, G. (B) Autocorrelation of the intensity trace showed in Figure \ref{fig:long_azurin_trace}C. The inset shows the zoom-in of the intensity correlation in the longer time scale.}
 	\label{fig:Dynamic_corr}
 \end{figure}
 
-In 1980s, conformational sub-states were observed in the association and dissociation of carbon monoxide (CO) with myoglobin in bulk experiment where sub-populations were found with different binding rates of CO.
-The time scales of binding were stretched from microseconds to seconds indicating all possible conformations of myoglobin.
-Indication of heterogeneity has also been observed for single-enzymes with some success($\beta$-galactosidase, flavoenzymes)\cite{lu1998single-molecule,kou2005single-molecule,english2006ever-fluctuating}.
-Here the dynamic rates can be observed for single azurin in the time scale of 10s of seconds which varies from protein to protein as can be seen in SI Fig. S\ref{SIfig:Dynamic_corr_many}
-As the rate of oxidation and reduction occur in the range of 100s of milliseconds, conformational changes in the shorter times scale can't be determined.
-Among the proteins that were recorded, no two proteins seemed to have the same dynamics indicating the vast number of conformational sub-states that a protein can take.
-It was almost impossible to experimentally build a map of such a large number of states.
+In the 1980s, conformational sub-states were observed in the association and dissociation of carbon monoxide (CO) with myoglobin in bulk experiment where sub-populations were found with different binding rates of CO.
+The time scales of binding were stretched from microseconds to seconds, indicating large variations of the reaction rate with the possible conformations of myoglobin.
+Indication of heterogeneity has also been observed for single enzymes with some success($\beta$-galactosidase, flavoenzymes)\cite{lu1998single-molecule,kou2005single-molecule,english2006ever-fluctuating}.
+Here the dynamic rates can be observed for single azurin molecules in the time scale of 10s of seconds which varies from protein to protein as can be seen in SI Fig. S\ref{SIfig:Dynamic_corr_many}
+As the oxidation and reduction occur in the range of 100s of milliseconds, conformational changes at shorter time scales cannot be determined by this method.
+Among the proteins that were recorded, no two proteins seemed to have the same dynamics, indicating the vast number of conformational sub-states that a protein can present.
+It was thus impossible to build an experimental map of such a large number of states.
 
 % Some proteins were also found to have no decay in the correlation (e.g. Figure \ref{fig: N_avgpoints_vs_fwhmwidth}C), primarily indicating the absence of dynamical heterogeneity.
 % Looking back at the histogram of midpoint potentials obtained from 132 single azurins, can the contribution of dynamical heterogeneity be estimated to the distribution (fwhm=\SI{36}{\mV}) for all the single-azurins.
@@ -399,15 +384,15 @@ It was almost impossible to experimentally build a map of such a large number of
 % This distribution of midpoint potential of a single-azurin over a long time is similar to the value of \SI{36}{\mV} obtained from many single-azurins.
 %=================CONCLUSION==================
 \section{Conclusion}
-The results presented here show how to controllably switch the solution potential and determine the switching ratio of redox active azurin.
-By introducing non-interacting surface and long linker, very narrow distribution in the midpoint potential obtained.
-The distribution over many single-azurin was found to be very close to the distribution of a single-azurin over long time.
-The rate of intermediate formation for the reduction process has been observed conferring to Michaelis-Menten mechanism.
-The intermediate formation for the oxidation was too fast to be detected with our signal to noise ratio.
+The results presented here show how controllably to switch the solution potential and determine the switching ratio of redox active azurin.
+By introducing a non-interacting surface and a long linker, we obtained a very narrow distribution of midpoint potentials.
+The distribution over many single-azurin was found to be very close to the distribution of a single-azurin over a long time.
+The rate of intermediate formation for the reduction process has been observed is consistent with a Michaelis-Menten mechanism.
+The intermediate formation for the oxidation was too fast to detect with our signal to noise ratio.
 In principle similar measurement at higher laser power and for many molecules should enable the detection of the intermediate if there is any.
-For the first time, correlated dynamic heterogeneity is observed in the complex formation ET azurin and its redox couple.
-We showed several ways like non-exponential distribution rates of ET, non-Gaussian distribution of midpoint potentials, correlations of the rates of ET and correlation of intensities to  characterize the dynamic-heterogeneity in the activity of the protein.
-Our study convincingly proves the evidence for the presence of conformational heterogeneity in an enzyme and we expect to have similar heterogeneity in all types enzymes and electron transfer proteins in the nature.
+For the first time, correlated dynamic heterogeneity is observed in the complex formation between azurin and its redox partners.
+We proved the presence of dynamic heterogeneity and presented several ways to characterize it : through the non-exponential distribution of reaction rates, the correlations of the redox times, and through the long correlation times found in fluorescence intensity correlation.
+Our study proves the presence of conformational heterogeneity in an electron-transfer protein, and makes it more plausible that similar heterogeneity may be a general feature in all types of enzymes and proteins.
 
 % \bibliographystyle{achemso.bst}
 % \pagebreak
