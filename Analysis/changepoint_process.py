@@ -35,7 +35,48 @@ def changepoint_photonHDF(file_path_hdf5, tmin=None, tmax=None, time_sect=25, pa
         x=0#false command, not of use
         # print('file already exist')
     return f_savePKL, timestamps
-
+def changepoint_simulatedata(simulatedhdf5, time_sect=25, pars=[1, 0.1, 0.9, 2],
+                             exp=True, rise=False, overwrite=False):
+    h5 = h5py.File(simulatedhdf5, 'r+');
+    if exp:
+        grp_exp = 'exp_changepoint'
+        if not h5['/'+grp_exp]:
+            grp_grp_exp = h5.create_group(grp_exp);
+        timestamps_exp = h5['onexp_offexp']['timestamps'][...];
+        grp_cpars = '/'+ grp_exp + '/cp_'+str(pars[1])+'_'+str(pars[2])+'_'+str(time_sect)+'s';
+        if grp_cpars in h5.keys() and overwrite:
+            print('exist')
+            del h5[grp_cpars];
+        if not grp_cpars in h5.keys() and overwrite:
+            changepoint_output = changepoint_exec(timestamps_exp, simulatedhdf5, 
+                                              time_sect=time_sect, pars=pars);
+            h5[grp_exp][grp_cpars]=changepoint_output;
+            h5[grp_exp][grp_cpars].attrs['parameters'] = pars
+            h5[grp_exp][grp_cpars].attrs['time_sect'] = time_sect
+            cp_cols = 'cp_index, cp_ts, cp_state, cp_countrate'
+            h5[grp_exp][grp_cpars].attrs['columns'] = cp_cols
+        h5.flush()
+    if rise:
+        grp_rise = 'rise_changepoint'
+        if not '/'+grp_rise in h5.keys():
+            print('doesnot exist')
+            grp_grp_rise = h5.create_group(grp_rise);
+        timestamps_rise = h5['onrise_offrise']['timestamps'][...];
+        grp_cpars = '/'+ grp_rise + '/cp_'+str(pars[1])+'_'+str(pars[2])+'_'+str(time_sect)+'s';
+        if grp_cpars in h5.keys() and overwrite:
+            print('exist')
+            del h5[grp_cpars];
+        if not grp_cpars in h5.keys() or overwrite:
+            changepoint_output = changepoint_exec(timestamps_rise, simulatedhdf5, 
+                                              time_sect=time_sect, pars=pars);
+            h5[grp_rise][grp_cpars]=changepoint_output;
+            h5[grp_rise][grp_cpars].attrs['parameters'] = pars
+            h5[grp_rise][grp_cpars].attrs['time_sect'] = time_sect
+            cp_cols = 'cp_index, cp_ts, cp_state, cp_countrate'
+            h5[grp_rise][grp_cpars].attrs['columns'] = cp_cols
+        h5.flush()
+    h5.close()
+    return
 def changepoint_exec(timestamps, file_path_hdf5, time_sect, pars=[1, 0.1, 0.9, 2]):
     ''' Process dat file containing arrival time
     Arguments:
@@ -113,7 +154,8 @@ def changepoint_folderwise(folderpath, pars=[1, 0.1, 0.9, 2], overwrite=False):
             file_path_hdf5 = file_path_pt3[:-3]+'hdf5';
             file_path_datn = file_path_hdf5[:-4]+'pt3.datn';
             if os.path.isfile(file_path_datn):
-                start_time_i = time.time()
+                start_time_i = time.time();
+                print("---Changepoint execution started for %s\n" % (file_path_hdf5))
                 try:
                     df_datn = pd.read_csv(file_path_datn, header=None);
                     tmin = min(df_datn[0]);
@@ -132,6 +174,6 @@ def changepoint_folderwise(folderpath, pars=[1, 0.1, 0.9, 2], overwrite=False):
     print("---TOTAL time took for the folder: %s seconds ---\n" % (time.time() - start_time))
     return
 # # run for a folder , remember it can take very long time; Create a temp file and run them in section
-# S83d10Sept16_A3_30sec_trace = '/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data/201609/20160910_CuAzu655Ferri_asc_2ndtime/S83d10Sept16_CuAz655_0.1mMAsc_0.2mMFerri_0.11uW_A3/30sec_trace'
-# data_path = '/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data';
-# changepoint_folderwise(S83d10Sept16_A3_30sec_trace, pars=[1, 0.1, 0.9, 2], overwrite=True);
+temp_data = '/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data/S106d18May17_635_CuAzu655_longtime/S106d18May17_60.5_635_A9_CuAzu655_100mV(18)/data'
+data_path = '/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data';
+# changepoint_folderwise(data_path, pars=[1, 0.1, 0.99, 2], overwrite=False);

@@ -10,7 +10,7 @@ def simulate_on_off_times(ton1=0.01, ton2=0.002, toff1=0.250, toff2=0.005, time_
     '''
     #on time pdfs
     k1=1/ton1; k2=1/ton2;
-    t_pdf = np.random.uniform(0,1, 1e7);
+    t_pdf = np.random.uniform(0,1, 10000000);
     tons_pdf = t_pdf*ton1*10# np.linspace(0, ton1*10, 100000);
     pdf_on_exp = k1*np.exp(-k1*tons_pdf);
     pdf_on_exp = pdf_on_exp/sum(pdf_on_exp);
@@ -27,13 +27,13 @@ def simulate_on_off_times(ton1=0.01, ton2=0.002, toff1=0.250, toff2=0.005, time_
     numpoints = int(time_len/(ton1+toff1));
     print('numpoint: '+str(numpoints))
     ontimes_exp_1 = np.random.choice(tons_pdf, numpoints, p=pdf_on_exp);
-    ontimes_exp_1 = np.round(ontimes_exp_1, 4);
+    ontimes_exp_1 = np.round(ontimes_exp_1, 6);
     ontimes_exp_rise = np.random.choice(tons_pdf, numpoints, p=pdf_on_rise);
-    ontimes_exp_rise = np.round(ontimes_exp_rise, 4);
+    ontimes_exp_rise = np.round(ontimes_exp_rise, 6);
     offtimes_exp_1 = np.random.choice(toffs_pdf, numpoints, p=pdf_off_exp);
-    offtimes_exp_1 = np.round(offtimes_exp_1, 4);
+    offtimes_exp_1 = np.round(offtimes_exp_1, 6);
     offtimes_exp_rise = np.random.choice(toffs_pdf, numpoints, p=pdf_off_rise);
-    offtimes_exp_rise = np.round(offtimes_exp_rise, 4);
+    offtimes_exp_rise = np.round(offtimes_exp_rise, 6);
     if plotting == True:
         bins_default = 100;
         fig = plt.figure(figsize=(20, 10))
@@ -51,9 +51,9 @@ def simulate_on_off_times(ton1=0.01, ton2=0.002, toff1=0.250, toff2=0.005, time_
         ax10.plot(time, ontimes_exp_rise, label='ontimes risetime')
         hist_exp, trace_exp = np.histogram(ontimes_exp_1, bins=bins_default)
         hist_rise, trace_rise = np.histogram(ontimes_exp_rise, bins=bins_default)
-        ax20.plot(trace_exp[:-1], hist_exp/max(hist_rise), label='ontimes exp: simulated')
+        ax20.plot(trace_exp[:-1], hist_exp/max(hist_rise),'*', label='ontimes exp: simulated')
         ax20.plot(tons_pdf, pdf_on_exp/max(pdf_on_rise), '.', ms=0.5, label='ontimes exp: analytical')
-        ax20.plot(trace_rise[:-1], hist_rise/max(hist_rise), label='ontimes rise: simulated')
+        ax20.plot(trace_rise[:-1], hist_rise/max(hist_rise),'*', label='ontimes rise: simulated')
         ax20.plot(tons_pdf, pdf_on_rise/max(pdf_on_rise), '.', ms=0.5, label='ontimes rise: analytical')
         # offtimes exponential
         time = np.cumsum(ontimes_exp_1+offtimes_exp_1)
@@ -62,9 +62,9 @@ def simulate_on_off_times(ton1=0.01, ton2=0.002, toff1=0.250, toff2=0.005, time_
         ax11.plot(time, offtimes_exp_rise, label='offtimes risetime')
         hist_exp, trace_exp = np.histogram(offtimes_exp_1, bins=bins_default)
         hist_rise, trace_rise = np.histogram(offtimes_exp_rise, bins=bins_default)
-        ax21.plot(trace_exp[:-1], hist_exp/max(hist_rise), label='offtimes exp: simulated')
+        ax21.plot(trace_exp[:-1], hist_exp/max(hist_rise),'*', label='offtimes exp: simulated')
         ax21.plot(toffs_pdf, pdf_off_exp/max(pdf_off_rise), '.',ms=0.5, label='offtimes exp: analytical')
-        ax21.plot(trace_rise[:-1], hist_rise/max(hist_rise), label='offtimes rise: simulated')
+        ax21.plot(trace_rise[:-1], hist_rise/max(hist_rise),'*', label='offtimes rise: simulated')
         ax21.plot(toffs_pdf, pdf_off_rise/max(pdf_off_rise), '.',ms=0.5, label='offtimes rise: analytical')
         
         ax00.legend();ax01.legend();
