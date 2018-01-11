@@ -1,3 +1,4 @@
+import sys
 import os
 import time
 import numpy as np
@@ -40,7 +41,7 @@ def changepoint_simulatedata(simulatedhdf5, time_sect=25, pars=[1, 0.1, 0.9, 2],
     h5 = h5py.File(simulatedhdf5, 'r+');
     if exp:
         grp_exp = 'exp_changepoint'
-        if not h5['/'+grp_exp]:
+        if not '/'+grp_exp in h5.keys():
             grp_grp_exp = h5.create_group(grp_exp);
         timestamps_exp = h5['onexp_offexp']['timestamps'][...];
         grp_cpars = '/'+ grp_exp + '/cp_'+str(pars[1])+'_'+str(pars[2])+'_'+str(time_sect)+'s';
@@ -99,10 +100,12 @@ def changepoint_exec(timestamps, file_path_hdf5, time_sect, pars=[1, 0.1, 0.9, 2
         file_dat_ts = file_path_hdf5[:-5]+'_ts.dat'
         np.savetxt(file_dat_ts, np.c_[timestamps_sect])
         import subprocess
-        args = ("wine", changepoint_exe, file_dat_ts, str(pars[0]), str(pars[1]), str(pars[2]), str(pars[3]))
-        popen = subprocess.Popen(args, stdout=subprocess.PIPE)
-        # popen.wait()
-        output = popen.stdout.read()
+        pc_sys = sys.platform
+        if 'linux' in pc_sys:
+            args = ("wine", changepoint_exe, file_dat_ts, str(pars[0]), str(pars[1]), str(pars[2]), str(pars[3]))
+            popen = subprocess.Popen(args, stdout=subprocess.PIPE)
+            # popen.wait()
+            output = popen.stdout.read()
         # list of output files
         file_dat_cp = file_dat_ts + '.cp';
         file_dat_em2 = file_dat_ts + '.em.2';

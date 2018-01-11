@@ -83,7 +83,7 @@ def timestamps_from_onofftrace(ontimes, offtimes,
     An array of photon arrival times
     If needed, array of interphoton times on on and off times can be generated 
     '''
-    t_int = np.random.uniform(0, 1, 1e6);
+    t_int = np.random.uniform(0, 1, 1000000);
     #pdf for poissonian on counts
     t_int_on_pdf = 10*t_int/i_on_mu;
     pdf_int_on = i_on_mu * np.exp(-i_on_mu*t_int_on_pdf);
@@ -94,7 +94,9 @@ def timestamps_from_onofftrace(ontimes, offtimes,
     pdf_int_off = pdf_int_off/sum(pdf_int_off);
     #number of photons on each on or off levels
     ontimes_counts = np.round(ontimes * i_on_mu);
+    ontimes_counts = ontimes_counts.astype('int')
     offtimes_counts = np.round(offtimes * i_off_mu);
+    offtimes_counts = offtimes_counts.astype('int')
     #geting time stamps
     intphoton_on = []; intphoton_off = [];
     timestamps = []; 
@@ -141,7 +143,7 @@ def save_simulated_trace(ton1=0.016, ton2=0.002, toff1=0.250,
     date = datetime.datetime.today().strftime('%Y%m%d_%H%M')
     hdf5_tosave = os.path.join(data_folder_sim, 
                               date+'_ton'+str(ton1)+'toff'+str(toff1)+'timelen'+str(time_len)
-                              +'.hdf5');
+                              +'bg'+str(i_off_mu)+'sig'+str(i_on_mu)+'.hdf5');
     f_saveHDF5 = h5py.File(hdf5_tosave, "w");#create or open hdf5 file in write mode
     #save all the parameters used in the simulation
     f_saveHDF5['parameters/ton1'] = ton1;

@@ -97,11 +97,11 @@ def dir_mV_molNo(foldername=foldername):
                                                     filename_hdf5, hdf5_filepath]],
                                                   columns=columns_datn_em)
                     datn_em_list = datn_em_list.append(temp_datn_list, ignore_index=True)
-    pt3_list = pt3_list.sort(['Point number'], ascending=[1])
+    pt3_list = pt3_list.sort_values(by=['Point number'], ascending=True)
     pt3_list.reset_index(drop=True, inplace=True)
-    FCS_list = FCS_list.sort(['Point number'], ascending=[1])
+    FCS_list = FCS_list.sort_values(by=['Point number'], ascending=True)
     FCS_list.reset_index(drop=True, inplace=True)
-    datn_em_list = datn_em_list.sort(['Point number'], ascending=[1])
+    datn_em_list = datn_em_list.sort_values(by=['Point number'], ascending=True)
     datn_em_list.reset_index(drop=True, inplace=True)
     return(datn_em_list, FCS_list, pt3_list)
 def point_list(foldername = foldername, pointnumbers=range(100)):
