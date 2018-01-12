@@ -33,7 +33,7 @@ def dir_mV_molNo_pt3(foldername=foldername):
                 point_number = pos_num_val_1
             elif pos_num_val_3 in ['_']:
                 point_number = pos_num_val_2 + pos_num_val_1
-            point_number=int(point_number)
+            point_number = int(point_number)
             #print(point_number)
             #potential extraction
             position_pot = filename.find(string_mV)
@@ -56,8 +56,8 @@ def dir_mV_molNo_pt3(foldername=foldername):
             potentail_val = int(potentail_val)
             file_pt3_path = os.path.join(dirpath, filename)
             temp_pt3list = pd.DataFrame([[point_number, potentail_val, filename, file_pt3_path]], columns=columns)
-            pt3_list = pt3_list.append(temp_pt3list, ignore_index = True)
-    return(pt3_list)
+            pt3_list = pt3_list.append(temp_pt3list, ignore_index=True)
+    return pt3_list
 def dir_mV_molNo(foldername=foldername):
     pt3_list = dir_mV_molNo_pt3(foldername=foldername)
     extensions = [".dat", ".datn"]
@@ -76,7 +76,8 @@ def dir_mV_molNo(foldername=foldername):
                 #add FCS to dataframe
                 if pt3_filename[:-5] in filename and 'FCS' in filename and '_'+str(point_number)+'_' in filename:
                     fcs_file_path = os.path.join(dirpath, filename)
-                    temp_FCS_list = pd.DataFrame([[point_number, potential, filename, fcs_file_path]], columns=columns_FCS)
+                    temp_FCS_list = pd.DataFrame([[point_number, potential, filename, fcs_file_path]],
+                                                 columns=columns_FCS)
                     FCS_list = FCS_list.append(temp_FCS_list, ignore_index=True)
                 #add .datn and .em.plot
                 if pt3_filename[:-3] in filename and 'datn' in filename:
@@ -86,11 +87,11 @@ def dir_mV_molNo(foldername=foldername):
                     emplot_path = os.path.join(dirpath, filename_emplot)
                     filename_hdf5 = pt3_filename[:-3]+'hdf5'
                     hdf5_filepath = os.path.join(dirpath, filename_hdf5)
-                    columns_datn_em=['Point number', 'Potential',
-                                     'filename[.datn]', 'filepath[.datn]',
-                                     'filename[.em.plot]', 'filepath[.em.plot]',
-                                     'filename[.hdf5]', 'filepath[.hdf5]'
-                                    ]
+                    columns_datn_em = ['Point number', 'Potential',
+                                       'filename[.datn]', 'filepath[.datn]',
+                                       'filename[.em.plot]', 'filepath[.em.plot]',
+                                       'filename[.hdf5]', 'filepath[.hdf5]'
+                                      ]
                     temp_datn_list = pd.DataFrame([[point_number, potential,
                                                     filename_datn, datn_file_path, 
                                                     filename_emplot, emplot_path, 
