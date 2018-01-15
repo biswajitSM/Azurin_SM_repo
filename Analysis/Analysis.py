@@ -188,7 +188,7 @@ def time_trace_plot(foldername= foldername, input_potential=[0, 25, 50, 100],
     df_datn_emplot, df_FCS, folder = dir_mV_molNo(foldername)
     df_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
     df_specific = df_specific[df_specific['Potential'].isin(input_potential)];
-    df_specific=df_specific.sort(['Potential'], ascending=[1]);df_specific.reset_index(drop=True, inplace=True)
+    df_specific=df_specific.sort_values(by=['Potential'], ascending=True);df_specific.reset_index(drop=True, inplace=True)
     fig, ax = plt.subplots(figsize = figsize,sharex=True, sharey=True)
     subplots_adjust(hspace=0.000);
     for i in range(len(df_specific)):
@@ -206,9 +206,8 @@ def time_trace_plot(foldername= foldername, input_potential=[0, 25, 50, 100],
         df=pd.DataFrame(df)
         h5.close()
         tt_length=max(df[0])-min(df[0])
-        tt_length = round(tt_length, 0)
-        binpts=tt_length*1000/bin
-        df_hist = histogram(df[0], bins=binpts,range=(min(df[0]), max(df[0])))
+        binpts = np.round(tt_length*1000/bin, 0)
+        df_hist = histogram(df[0], bins=int(binpts),range=(min(df[0]), max(df[0])))
         plot(df_hist[1][:-1], df_hist[0]/bin, 'b', label=str(given_potential)+" mV")#original data
         #----time trace overlapped with change-points
         if os.path.isfile(f_emplot):
@@ -530,7 +529,7 @@ def timetrace_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potent
     out_total = pd.DataFrame()#initiating empty output matrix
     for input_number in pointnumbers:
         df_datnem_specific = df_datn_emplot[df_datn_emplot['Point number']==input_number]
-        df_datnem_specific = df_datnem_specific.sort(['Potential'], ascending=[1])
+        df_datnem_specific = df_datnem_specific.sort_values(by=['Potential'], ascending=True)
         df_datnem_specific.reset_index(drop=True, inplace=True)
 
         if not df_datnem_specific.empty:
