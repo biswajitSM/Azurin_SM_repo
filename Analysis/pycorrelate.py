@@ -2,10 +2,12 @@
 The following functions to compute linear correlation on discrete signals
 or on point-processes (e.g. timestamps).
 """
-
+import os
+import time
 import numpy as np
 import numba
-
+import pandas as pd
+import h5py
 
 @numba.jit(nopython=True)
 def pcorrelate(t, u, bins):
@@ -162,3 +164,91 @@ def normalize_G(t, u, bins):
                   / (float((t >= tau).sum()) * 
                      float((u <= (u.max() - tau)).sum())))
     return Gn
+
+def fcs_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
+                   t_fcsrange=[1e-6, 1], nbins=10,
+                   overwrite=False):
+    '''
+    '''
+    file_path_hdf5 = os.path.abspath(file_path_hdf5)
+    file_path_hdf5analysis = file_path_hdf5[:-5] + '_analysis.hdf5'
+    # check if output hdf5 file exist, else create one
+    if not os.path.isfile(file_path_hdf5analysis):
+        h5_analysis = h5py.File(file_path_hdf5analysis, 'w')
+    else:
+        h5_analysis = h5py.File(file_path_hdf5analysis, 'r+')
+    # check if changepoint group exist, else create one
+    grp_fcs = 'fcs'
+    if not '/' + grp_fcs in h5_analysis.keys():
+        h5_analysis.create_group(grp_fcs)
+    # Read and extract time stamps from photonhdf4 file
+    h5 = h5py.File(file_path_hdf5, 'r')
+    unit = h5['photon_data']['timestamps_specs']['timestamps_unit'].value
+    timestamps = unit * h5['photon_data']['timestamps'][...]
+    if not tmin:
+        tmin = min(timestamps)
+    if not tmax:
+        tmax = max(timestamps)
+    mask = np.logical_and(timestamps >= tmin, timestamps <= tmax)
+    timestamps = timestamps[mask]
+    h5.close()
+    # check if  exist
+    data_fpars = '/' + grp_fcs + '/fcs_nbins' + str(nbins)
+    if data_fpars in h5_analysis.keys() and overwrite:
+        print('already exists and deleting for new analysis')
+        del h5_analysis[data_fpars]
+    if not data_fpars in h5_analysis.keys() or overwrite:
+        bins = make_loglags(np.log10(t_fcsrange[0]),
+                            np.log10(t_fcsrange[1]), nbins)
+        Gn = normalize_G(timestamps, timestamps, bins)
+        Gn = np.hstack((Gn[:1], Gn)) - 1
+        df_fcs = pd.DataFrame({'lag time': bins,
+                               'nGn': Gn})
+        h5_analysis[data_fpars] = df_fcs
+        h5_analysis[data_fpars].attrs['tmin'] = tmin
+        h5_analysis[data_fpars].attrs['tmax'] = tmax
+        cols = 'lag time, G(t)-1'
+        h5_analysis[data_fpars].attrs['cols'] = cols
+        h5_analysis[data_fpars].attrs['bins per one order of time'] = nbins
+        h5_analysis.flush()
+    h5_analysis.close()
+    return
+# =========== FOLDERWISE ==============
+
+
+def fcs_folderwise(folderpath, t_fcsrange=[1e-6, 1], nbins=100, overwrite=False):
+    start_time = time.time()
+    pt3_extension = [".pt3"]
+    for dirpath, dirname, filenames in os.walk(folderpath):
+        for filename in [f for f in filenames if f.endswith(tuple(pt3_extension))]:
+            file_path_pt3 = os.path.join(dirpath, filename)
+            file_path_hdf5 = file_path_pt3[:-3] + 'hdf5'
+            file_path_datn = file_path_hdf5[:-4] + 'pt3.datn'
+            if os.path.isfile(file_path_datn):
+                start_time_i = time.time()
+                print("---%.1f : fcs calculation started for %s\n" %
+                      (start_time_i, file_path_hdf5))
+                try:
+                    df_datn = pd.read_csv(file_path_datn, header=None)
+                    tmin = min(df_datn[0])
+                    tmax = max(df_datn[0])
+                    fcs_photonhdf5(file_path_hdf5, tmin=tmin, tmax=tmax,
+                                   t_fcsrange=t_fcsrange, nbins=nbins,
+                                   overwrite=overwrite)
+                except:
+                    fcs_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
+                                   t_fcsrange=t_fcsrange, nbins=nbins,
+                                   overwrite=overwrite)
+                processtime = time.time() - start_time_i
+                print("---TOTAL time took for the file: %s IS: %s seconds ---\n" %
+                      (file_path_hdf5, processtime))
+            else:
+                print(file_path_datn + ' : doesnot exist\n')
+    print("---TOTAL time took for the folder: %s seconds ---\n" %
+          (time.time() - start_time))
+    return
+
+# # run for a folder , remember it can take very long time; Create a temp file and run them in section
+temp_data = '/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data/S106d18May17_635_CuAzu655_longtime/S106d18May17_60.5_635_A9_CuAzu655_100mV(18)/data'
+data_path = '/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data'
+fcs_folderwise(data_path, t_fcsrange=[1e-6, 10], nbins=100, overwrite=True)
