@@ -12,13 +12,27 @@ from lmfit import Parameters, report_fit, Model
 changepoint_exe = "changepoint_program/changepoint.exe"
 changepoint_exe = os.path.abspath(changepoint_exe)
 
-def changepoint_photonhdf5(file_path_hdf5, tmin=None, tmax=None, time_sect=25, pars=[1, 0.1, 0.9, 2], overwrite=False):
+
+def changepoint_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
+                           time_sect=25, pars=[1, 0.1, 0.9, 2],
+                           overwrite=False):
     '''
     '''
     file_path_hdf5 = os.path.abspath(file_path_hdf5)
+    file_path_hdf5analysis = file_path_hdf5[:-5] + '_analysis.hdf5'
+    # check if output hdf5 file exist, else create one
+    if not os.path.isfile(file_path_hdf5analysis):
+        h5_analysis = h5py.File(file_path_hdf5analysis, 'w')
+    else:
+        h5_analysis = h5py.File(file_path_hdf5analysis, 'r+')
+    # check if changepoint group exist, else create one
+    grp_cp = 'changepoint'
+    if not '/' + grp_cp in h5_analysis.keys():
+        h5_analysis.create_group(grp_cp)
+    # Read and extract time stamps from photonhdf4 file
     h5 = h5py.File(file_path_hdf5)
     unit = h5['photon_data']['timestamps_specs']['timestamps_unit'].value
-    timestamps =  unit*h5['photon_data']['timestamps'][...]
+    timestamps = unit * h5['photon_data']['timestamps'][...]
     if not tmin:
         tmin = min(timestamps)
     if not tmax:
@@ -26,16 +40,25 @@ def changepoint_photonhdf5(file_path_hdf5, tmin=None, tmax=None, time_sect=25, p
     mask = np.logical_and(timestamps >= tmin, timestamps <= tmax)
     timestamps = timestamps[mask]
     h5.close()
-    # check if output file exist
-    f_savePKL = file_path_hdf5[:-5]+'_changepoint.pkl'   
-    if not os.path.isfile(f_savePKL) or overwrite:
-        # print('new file for changepoint output will be created')
-        changepoint_output = changepoint_exec(timestamps, file_path_hdf5, time_sect=time_sect, pars=pars)#function
-        changepoint_output.to_pickle(f_savePKL)
-    else:
-        x=0#false command, not of use
-        # print('file already exist')
-    return f_savePKL, timestamps
+    # check if  exist
+    data_cpars = '/' + grp_cp + '/cp_' + \
+        str(pars[1]) + '_' + str(pars[2]) + '_' + str(time_sect) + 's'
+    if data_cpars in h5_analysis.keys() and overwrite:
+        print('already exists and deleting for new analysis')
+        del h5_analysis[data_cpars]
+    if not data_cpars in h5_analysis.keys() or overwrite:
+        changepoint_output = changepoint_exec(
+            timestamps, file_path_hdf5, time_sect=time_sect, pars=pars)  # function
+        h5_analysis[data_cpars] = changepoint_output
+        h5_analysis[data_cpars].attrs['parameters'] = pars
+        h5_analysis[data_cpars].attrs['tmin'] = tmin
+        h5_analysis[data_cpars].attrs['tmax'] = tmax
+        h5_analysis[data_cpars].attrs['time_sect'] = time_sect
+        cp_cols = 'cp_index, cp_ts, cp_state, cp_countrate'
+        h5_analysis[data_cpars].attrs['columns'] = cp_cols
+        h5_analysis.flush()
+    h5_analysis.close()
+    return file_path_hdf5analysis, timestamps
 def changepoint_simulatedata(simulatedhdf5, time_sect=25, pars=[1, 0.1, 0.9, 2],
                              exp=True, rise=False, overwrite=False):
     h5 = h5py.File(simulatedhdf5, 'r+')
@@ -109,7 +132,6 @@ def changepoint_exec(timestamps, file_path_hdf5, time_sect, pars=[1, 0.1, 0.9, 2
             # popen.wait()
             output = popen.stdout.read()
         if 'win' in pc_sys:
-            changepoint_exe = r'F:\DD\PhD\temp\Azurin_SM_repo\Analysis\changepoint_program\changepoint.exe'
             args = (changepoint_exe, file_dat_ts, str(pars[0]), str(pars[1]), str(pars[2]), str(pars[3]))
             popen = subprocess.Popen(args, stdout=subprocess.PIPE)
             # popen.wait()
@@ -162,29 +184,30 @@ def changepoint_folderwise(folderpath, pars=[1, 0.1, 0.9, 2], overwrite=False):
     for dirpath, dirname, filenames in os.walk(folderpath):
         for filename in [f for f in filenames if f.endswith(tuple(pt3_extension))]:
             file_path_pt3 = os.path.join(dirpath, filename)
-            file_path_hdf5 = file_path_pt3[:-3]+'hdf5'
-            file_path_datn = file_path_hdf5[:-4]+'pt3.datn'
+            file_path_hdf5 = file_path_pt3[:-3] + 'hdf5'
+            file_path_datn = file_path_hdf5[:-4] + 'pt3.datn'
             if os.path.isfile(file_path_datn):
                 start_time_i = time.time()
-                print("---Changepoint execution started for %s\n" % (file_path_hdf5))
+                import datetime
+                date = datetime.datetime.today().strftime('%Y%m%d_%H%M')
+                print("---%s : Changepoint execution started for %s\n" %
+                      (date, file_path_hdf5))
                 try:
                     df_datn = pd.read_csv(file_path_datn, header=None)
                     tmin = min(df_datn[0])
                     tmax = max(df_datn[0])
-                    f_savePKL, timestamps = changepoint_photonhdf5(file_path_hdf5, tmin=tmin, 
-                                                                  tmax=tmax, pars=pars,
-                                                                  overwrite=overwrite)#MOST iMPORTANT parameters
+                    changepoint_photonhdf5(file_path_hdf5, tmin=tmin,
+                                                            tmax=tmax, pars=pars,
+                                                            overwrite=overwrite)  # MOST iMPORTANT parameters
                 except:
                     #print(file_path_datn)
-                    f_savePKL, timestamps = changepoint_photonhdf5(file_path_hdf5,pars=pars,
-                                                                  overwrite=overwrite)#MOST iMPORTANT parameters
+                    changepoint_photonhdf5(file_path_hdf5, pars=pars,
+                                                            overwrite=overwrite)  # MOST iMPORTANT parameters
                 processtime = time.time() - start_time_i
-                print("---TOTAL time took for the file: %s IS: %s seconds ---\n" % (file_path_hdf5, processtime))                
+                print("---TOTAL time took for the file: %s IS: %s seconds ---\n" %
+                      (file_path_hdf5, processtime))
             else:
-                print(file_path_datn+' : doesnot exist\n')
-    print("---TOTAL time took for the folder: %s seconds ---\n" % (time.time() - start_time))
+                print(file_path_datn + ' : doesnot exist\n')
+    print("---TOTAL time took for the folder: %s seconds ---\n" %
+          (time.time() - start_time))
     return
-# # run for a folder , remember it can take very long time; Create a temp file and run them in section
-temp_data = '/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data/S106d18May17_635_CuAzu655_longtime/S106d18May17_60.5_635_A9_CuAzu655_100mV(18)/data'
-data_path = '/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data'
-# changepoint_folderwise(data_path, pars=[1, 0.1, 0.99, 2], overwrite=False)
