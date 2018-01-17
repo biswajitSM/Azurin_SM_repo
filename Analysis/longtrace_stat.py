@@ -7,6 +7,7 @@ from scipy.optimize import curve_fit
 
 from Analysis import *
 from autocorrelate import autocorrelate
+from pycorrelate import *
 
 def histogram_on_off_1mol(foldername= foldername, input_potential=[100],
 						 pointnumbers=[1], time_lim = [0, 1e5], 
@@ -268,6 +269,116 @@ def t_ons_t_offs(df_dig):
     t_offs = df_offs_maxs - df_offs_mins;
     t_offs = t_offs[np.nonzero(t_offs)]
     return t_ons, t_offs
+# ============= Video making by parts analysis ===============
+def longtrace_byparts(timestamps, nanotimes, save_folder,
+                      window=1e4, period=1e3, plotting=False):
+    '''
+    Arguments:
+    timestamps and nanotimes should be of equal length and
+    both in the units of seconds
+    window and period in number of photons
+    '''
+    length = len(timestamps)
+    index_left = 0
+    length_update = length - index_left
+    df_fcs = pd.DataFrame()
+    df_lt = pd.DataFrame()  # lifetiem
+    df_ip = pd.DataFrame()  # interphoton
+    df_ts = pd.DataFrame()
+    while length_update > window:
+        tleft = int(index_left)
+        tright = int(index_left + window)
+        # change "period" to "window" to avoid rolling
+        index_left = int(index_left + period)
+        length_update = int(length - index_left)
+
+        t_mac_temp = timestamps[tleft:tright]
+        t_mic_temp = 1e9 * nanotimes[tleft:tright]
+        df_ts['t'] = t_mac_temp
+        df_ts[str(tleft)] = t_mac_temp
+
+        # interphoton histogram
+        t_diff = np.diff(t_mac_temp)
+        binned_trace = np.histogram(t_diff, bins=500, range=(1e-5, 1e-1))
+        t = binned_trace[1][:-1]
+        n = binned_trace[0]
+        df_ip['t'] = t
+        df_ip[str(tleft)] = n / max(n)
+        # lifetime histogram
+        binned_trace = np.histogram(t_mic_temp, bins=50, range=(0, 8))
+        t = binned_trace[1][:-1]
+        n = binned_trace[0]
+        df_lt['t'] = t
+        df_lt[str(tleft)] = n / max(n)
+        # FCS
+        bin_lags = make_loglags(-6, 0, 10)
+        Gn = normalize_G(t_mac_temp, t_mac_temp, bin_lags)
+        Gn = np.hstack((Gn[:1], Gn)) - 1
+        df_fcs['t'] = bin_lags
+        df_fcs[str(tleft)] = Gn
+    if plotting:
+        for column in df_ts.iloc[:, 1:]:
+            plt.close('all')
+            nrows = 3
+            ncols = 2
+            fig = plt.figure(figsize=(20, 10))
+            ax00 = plt.subplot2grid((nrows, ncols), (0, 0), colspan=2)
+            ax10 = plt.subplot2grid((nrows, ncols), (1, 0))
+            ax11 = plt.subplot2grid((nrows, ncols), (1, 1))
+            ax20 = plt.subplot2grid((nrows, ncols), (2, 0))
+            ax21 = plt.subplot2grid((nrows, ncols), (2, 1))
+            #plot all
+            plot_timetrace(ax00, timestamps, bintime=5e-3)
+            ax11.plot(df_lt.iloc[:, 0], df_lt.iloc[:, 1:], alpha=0.3)
+            ax20.plot(df_ip.iloc[:, 0], df_ip.iloc[:, 1:], alpha=0.3)
+            ax21.plot(df_fcs.iloc[:, 0], df_fcs.iloc[:, 1:], alpha=0.3)
+            #plot individual
+            plot_timetrace(ax10, df_ts[column], bintime=5e-3)
+            ax00.axvspan(min(df_ts[column]), max(df_ts[column]),
+                         color='r', alpha=0.3, lw=0)
+            ax11.plot(df_lt.iloc[:, 0], df_lt[column],
+                      'ob', label='Fluorescence lifetime')
+            ax20.plot(df_ip.iloc[:, 0], df_ip[column],
+                      'ob', label='Interphoton time')
+            ax21.plot(df_fcs.iloc[:, 0], df_fcs[column],
+                      'ob', label='FCS')
+            # axis properties
+            ax00.set_ylim(0, None)
+            ax10.set_ylim(0, None)
+            ax11.set_xlim(4.5, 7.5)
+            ax11.set_ylim(1e-1, None)
+            ax11.set_yscale('log')
+            ax11.legend()
+            ax20.set_xlim(1e-5, 1e-1)
+            ax20.set_xscale('log')
+            ax20.set_yscale('log')
+            ax20.legend()
+            ax21.set_xlim(1e-5, 1)
+            ax21.set_ylim(0, 4)
+            ax21.set_xscale('log')
+            ax21.legend()
+            fig.tight_layout()
+            # save figure
+            savename = str(column) + '.png'
+            savename = os.path.join(save_folder, savename)
+            fig.savefig(savename, dpi=300)
+    return df_ts, df_lt, df_fcs, df_ip
+
+
+def plot_timetrace(ax, timestamps, bintime):
+    tmin = min(timestamps)
+    tmax = max(timestamps)
+    tt_length = tmax - tmin
+    binpts = int(tt_length / bintime)
+    hist, trace = np.histogram(timestamps, bins=binpts,
+                               range=(tmin, tmax))
+    ax.plot(trace[:-1], hist * 1e-3 / bintime)
+    ax.set_ylabel('counts/kcps')
+    ax.set_xlabel('time/s')
+    ax.set_xlim(tmin, tmax)
+    #ax.set_title('bintime: ' + str(bintime))
+    return
+
 #===============fitting functions=============
 def risetime_fit(t, k1, k2, A):
     return ((A*k1*k2/(k2-k1)) * (exp(-k1*t) - exp(-k2*t)))
