@@ -1,6 +1,8 @@
 import os
 import numpy as np
 import pandas as pd
+import scipy
+import scipy.stats
 import h5py
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
@@ -71,6 +73,48 @@ def simulate_on_off_times(ton1=0.01, ton2=0.002, toff1=0.250, toff2=0.005, time_
         ax10.legend(); ax11.legend();
         ax20.legend(); ax21.legend();
     return ontimes_exp_1, ontimes_exp_rise, offtimes_exp_1, offtimes_exp_rise
+def simulate_nanotimes(lifetime=2e-9, num_samples=1e5, plotting=False):
+    time_step_s =8e-12# (60e-9 / 4096)               # time step in seconds (S.I.)
+    time_step_ns = time_step_s * 1e9           # time step in nano-seconds
+    time_nbins = 4096  # 2948                        # number of time bins
+
+    time_idx = np.arange(time_nbins)         # time axis in index units
+    time_ns = time_idx * time_step_ns          # time axis in nano-seconds
+
+    def exgauss(x, mu, sig, tau):
+        lam = 1. / tau
+        return 0.5 * lam * np.exp(0.5 * lam * (2 * mu + lam * (sig**2) - 2 * x)) *\
+            scipy.special.erfc((mu + lam * (sig**2) - x) / (np.sqrt(2) * sig))
+
+    irf_sig = 0.2
+    irf_mu = 5 * irf_sig
+    #irf_mu = 3.51007075 #5*irf_sig
+    irf_lam = 0.1
+    x_irf = np.arange(0, (irf_lam * 15 + irf_mu) / time_step_ns)
+    p_irf = exgauss(x_irf, irf_mu / time_step_ns, irf_sig / time_step_ns,
+                    irf_lam / time_step_ns)
+    irf = scipy.stats.rv_discrete(name='irf', values=(x_irf, p_irf))
+    x_irf.size
+    # generate nanotimes
+    num_samples = int(5e5)
+    tau = lifetime  # 0.2e-9
+    baseline_fraction = 0.03
+    offset = 2e-9
+
+    sample_decay = np.random.exponential(scale=tau / time_step_s,
+                                         size=num_samples) + offset / time_step_s
+    sample_decay += irf.rvs(size=num_samples)
+    sample_baseline = np.random.randint(low=0, high=time_nbins,
+                                        size=int(baseline_fraction * num_samples))
+    sample_tot = np.hstack((sample_decay, sample_baseline))
+    np.random.shuffle(sample_tot)
+    nanotimes = time_step_s * sample_tot[:num_samples]
+    if plotting:
+        decay_hist, bins = np.histogram(
+            sample_tot, bins=np.arange(time_nbins + 1))
+        plt.plot(bins[:-1] * time_step_s * 1e9, decay_hist)
+        plt.yscale('log')
+    return nanotimes
 def timestamps_from_onofftrace(ontimes, offtimes,
                           i_on_mu=2000, i_off_mu=200,
                           plotting=False):
@@ -92,8 +136,11 @@ def timestamps_from_onofftrace(ontimes, offtimes,
     t_int_off_pdf = 10*t_int/i_off_mu;    
     pdf_int_off = i_off_mu * np.exp(-i_off_mu*t_int_off_pdf);
     pdf_int_off = pdf_int_off/sum(pdf_int_off);
+    #pdf for nanotimes
+    pdf_nanotimes_on = simulate_nanotimes(lifetime=1.9e-9, num_samples=1e5, plotting=False)
+    pdf_nanotimes_off = simulate_nanotimes(lifetime=0.3e-9, num_samples=1e5, plotting=False)
     #number of photons on each on or off levels
-    ontimes_counts = np.round(ontimes * i_on_mu);
+    ontimes_counts = np.round(ontimes * (i_on_mu+i_off_mu));
     ontimes_counts = ontimes_counts.astype('int')
     offtimes_counts = np.round(offtimes * i_off_mu);
     offtimes_counts = offtimes_counts.astype('int')
@@ -101,6 +148,7 @@ def timestamps_from_onofftrace(ontimes, offtimes,
     intphoton_on = []; intphoton_off = [];
     timestamps = []; 
     timestamps_start = 0;
+    nanotimes = []
     timestamps_marker=np.array([], dtype=np.uint8);
     for i in range(len(ontimes_counts)):
         on_counts_i = ontimes_counts[i];
@@ -109,7 +157,11 @@ def timestamps_from_onofftrace(ontimes, offtimes,
         intphoton_off_i = np.random.choice(t_int_off_pdf, off_counts_i, p=pdf_int_off);
         timestamps_i = np.append(intphoton_on_i, intphoton_off_i);
         timestamps_i = np.cumsum(timestamps_i) + timestamps_start;
-        timestamps = np.append(timestamps, timestamps_i);
+        timestamps = np.append(timestamps, timestamps_i)
+        nanotimes_on_i =  np.random.choice(pdf_nanotimes_on, on_counts_i)
+        nanotimes_off_i = np.random.choice(pdf_nanotimes_off, off_counts_i)
+        nanotimes_i = np.append(nanotimes_on_i,nanotimes_off_i)
+        nanotimes = np.append(nanotimes, nanotimes_i)
         timestamps_start = timestamps[-1];
         timestamps_marker_i = np.append(np.ones_like(intphoton_on_i),
                                         np.zeros_like(intphoton_off_i));
@@ -123,7 +175,7 @@ def timestamps_from_onofftrace(ontimes, offtimes,
         plt.plot(t_int_on_pdf, pdf_int_on, '.')
         plt.plot(t_int_off_pdf, pdf_int_off, '.')
     timestamps = np.round(timestamps, 8);
-    return timestamps, timestamps_marker
+    return timestamps, timestamps_marker, nanotimes
 def save_simulated_trace(ton1=0.016, ton2=0.002, toff1=0.250,
                     toff2=0.02, time_len=10, 
                     i_on_mu=3000, i_off_mu=200, 
@@ -162,8 +214,9 @@ def save_simulated_trace(ton1=0.016, ton2=0.002, toff1=0.250,
     grp_rise.create_dataset('offtimes_exp_rise', data=offtimes_exp_rise);
     out_ts = timestamps_from_onofftrace(ontimes_exp_rise, offtimes_exp_rise, 
                                      i_on_mu, i_off_mu);
-    [timestamps, timestamps_marker] = out_ts;
+    [timestamps, timestamps_marker, nanotimes] = out_ts;
     grp_rise.create_dataset('timestamps', data=timestamps);
+    grp_rise.create_dataset('nanotimes', data=nanotimes);
     grp_rise.create_dataset('timestamps_marker', data=timestamps_marker, dtype='int8');
     f_saveHDF5.flush()
     # simulate for ontime_exp1 and offtime_exp_1
@@ -172,8 +225,9 @@ def save_simulated_trace(ton1=0.016, ton2=0.002, toff1=0.250,
     grp_exp.create_dataset('offtimes_exp', data=offtimes_exp_1);
     out_ts = timestamps_from_onofftrace(ontimes_exp_1, offtimes_exp_1, 
                                      i_on_mu, i_off_mu);
-    [timestamps, timestamps_marker] = out_ts;
+    [timestamps, timestamps_marker, nanotimes] = out_ts;
     grp_exp.create_dataset('timestamps', data=timestamps);
+    grp_exp.create_dataset('nanotimes', data=nanotimes);
     grp_exp.create_dataset('timestamps_marker', data=timestamps_marker, dtype='int8');
     f_saveHDF5.flush()
     # close hdf5 and end of func
@@ -193,7 +247,7 @@ def timetrace_from_onofftrace(ontimes, offtimes, bintime=1e-3,
     '''
     #counts per bintime
     counts_on_mu = bintime * i_on_mu;
-    counts_on_sig = bintime * i_on_sig;
+    counts_on_sig = bintime * (i_on_sig + i_off_sig)
     counts_off_mu = bintime * i_off_mu;
     counts_off_sig = bintime * i_off_sig;
     # times to milliseconds and converting to integer for generating binned trace
