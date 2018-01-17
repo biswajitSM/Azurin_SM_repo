@@ -166,7 +166,7 @@ def normalize_G(t, u, bins):
     return Gn
 
 def fcs_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
-                   t_fcsrange=[1e-6, 1], nbins=10,
+                   t_fcsrange=[1e-6, 1], nbins=100,
                    overwrite=False):
     '''
     '''
@@ -212,7 +212,11 @@ def fcs_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
         h5_analysis[data_fpars].attrs['bins per one order of time'] = nbins
         h5_analysis.flush()
     h5_analysis.close()
-    return
+    h5_saved = h5py.File(file_path_hdf5analysis, 'r')
+    fcs_out = pd.DataFrame(h5_saved['fcs/fcs_nbins100'][:],
+                            columns = ['lag_time', 'G(t)-1'])
+    h5_saved.close()
+    return file_path_hdf5analysis, fcs_out
 # =========== FOLDERWISE ==============
 
 
@@ -232,11 +236,11 @@ def fcs_folderwise(folderpath, t_fcsrange=[1e-6, 1], nbins=100, overwrite=False)
                     df_datn = pd.read_csv(file_path_datn, header=None)
                     tmin = min(df_datn[0])
                     tmax = max(df_datn[0])
-                    fcs_photonhdf5(file_path_hdf5, tmin=tmin, tmax=tmax,
+                    out = fcs_photonhdf5(file_path_hdf5, tmin=tmin, tmax=tmax,
                                    t_fcsrange=t_fcsrange, nbins=nbins,
                                    overwrite=overwrite)
                 except:
-                    fcs_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
+                    out = fcs_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
                                    t_fcsrange=t_fcsrange, nbins=nbins,
                                    overwrite=overwrite)
                 processtime = time.time() - start_time_i
@@ -249,6 +253,6 @@ def fcs_folderwise(folderpath, t_fcsrange=[1e-6, 1], nbins=100, overwrite=False)
     return
 
 # # run for a folder , remember it can take very long time; Create a temp file and run them in section
-temp_data = '/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data/S106d18May17_635_CuAzu655_longtime/S106d18May17_60.5_635_A9_CuAzu655_100mV(18)/data'
-data_path = '/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data'
-fcs_folderwise(data_path, t_fcsrange=[1e-6, 10], nbins=100, overwrite=True)
+# temp_data = '/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data/S106d18May17_635_CuAzu655_longtime/S106d18May17_60.5_635_A9_CuAzu655_100mV(18)/data'
+# data_path = '/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data'
+# fcs_folderwise(data_path, t_fcsrange=[1e-6, 10], nbins=100, overwrite=False)

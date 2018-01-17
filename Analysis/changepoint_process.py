@@ -12,9 +12,8 @@ from lmfit import Parameters, report_fit, Model
 changepoint_exe = "changepoint_program/changepoint.exe"
 changepoint_exe = os.path.abspath(changepoint_exe)
 
-
 def changepoint_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
-                           time_sect=25, pars=[1, 0.1, 0.9, 2],
+                           time_sect=25, pars=(1, 0.01, 0.99, 2),
                            overwrite=False):
     '''
     '''
@@ -58,7 +57,11 @@ def changepoint_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
         h5_analysis[data_cpars].attrs['columns'] = cp_cols
         h5_analysis.flush()
     h5_analysis.close()
-    return file_path_hdf5analysis, timestamps
+    h5_saved = h5py.File(file_path_hdf5analysis, 'r')
+    cp_out = pd.DataFrame(h5_saved[data_cpars][:],
+                            columns = ['cp_index', 'cp_ts', 'cp_state', 'cp_countrate'])
+    h5_saved.close()
+    return file_path_hdf5analysis, timestamps, cp_out
 def changepoint_simulatedata(simulatedhdf5, time_sect=25, pars=[1, 0.1, 0.9, 2],
                              exp=True, rise=False, overwrite=False):
     h5 = h5py.File(simulatedhdf5, 'r+')
@@ -165,20 +168,66 @@ def changepoint_exec(timestamps, file_path_hdf5, time_sect, pars=[1, 0.1, 0.9, 2
     os.remove(file_dat_bic)
     os.remove(file_dat_cp0)
     return changepoint_output
-def plot_changepoint(changepoint_output, timestamps):
+
+def plot_changepoint_trace(ax, timestamps, changepoint_output, bintime,
+                           x_lim_min=0, y_lim_min=0, x_lim_max=5, y_lim_max=6,
+                           show_changepoint=True):
+    ''' help doc
     '''
-    '''
-    time_cp = pd.concat([changepoint_output['cp_ts'][1:], changepoint_output['cp_ts']], axis=0).reset_index(drop=True)
-    countrate_cp = pd.concat([changepoint_output['cp_countrate'][:-1], 
-                              changepoint_output['cp_countrate']], axis=0).reset_index(drop=True)
-    df = pd.DataFrame({'cp': time_cp.values,
-                       'countrate': countrate_cp.values})
-    df = df.sort_values(by=['cp'], kind='mergesort').reset_index(drop=True)#'mergesort', 'quicksort', 'heapsort'
-    # df.head(15)
-    plt.plot(df['cp'][:200], df['countrate'][:200])
+    # realtime trace plot
+    bins = int((max(timestamps) - min(timestamps)) / bintime)
+    binned_trace = np.histogram(timestamps, bins=bins)
+    ax.plot(binned_trace[1][:-1], 1e-3 *
+            binned_trace[0] / bintime, 'b', alpha=0.5)
+    # changepoint plot
+    time_cp = []
+    for i, j in zip(changepoint_output['cp_ts'], changepoint_output['cp_ts'][1:]):
+        time_cp_temp = [i, j]
+        time_cp = np.append(time_cp, time_cp_temp)
+    countrate_cp = []
+    for i, j in zip(changepoint_output['cp_countrate'][:-1], changepoint_output['cp_countrate']):
+        countrate_cp_temp = [i, j]
+        countrate_cp = np.append(countrate_cp, countrate_cp_temp)
+    ax.plot(time_cp, 1e-3 * countrate_cp, 'r')
+    # axis properties
+    ax.set_xlim(x_lim_min, x_lim_max)
+    ax.set_ylim(y_lim_min, y_lim_max)
+    ax.set_xlabel('Time/s')
+    ax.set_ylabel('Counts/kcps')
     return
+
+def onoff_changepoint(changepoint_output, plotting=True, figsize=(12, 6)):
+    df_diff = changepoint_output[1:].diff(periods=1)[1:].reset_index(drop=True)
+    df_diff.columns = df_diff.columns.str.replace('cp_ts', 'duration')
+    df_rollmean = pd.rolling_mean(changepoint_output, window=2)[
+        2:].reset_index(drop=True)
+    df_diff["abs_time"] = df_rollmean["cp_ts"]
+
+    df_on = df_diff[['duration', 'abs_time']
+                    ][df_diff["cp_countrate"] < 0].reset_index(drop=True)
+    df_off = df_diff[['duration', 'abs_time']
+                     ][df_diff["cp_countrate"] > 0].reset_index(drop=True)
+    if plotting:
+        fig = plt.figure(figsize=(12, 6))
+        nrows = 2
+        ncols = 3
+        ax00 = plt.subplot2grid((nrows, ncols), (0, 0), colspan=2)
+        ax10 = plt.subplot2grid((nrows, ncols), (1, 0), colspan=2)
+        ax02 = plt.subplot2grid((nrows, ncols), (0, 2))
+        ax12 = plt.subplot2grid((nrows, ncols), (1, 2))
+
+        ax00.plot(df_on["abs_time"], df_on["duration"])
+        ax10.plot(df_off["abs_time"], df_off["duration"])
+        ax00.set_ylim(0, 2)
+        ax10.set_ylim(0, 2)
+        ax02.hist(df_on["duration"], bins=20, range=(
+            min(df_on["duration"]), 0.5), label='on times')
+        ax12.hist(df_off["duration"], bins=20, range=(
+            min(df_off["duration"]), 0.5), label='off times')
+        # df_diff.head()
+    return df_on, df_off
 # =========== FOLDERWISE ==============
-def changepoint_folderwise(folderpath, pars=[1, 0.1, 0.9, 2], overwrite=False):
+def changepoint_folderwise(folderpath, pars=(1, 0.1, 0.9, 2), overwrite=False):
     start_time = time.time()
     pt3_extension = [".pt3"]
     for dirpath, dirname, filenames in os.walk(folderpath):
