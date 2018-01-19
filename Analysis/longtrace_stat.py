@@ -4,6 +4,8 @@ import pandas as pd
 import h5py
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+import datetime
+
 
 from Analysis import *
 from autocorrelate import autocorrelate
@@ -321,7 +323,7 @@ def longtrace_byparts(timestamps, nanotimes, save_folder,
             plt.close('all')
             nrows = 3
             ncols = 2
-            fig = plt.figure(figsize=(20, 10))
+            fig = plt.figure(figsize=(10, 8))
             ax00 = plt.subplot2grid((nrows, ncols), (0, 0), colspan=2)
             ax10 = plt.subplot2grid((nrows, ncols), (1, 0))
             ax11 = plt.subplot2grid((nrows, ncols), (1, 1))
@@ -337,33 +339,40 @@ def longtrace_byparts(timestamps, nanotimes, save_folder,
             ax00.axvspan(min(df_ts[column]), max(df_ts[column]),
                          color='r', alpha=0.3, lw=0)
             ax11.plot(df_lt.iloc[:, 0], df_lt[column],
-                      'ob', label='Fluorescence lifetime')
+                      '*b', ms=3, label='Fluorescence lifetime')
             ax20.plot(df_ip.iloc[:, 0], df_ip[column],
-                      'ob', label='Interphoton time')
+                      '*b', ms=3, label='Interphoton time')
             ax21.plot(df_fcs.iloc[:, 0], df_fcs[column],
-                      'ob', label='FCS')
+                      '*b', ms=3, label='FCS')
             # axis properties
             ax00.set_ylim(0, None)
             ax10.set_ylim(0, None)
+            ax10.legend(['Highlighted part of the trace'])
             ax11.set_xlim(4.5, 7.5)
             ax11.set_ylim(1e-1, None)
             ax11.set_yscale('log')
+            ax11.set_xlabel('Lifetime/ns')
+            ax11.set_ylabel('#')
             ax11.legend()
             ax20.set_xlim(1e-5, 1e-1)
             ax20.set_xscale('log')
             ax20.set_yscale('log')
+            ax20.set_xlabel('Interphoton time/s')
+            ax20.set_ylabel('#')
             ax20.legend()
             ax21.set_xlim(1e-5, 1)
             ax21.set_ylim(0, 4)
             ax21.set_xscale('log')
+            ax21.set_xlabel('lag time/s')
+            ax21.set_ylabel('G(t)-1')
             ax21.legend()
             fig.tight_layout()
             # save figure
-            savename = str(column) + '.png'
+            date = datetime.datetime.today().strftime('%Y%m%d_%H%M')
+            savename = date+'_'+str(column) + '.png'
             savename = os.path.join(save_folder, savename)
             fig.savefig(savename, dpi=300)
     return df_ts, df_lt, df_fcs, df_ip
-
 
 def plot_timetrace(ax, timestamps, bintime):
     tmin = min(timestamps)
@@ -372,13 +381,59 @@ def plot_timetrace(ax, timestamps, bintime):
     binpts = int(tt_length / bintime)
     hist, trace = np.histogram(timestamps, bins=binpts,
                                range=(tmin, tmax))
-    ax.plot(trace[:-1], hist * 1e-3 / bintime)
+    ax.plot(trace[:-1], hist * 1e-3 / bintime, 'b')
     ax.set_ylabel('counts/kcps')
     ax.set_xlabel('time/s')
     ax.set_xlim(tmin, tmax)
     #ax.set_title('bintime: ' + str(bintime))
     return
 
+
+def photonhdf5_longtrace_byparts(file_path_hdf5, delete_oldpng=True):
+    file_path_datn = file_path_hdf5[:-4] + 'pt3.datn'
+    df_datn = pd.read_csv(file_path_datn, header=None)
+    tmin = min(df_datn[0])
+    tmax = max(df_datn[0])
+    h5 = h5py.File(file_path_hdf5)
+    unit = h5['photon_data']['timestamps_specs']['timestamps_unit'][...]
+    tcspc_unit = h5['photon_data']['nanotimes_specs']['tcspc_unit'][...]
+    timestamps = unit * h5['photon_data']['timestamps'][...]
+    nanotimes = tcspc_unit * h5['photon_data']['nanotimes'][...]
+    mask = np.logical_and(timestamps >= tmin, timestamps <= tmax)
+    timestamps = timestamps[mask]
+    nanotimes = nanotimes[mask]
+    h5.close()
+    hdf5file_name = os.path.basename(file_path_hdf5)
+    longtraces_folder = '/home/biswajit/Downloads/temp/longtraces'
+    save_folder = os.path.join(longtraces_folder, hdf5file_name[:-5])
+    if not os.path.exists(save_folder):
+        os.makedirs(save_folder)
+    if delete_oldpng:
+        filelist = [f for f in os.listdir(save_folder) if f.endswith(".png")]
+        for f in filelist:
+            os.remove(os.path.join(save_folder, f))
+    out = longtrace_byparts(timestamps, nanotimes, save_folder,
+                            window=1e4, period=1e3, plotting=True)
+    return out
+
+
+def simulatedhdf5_longtrace_byparts(simulated_hdf5, delete_oldpng=True):
+    h5 = h5py.File(hdf5_simulated, 'r')
+    timestamps = h5['onexp_offexp']['timestamps'][...]
+    nanotimes = h5['onexp_offexp']['nanotimes'][...]
+    h5.close()
+    hdf5file_name = os.path.basename(simulated_hdf5)
+    longtraces_folder = '/home/biswajit/Downloads/temp/longtraces'
+    save_folder = os.path.join(longtraces_folder, hdf5file_name[:-5])
+    if not os.path.exists(save_folder):
+        os.makedirs(save_folder)
+    if delete_oldpng:
+        filelist = [f for f in os.listdir(save_folder) if f.endswith(".png")]
+        for f in filelist:
+            os.remove(os.path.join(save_folder, f))
+    out = longtrace_byparts(timestamps, nanotimes, save_folder,
+                            window=1e4, period=1e3, plotting=True)
+    return out
 #===============fitting functions=============
 def risetime_fit(t, k1, k2, A):
     return ((A*k1*k2/(k2-k1)) * (exp(-k1*t) - exp(-k2*t)))

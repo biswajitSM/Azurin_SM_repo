@@ -13,6 +13,8 @@ tempfiles/
 *.sublime-workspace
 *.bib~
 *.html
+*.png
+*.odt
 *.dat
 *data/
 *data_simulated/

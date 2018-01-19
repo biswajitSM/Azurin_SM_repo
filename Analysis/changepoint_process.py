@@ -199,8 +199,8 @@ def plot_changepoint_trace(ax, timestamps, changepoint_output, bintime,
 def onoff_changepoint(changepoint_output, plotting=True, figsize=(12, 6)):
     df_diff = changepoint_output[1:].diff(periods=1)[1:].reset_index(drop=True)
     df_diff.columns = df_diff.columns.str.replace('cp_ts', 'duration')
-    df_rollmean = pd.rolling_mean(changepoint_output, window=2)[
-        2:].reset_index(drop=True)
+    df_rollmean = changepoint_output.rolling(
+        window=2).mean().reset_index(drop=True)
     df_diff["abs_time"] = df_rollmean["cp_ts"]
 
     df_on = df_diff[['duration', 'abs_time']

@@ -99,7 +99,7 @@ def simulate_nanotimes(lifetime=2e-9, num_samples=1e5, plotting=False):
     num_samples = int(5e5)
     tau = lifetime  # 0.2e-9
     baseline_fraction = 0.03
-    offset = 2e-9
+    offset = 3.5e-9
 
     sample_decay = np.random.exponential(scale=tau / time_step_s,
                                          size=num_samples) + offset / time_step_s

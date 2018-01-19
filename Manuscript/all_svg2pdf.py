@@ -47,7 +47,7 @@ def svg2pdf(list):
         print('Converting file: %s' %file)
         pdf_abspath = file.split('.')[0]
         os.system('inkscape %s "%s" --export-pdf="%s.pdf"' %(options, file, pdf_abspath)) 
-
+        # os.system('inkscape %s "%s" --export-png="%s.png"' %(options, file, pdf_abspath)) 
 
 if __name__ == "__main__":
     print(__doc__)
