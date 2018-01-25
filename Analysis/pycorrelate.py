@@ -8,6 +8,7 @@ import numpy as np
 import numba
 import pandas as pd
 import h5py
+from scipy.optimize import curve_fit
 
 @numba.jit(nopython=True)
 def pcorrelate(t, u, bins):
@@ -120,7 +121,6 @@ def ucorrelate(t, u, maxlags=None):
         C[lag] = (t[:tmax] * u[lag:umax]).sum()
     return C
 
-
 def make_loglags(exp_min, exp_max, points_per_base, base=10):
     """Make a log-spaced array useful as lag bins for cross-correlation.
 
@@ -164,7 +164,157 @@ def normalize_G(t, u, bins):
                   / (float((t >= tau).sum()) * 
                      float((u <= (u.max() - tau)).sum())))
     return Gn
+# ============ fitting ========
+def t_on_off_fromFCS(lag_time, Gn, tmin=1e-5, tmax=1.0e0,
+                     signal=3.0e3, bg=2.0e2, bg_corr=True,
+                     fitype='mono_exp', plotting=False, ax=None):
+    '''
+    Argument:
+    fitype: 'mono_exp' or 'bi_exp'
+    '''
+    xdata = lag_time
+    mask = np.logical_and(xdata >= tmin, xdata <= tmax)
+    xdata = xdata[mask]
+    ydata = Gn[mask]
+    correction_BG = ((signal + bg) / signal)**2
+    if bg_corr:
+        ydata = ((ydata) * correction_BG)
+    def mono_exp(x, A1, t_ac1):
+        return (A1*np.exp(-x/t_ac1))
+    def bi_exp(x, A1, t1, A2, t2):
+        return (A1*np.exp(-x/t1) + A2*np.exp(-x/t2))
+    if fitype=='mono_exp':
+        monofit, pcov = curve_fit(mono_exp, xdata, ydata, p0 = [1, 1], bounds=(0, np.inf))
+        perr = np.sqrt(np.diag(pcov))
+        A1=monofit[0]; t_ac1 = monofit[1]; t_ac1_err = perr[1]
+        toff1 = t_ac1*(1+A1); ton1 = t_ac1*(1+(1/A1));
+        toff1_err = t_ac1_err*(1+A1); ton1_err = t_ac1_err*(1+(1/A1));
+        #rounding figures
+        Mylist = [ton1, ton1_err, toff1, toff1_err]
+        roundMylist = ['%.4f' % elem for elem in Mylist]
+        # roundMylist = [ np.round(elem, 3) for elem in Mylist ]
+        [ton1, ton1_err, toff1, toff1_err] = roundMylist
+        fcs_fit_result = {'ton1': ton1,
+                          'ton1_err': ton1_err,
+                          'toff1': toff1,
+                          'toff1_err': toff1_err}        
+    if fitype=='bi_exp':
+        bifit, pcov = curve_fit(bi_exp, xdata, ydata, p0 = [1, 1, 1, 1], bounds=(0, np.inf))
+        perr = np.sqrt(np.diag(pcov))
+        if bifit[1]>bifit[3]:
+            A1=bifit[0]; t_ac1 = bifit[1]; t_ac1_err = perr[1]
+            A2=bifit[2]; t_ac2 = bifit[3]; t_ac2_err = perr[3]
+        else:
+            A1=bifit[2]; t_ac1 = bifit[3]; t_ac1_err = perr[3]
+            A2=bifit[0]; t_ac2 = bifit[1]; t_ac2_err = perr[1]
+        toff1 = t_ac1*(1+A1); ton1 = t_ac1*(1+(1/A1));
+        toff1_err = t_ac1_err*(1+A1); ton1_err = t_ac1_err*(1+(1/A1));
+        toff2 = t_ac2*(1+A2); ton2 = t_ac2*(1+(1/A2));
+        toff2_err = t_ac2_err*(1+A2); ton2_err = t_ac2_err*(1+(1/A2));        
+        #rounding figures
+        Mylist = [ton1, ton1_err, toff1, toff1_err,
+                 ton2, ton2_err, toff2, toff2_err]
+        roundMylist = [ '%.4f' % elem for elem in Mylist ]
+        # roundMylist = [ np.round(elem, 3) for elem in Mylist ]
+        [ton1, ton1_err, toff1, toff1_err,
+         ton2, ton2_err, toff2, toff2_err] = roundMylist
+        fcs_fit_result = {'ton1': ton1,
+                          'ton1_err': ton1_err,
+                          'toff1': toff1,
+                          'toff1_err': toff1_err,
+                          'ton2': ton2,
+                          'ton2_err': ton2_err,
+                          'toff2': toff2,
+                          'toff2_err': toff2_err}       
+    if plotting and ax:
+        ax.plot(xdata, ydata, label='data')
+        if fitype=='mono_exp':
+            ax.plot(xdata, mono_exp(xdata, *monofit), color = 'r', linewidth=2.0)
+        if fitype=='bi_exp':
+            ax.plot(xdata, bi_exp(xdata, *bifit), color = 'r', linewidth=2.0)
+        ax.set_xscale('log')
+        ax.grid(True); ax.grid(True, which='minor', lw=0.3)
+        ax.set_xlim(tmin, tmax)
+        ax.set_ylim(0, None)
+        ax.legend()
+        # ax.set_title(fcs_fit_result)
+    return fcs_fit_result
 
+def t_on_off_fromFCS_2(lag_time, Gn, tmin=1e-5, tmax=1.0e0,
+                     signal=3.0e3, bg=2.0e2, bg_corr=True,
+                     fitype='mono_exp', plotting=False, ax=None):
+    '''
+    Argument:
+    fitype: 'mono_exp' or 'bi_exp'
+    '''
+    xdata = lag_time
+    mask = np.logical_and(xdata >= tmin, xdata <= tmax)
+    xdata = xdata[mask]
+    ydata = Gn[mask]
+    correction_BG = ((signal + bg) / signal)**2
+    if bg_corr:
+        ydata = ((ydata) * correction_BG)
+
+    def mono_exp(x, ton1, toff1):
+        #A*np.exp(-x/t_ac)
+        return (toff1 / ton1) * np.exp(-x * (ton1 + toff1) / (ton1 * toff1))
+    def bi_exp(x, ton1, toff1, ton2, toff2):
+        g1 = (toff1 / ton1) * np.exp(-x * (ton1 + toff1) / (ton1 * toff1))
+        g2 = (toff2 / ton2) * np.exp(-x * (ton2 + toff2) / (ton2 * toff2))
+        return g1 * g2
+    from lmfit import Model
+    if fitype == 'mono_exp':
+        gmodel = Model(mono_exp)
+        gmodel.set_param_hint('ton1', value=0.01)  # , value=1, min=0.05, max=100
+        gmodel.set_param_hint('toff1', value=0.05)  # , value=0.005, min=1, max=100
+        pars = gmodel.make_params()
+        result = gmodel.fit(ydata, pars, x=xdata)  # , A=1, B=1, t_ac=1
+        params = result.params
+        ton1 = params['ton1'].value
+        ton1_err = float(str(params['ton1']).split('+/-')[1].split(',')[0])
+        toff1 = params['toff1'].value
+        toff1_err = float(str(params['toff1']).split('+/-')[1].split(',')[0])
+        #rounding figures
+        Mylist = [ton1, ton1_err, toff1, toff1_err]
+        roundMylist = [ np.round(elem, 3) for elem in Mylist ]
+        [ton1, ton1_err, toff1, toff1_err] = roundMylist
+        fcs_fit_result = {'ton1': ton1,
+                          'ton1_err': ton1_err,
+                          'toff1': toff1,
+                          'toff1_err': toff1_err}
+    if fitype == 'bi_exp':
+        gmodel = Model(bi_exp)
+        gmodel.set_param_hint('ton1', value=0.1)  # , value=1, min=0.05, max=100
+        gmodel.set_param_hint('toff1', value=0.2)  # , value=0.005, min=1, max=100
+        gmodel.set_param_hint('ton2', value=0.2)  # , value=1, min=0.05, max=100
+        gmodel.set_param_hint('toff2', value=0.3)  # , value=0.005, min=1, max=100        
+        pars = gmodel.make_params()
+        result = gmodel.fit(ydata, pars, x=xdata)  # , A=1, B=1, t_ac=1
+        params = result.params
+        ton1 = params['ton1'].value
+        ton1_err = float(str(params['ton1']).split('+/-')[1].split(',')[0])
+        toff1 = params['toff1'].value
+        toff1_err = float(str(params['toff1']).split('+/-')[1].split(',')[0])
+        #rounding figures
+        Mylist = [ton1, ton1_err, toff1, toff1_err]
+        roundMylist = [ np.round(elem, 3) for elem in Mylist ]
+        [ton1, ton1_err, toff1, toff1_err] = roundMylist
+        fcs_fit_result = {'ton1': ton1,
+                          'ton1_err': ton1_err,
+                          'toff1': toff1,
+                          'toff1_err': toff1_err}        
+    if plotting and ax:
+        print('plot')
+        ax.plot(xdata, ydata, 'b.', label='data')
+        ax.plot(xdata, result.best_fit, 'r--', label='fit')
+        ax.set_xscale('log')
+        ax.grid(True); ax.grid(True, which='minor', lw=0.3)
+        ax.set_xlim(tmin, tmax)
+        ax.set_ylim(0, None)
+        ax.legend()
+        ax.set_title(fcs_fit_result)
+    return fcs_fit_result, result  # , t_on_err, t_off_err
+# ========== fcs of photonhdf5 format  ==========
 def fcs_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
                    t_fcsrange=[1e-6, 1], nbins=100,
                    overwrite=False):
@@ -218,8 +368,6 @@ def fcs_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
     h5_saved.close()
     return file_path_hdf5analysis, fcs_out
 # =========== FOLDERWISE ==============
-
-
 def fcs_folderwise(folderpath, t_fcsrange=[1e-6, 1], nbins=100, overwrite=False):
     start_time = time.time()
     pt3_extension = [".pt3"]
@@ -251,8 +399,3 @@ def fcs_folderwise(folderpath, t_fcsrange=[1e-6, 1], nbins=100, overwrite=False)
     print("---TOTAL time took for the folder: %s seconds ---\n" %
           (time.time() - start_time))
     return
-
-# # run for a folder , remember it can take very long time; Create a temp file and run them in section
-# temp_data = '/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data/S106d18May17_635_CuAzu655_longtime/S106d18May17_60.5_635_A9_CuAzu655_100mV(18)/data'
-# data_path = '/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data'
-# fcs_folderwise(data_path, t_fcsrange=[1e-6, 10], nbins=100, overwrite=False)

@@ -271,7 +271,9 @@ def t_ons_t_offs(df_dig):
     t_offs = df_offs_maxs - df_offs_mins;
     t_offs = t_offs[np.nonzero(t_offs)]
     return t_ons, t_offs
-# ============= Video making by parts analysis ===============
+# ===============================================
+# ============= Changepoint free ===============
+# ===============================================
 def longtrace_byparts(timestamps, nanotimes, save_folder,
                       window=1e4, period=1e3, plotting=False):
     '''

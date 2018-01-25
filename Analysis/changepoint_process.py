@@ -146,20 +146,20 @@ def changepoint_exec(timestamps, file_path_hdf5, time_sect, pars=[1, 0.1, 0.9, 2
         file_dat_bic = file_dat_ts + '.bic'
         file_dat_cp0 = file_dat_ts + '.cp0'
         #Extract proper outputs
-        changepoint_em2 = pd.read_csv(file_dat_em2, header=None, sep='\s+')
         changepoint_cp = pd.read_csv(file_dat_cp, header=None, sep='\s+')
-        cp_index_1 = pd.DataFrame([[0, 0, 0]])
-        changepoint_cp = pd.concat([cp_index_1, changepoint_cp], axis=0).reset_index(drop=True)
-        changepoint_ts = pd.DataFrame(timestamps_sect[changepoint_cp[0].values] + timestamps_sect_corr)
+        cp_index_0 = pd.DataFrame([[0, 0, 0]])
+        cp_index_end = pd.DataFrame([[len(timestamps_sect)-1, 0, 0]])
+        changepoint_cp = pd.concat([cp_index_0, changepoint_cp, cp_index_end],
+                                axis=0).reset_index(drop=True)
+        changepoint_em2 = pd.read_csv(file_dat_em2, header=None, sep='\s+')
+        em_add_0 = pd.DataFrame([changepoint_em2.iloc[0, :].values])
+        changepoint_em2 = pd.concat([em_add_0, changepoint_em2],
+                                axis=0).reset_index(drop=True)
+        changepoint_ts = pd.DataFrame(timestamps_sect[changepoint_cp[0].values] + timestamps_sect_corr)# + timestamps_sect_corr
         changepoint_comb = pd.concat([changepoint_cp[[0]], changepoint_ts[[0]],
-                                       changepoint_em2[[0]], changepoint_em2[[1]]], axis=1)
+                                changepoint_em2[[0]], changepoint_em2[[1]]], axis=1)
         changepoint_comb.columns = ['cp_index', 'cp_ts', 'cp_state', 'cp_countrate']
-        # remove same consecutive states 
-        mask = np.diff(changepoint_comb['cp_state'].values)
-        mask = np.append(mask, [11])
-        mask = mask != 0 # removing repeatative time indices 
-        changepoint_comb_cor = changepoint_comb[mask].reset_index(drop=True)
-        changepoint_output = pd.concat([changepoint_output, changepoint_comb_cor]).reset_index(drop=True)
+        changepoint_output = pd.concat([changepoint_output, changepoint_comb]).reset_index(drop=True)
     # remove generated files
     os.remove(file_dat_ts)
     os.remove(file_dat_cp)
@@ -168,6 +168,30 @@ def changepoint_exec(timestamps, file_path_hdf5, time_sect, pars=[1, 0.1, 0.9, 2
     os.remove(file_dat_bic)
     os.remove(file_dat_cp0)
     return changepoint_output
+
+def changepoint_output_corr(changepoint_output):
+    cp_ts = []
+    for i, j in zip(changepoint_output['cp_ts'], changepoint_output['cp_ts'][1:]):
+        cp_ts_temp = [i, j]
+        cp_ts = np.append(cp_ts, cp_ts_temp)
+    cp_index = []
+    for i, j in zip(changepoint_output['cp_index'], changepoint_output['cp_index'][1:]):
+        cp_index_temp = [i, j]
+        cp_index = np.append(cp_index, cp_index_temp)        
+    cp_countrate = []
+    for i, j in zip(changepoint_output['cp_countrate'][1:], changepoint_output['cp_countrate'][1:]):
+        cp_countrate_temp = [i, j]
+        cp_countrate = np.append(cp_countrate, cp_countrate_temp)
+    cp_state = []
+    for i, j in zip(changepoint_output['cp_state'][1:], changepoint_output['cp_state'][1:]):
+        cp_state_temp = [i, j]
+        cp_state = np.append(cp_state, cp_state_temp)
+    cp_out_cor = pd.DataFrame()
+    cp_out_cor['cp_index'] = cp_index
+    cp_out_cor['cp_ts'] = cp_ts
+    cp_out_cor['cp_state'] = cp_state
+    cp_out_cor['cp_countrate'] = cp_countrate
+    return cp_out_cor
 
 def plot_changepoint_trace(ax, timestamps, changepoint_output, bintime,
                            x_lim_min=0, y_lim_min=0, x_lim_max=5, y_lim_max=6,
@@ -180,15 +204,9 @@ def plot_changepoint_trace(ax, timestamps, changepoint_output, bintime,
     ax.plot(binned_trace[1][:-1], 1e-3 *
             binned_trace[0] / bintime, 'b', alpha=0.5)
     # changepoint plot
-    time_cp = []
-    for i, j in zip(changepoint_output['cp_ts'], changepoint_output['cp_ts'][1:]):
-        time_cp_temp = [i, j]
-        time_cp = np.append(time_cp, time_cp_temp)
-    countrate_cp = []
-    for i, j in zip(changepoint_output['cp_countrate'][:-1], changepoint_output['cp_countrate']):
-        countrate_cp_temp = [i, j]
-        countrate_cp = np.append(countrate_cp, countrate_cp_temp)
-    ax.plot(time_cp, 1e-3 * countrate_cp, 'r')
+    cp_out_cor = changepoint_output_corr(changepoint_output)
+    if show_changepoint:
+        ax.plot(cp_out_cor['cp_ts'], 1e-3*cp_out_cor['cp_countrate'], 'r')
     # axis properties
     ax.set_xlim(x_lim_min, x_lim_max)
     ax.set_ylim(y_lim_min, y_lim_max)
@@ -196,36 +214,45 @@ def plot_changepoint_trace(ax, timestamps, changepoint_output, bintime,
     ax.set_ylabel('Counts/kcps')
     return
 
-def onoff_changepoint(changepoint_output, plotting=True, figsize=(12, 6)):
-    df_diff = changepoint_output[1:].diff(periods=1)[1:].reset_index(drop=True)
+def onoff_fromCP(changepoint_output):
+    cp_out_cor = changepoint_output_corr(changepoint_output)
+    state_diff = cp_out_cor['cp_state'].diff().values
+    state_diff = np.append([1],state_diff[1:], axis=0)#replace 1st nan by '0'
+    df = cp_out_cor[state_diff != 0].reset_index(drop=True)    
+    df_diff = df[1:].diff(periods=1)[1:].reset_index(drop=True)
     df_diff.columns = df_diff.columns.str.replace('cp_ts', 'duration')
-    df_rollmean = changepoint_output.rolling(
-        window=2).mean().reset_index(drop=True)
-    df_diff["abs_time"] = df_rollmean["cp_ts"]
 
-    df_on = df_diff[['duration', 'abs_time']
-                    ][df_diff["cp_countrate"] < 0].reset_index(drop=True)
-    df_off = df_diff[['duration', 'abs_time']
-                     ][df_diff["cp_countrate"] > 0].reset_index(drop=True)
-    if plotting:
-        fig = plt.figure(figsize=(12, 6))
-        nrows = 2
-        ncols = 3
-        ax00 = plt.subplot2grid((nrows, ncols), (0, 0), colspan=2)
-        ax10 = plt.subplot2grid((nrows, ncols), (1, 0), colspan=2)
-        ax02 = plt.subplot2grid((nrows, ncols), (0, 2))
-        ax12 = plt.subplot2grid((nrows, ncols), (1, 2))
+    df_diff = df_diff[1:]
+    ontimes = df_diff[['duration']][df_diff["cp_countrate"] < 0].values
+    offtimes = df_diff[['duration']][df_diff["cp_countrate"] > 0].values
+    len_cor = len(ontimes)-2
+    ontimes = ontimes[:len_cor]
+    offtimes = offtimes[:len_cor]
+    abstimes = ontimes+offtimes
+    abstimes = np.cumsum(abstimes)
 
-        ax00.plot(df_on["abs_time"], df_on["duration"])
-        ax10.plot(df_off["abs_time"], df_off["duration"])
-        ax00.set_ylim(0, 2)
-        ax10.set_ylim(0, 2)
-        ax02.hist(df_on["duration"], bins=20, range=(
-            min(df_on["duration"]), 0.5), label='on times')
-        ax12.hist(df_off["duration"], bins=20, range=(
-            min(df_off["duration"]), 0.5), label='off times')
-        # df_diff.head()
-    return df_on, df_off
+    tonav = np.average(ontimes)
+    lambda_ton = 1/tonav;
+    lambda_ton_low = lambda_ton * (1-(1.96/np.sqrt(len(ontimes))))
+    lambda_ton_upp = lambda_ton * (1+(1.96/np.sqrt(len(ontimes))))
+    tonav_err = (1/lambda_ton_low) - (1/lambda_ton_upp);
+    tonav_err = np.round(tonav_err, 4)
+
+    toffav = np.average(offtimes);# also converts to millisecond
+    lambda_toff = 1/toffav;
+    lambda_toff_low = lambda_toff * (1-(1.96/np.sqrt(len(offtimes))))
+    lambda_toff_upp = lambda_toff * (1+(1.96/np.sqrt(len(offtimes))))
+    toffav_err = (1/lambda_toff_low) - (1/lambda_toff_upp);
+    toffav_err = np.round(toffav_err, 4)
+    
+    onoff_out = {'ontimes': ontimes,
+                         'offtimes': offtimes,
+                         'abstimes': abstimes,
+                         'tonav': tonav,
+                         'tonav_err': tonav_err,
+                         'toffav': toffav,
+                         'toffav_err': toffav_err}
+    return onoff_out
 # =========== FOLDERWISE ==============
 def changepoint_folderwise(folderpath, pars=(1, 0.1, 0.9, 2), overwrite=False):
     start_time = time.time()
