@@ -72,9 +72,8 @@ multi-part-units = single]{siunitx}
   {A proper structure will be replaced}}
   \label{SIfig: peak_sep}
 \end{figure}
-% \pagebreak
 %==================BULK Switching=========================
-\paragraph*{Fluorescence switching in bulk} Fluorescence measurements in bulk of different peaks of azurin-ATTO655 sample (Figure S\ref{SIfig: peak_sep}) were carried out to determine the FRET switching ratio.
+\paragraph*{Fluorescence switching in bulk.} Fluorescence measurements in bulk of different peaks of azurin-ATTO655 sample (Figure S\ref{SIfig: peak_sep}) were carried out to determine the FRET switching ratio.
 The measurements were done in Cary Eclipse Spectrometer (Varian Inc. Agilent Technology, USA).
 A \SI{50}{\nM} sample was excited with \SI{665}{\nm} and intensity was monitored above \SI{675}{\nm}.
 Sodium ascorbate (reductant) and pottasium ferricyanide (oxidant) were added alternatively.
@@ -110,8 +109,8 @@ Similarly Zn Azurin-ATTO655 showed little or no change in intensity.
   \centering
   \includegraphics[width=\textwidth]{lifetime}
   \makeatletter
-  \renewcommand{\fnum@figure}{\figurename~S\thefigure
-}  \makeatother
+  \renewcommand{\fnum@figure}{\figurename~S\thefigure}
+  \makeatother
   \caption{Single-molecule azurin switching and lifetime. (a) Time trace of a single Cu azurin at \SI{50}{\mV} with a binning time of \SI{50}{\ms}.
   Notice the three different labels indicated in the figure. Bright (Cu(I)) state as above the red line, oxidized state is between red and black and Dark counts are below the black line. The fact that the molecule doesn't go to the dark count label before being bleached shows that the transitions are due to Copper oxidation switching rather than triplet blinking of the dye.
   Once the fluorophore is bleached, no transitions were observavable.
@@ -133,13 +132,14 @@ Similarly Zn Azurin-ATTO655 showed little or no change in intensity.
   The Cu azurin study is focussed in the safe window of potential more than \SI{40}{\mV} where triplet blinking is absent.}
   \label{SIfig:fcscomparision}
 \end{figure}
+
 %===============================Slope: Nernst equation==================================
 \begin{figure}
   \centering
-  \includegraphics[width=\textwidth,keepaspectratio]{SI_potential_slope}
-	\makeatletter
-	\renewcommand{\fnum@figure}{\figurename~S\thefigure}
-	\makeatother
+  \includegraphics[width=0.8\textwidth]{SI_potential_slope}
+  \makeatletter
+  \renewcommand{\fnum@figure}{\figurename~S\thefigure}
+  \makeatother
   \caption{Fitting with Nernst equation with slope as variable parameters for  (a) Cu-Azurin ATTO655. 
   (b) The corresponding histogram of slopes obtained from the fitting shown in the left.T
   he distribution of slope is centered around \SI{59}{\mV} indicating that Cuazurin switching  involves only one electron.}
@@ -168,12 +168,34 @@ Similarly Zn Azurin-ATTO655 showed little or no change in intensity.
   The averaging of on-time and off-times for correlation and midpoint distribution were done every $20$ events.}
   \label{fig: N_avgpoints_vs_fwhmwidth}
 \end{figure}
-\paragraph*{}
+
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{dynamic_trace_steps}
-  \caption{\textbf{Two conformational state dynamics}}
+  \caption{\textbf{Two conformational state dynamics: Dynamic heterogeneity of azurin-ATTO655}}
   \label{SIfig:dynamic_trace_steps}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{dynamic_Point_20_75mV_S105}
+  \caption{\textbf{Example2: Dynamic heterogeneity of azurin-ATTO655}}
+  \label{SIfig:dynamic_Point_20_75mV_S105}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{dynamic_Point_21_75mV_S105}
+  \caption{\textbf{Example3: Dynamic heterogeneity of azurin-ATTO655}}
+  \label{SIfig:dynamic_Point_21_75mV_S105}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{Dynamic_corr_many}
+  \caption{\textbf{More examples of Dynamic correlation.} 
+  }
+  \label{SIfig:Dynamic_corr_many}
 \end{figure}
 %============on-off 2D histogram=============
 \begin{figure}
@@ -181,26 +203,6 @@ Similarly Zn Azurin-ATTO655 showed little or no change in intensity.
   \includegraphics[width=\textwidth]{Figure_4_on_off_2D_100mV}
   \caption{\textbf{2D histogram: Cu-Azurin.}Two-dimensional correlation plot of a single azurin at \SI{50}{\mV} of(a) adjacent waiting time for oxidation ($t_{n}~and~t_{n+1}$) (b) two waiting times at a large separation of 100 ($t_{n}~and~t_{n+100}$) (c) The difference two dimensional histogram of (a) and (b).}
   \label{SIfig:onoff2D}
-\end{figure}
-
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth]{dynamic_Point_20_75mV_S105}
-  \caption{\textbf{dynamic Point 20 75mV S105}}
-  \label{SIfig:dynamic_Point_20_75mV_S105}
-\end{figure}
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth]{dynamic_Point_21_75mV_S105}
-  \caption{\textbf{dynamic Point 20 75mV S105}}
-  \label{SIfig:dynamic_Point_21_75mV_S105}
-\end{figure}
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth]{Dynamic_corr_many}
-  \caption{\textbf{More examples of Dynamic correlation.} 
-  }
-  \label{SIfig:Dynamic_corr_many}
 \end{figure}
 % \pagebreak
 \bibliographystyle{ieeetr} % For a list of bibliography styles, see https://www.sharelatex.com/learn/Bibtex_bibliography_styles
