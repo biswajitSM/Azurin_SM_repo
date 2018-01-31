@@ -47,23 +47,39 @@ multi-part-units = single]{siunitx}
 %%%%%%% Start the main part of the manuscript here.%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
+
 \begin{abstract}
 	Protein conformational dynamics play a crucial role in their biological activity. Single-molecule studies have revealed the spread of kinetic rates of enzymes which was not accessible in ensemble measurements.
 	The energy landscape of an enzymatic reactions consists a large number of substates with a rugged energy landscape.
 	However, the heterogeneous nature of dynamics obtained from the analysis of single-molecule traces and their generality is still hotly debated. Here we provide evidence of conformational heterogeneity in the complex formation of an electron transfer protein, azurin, with redox-active partners. We characterize the electron transfer dynamics activity of single azurin molecules from time traces, histograms of bright and dark times, and correlation functions of redox events. 
 \end{abstract}
+\newpage
+%============================ Introduction =====================================
 \section{Introduction}
-\begin{itemize}
-	\item Dynamic properties of enzymes have been focus of much research: Frauenfelder, Eaton, Onuchic, Kern. Single molecule: Xie HP Lu, H. Yang, van Oijen, Hofkens, Blank, Goldsmith
-	\item Also the dynamic properties of ET proteins are of high interest: Canters, Eaton, Marcus
-	\item Characteristic of ET-redox proteins are E0 and ET kinetics.
-	\item Question: are these properties distributed in an ensemble and if so in what sense. Ergodicity, time and ensemble averages: Barkai
-	\item We have investigated this by studying the E0 and the k's by SM techniques
-	\item Do this by applying electric potential and looking at life times of reduced and oxidized state.
-	\item Can do this by fluorescent labeling because the fluorescence is strongly dependent on the oxidation state through FRET.
-	\item We will show that $...$
-\end{itemize}
-%%%%%%%%%%%%%%----------EXPERIMENTAL SECTION----------%%%%%%%%%%%%%%%%%%%%
+Enzymes perform metabolic processes inside cell with minimum energy requirement. Conformational fluctuation of enzymes has got attention since the finding of non-exponential distribution of kinetic rates in ensemble of myoglobin. \cite{frauenfelder1991the,ansari1985protein,stein1985a,henzler-wildman2007dynamic} Conformational substates might hold the answer to the evolution of highly complex enzymes to perform efficient conversion of substrate to product. Single molecule spectroscopy have revealed the dynamic fluctuation of enzymes covering many orders of magnitude.\cite{lu1998single-molecule,yang2003protein,english2006ever-fluctuating}
+However, the evidences of heterogeneity from the analysis of single-molecule time traces have been strongly debated. Blank and coworkers have shown that the non-exponential distribution in the turn-overs of enzymes might be an artifact the analysis of the time traces.\cite{terentyeva2012dynamic} They showed that both threshold and change point analysis to find transitions on a time trace lead to additional non-exponentiality in the distribution of turn-over times.
+
+Dynamics of electron transfer in metalloproteins are also of high interest.\cite{marcus1985electron,dooley1981spectroscopic} Efficient electron transfer in living cells is essential for energy metabolism and storage. Metallo proteins are promising candidates from bio-electric devices and efficient energy conversion as a biofuel. Copper proteins along with iron proteins dominate the biological redox reactions. \cite{solomon2004electronic,solomon2001oxygen,peisach1974structural,canters1993engineering} 
+Like enzyme-substrate complex, electron transfer occurs through the formation of complex between metallo(redox) protein and its redox partners. 
+
+Electron transfer proteins are characterized by their electron transfer rates and midpoint potentials. Subtle changes in the structure of proteins may lead to variation in the electron transfer rates. Do redox proteins possess substates of their conformation in a particular oxidation state? We will invest electron transfer rates of a redox protein azurin across many single molecules and of single azurins as a function of time to look for heterogeneity.
+
+Azurin is a copper protein which is believed to be taking part in redox homeostasis in cells. A copper metal center is found in the so-called northern region of the protein matrix with molecular weight of \SI{\sim14}{\kilo\dalton}. The surrounded ligands around the protein results in a $\pi-\pi*$ transition giving the protein a blue color (absorption in \SIrange{590}{620}{\nm}) in Cu(II) state. Cu(I)azurin is colorless due to the absence of the absorption band in the red. Oxidation state of single azurins can be determined by attaching a fluorophore whose emission overlaps with absorption of Cu(II)azurin.\cite{kuznetsova2006a,kuznetsova2008the}
+The fluorescence of the label strongly depends on the oxidation state of the copper. In Cu(II) state, the fluorescence is quenched while in Cu(I) state the fluorescence is reserved. The durations of high intensity bursts are denoted as bright times and the durations of low intensity bursts are denoted as dark times.
+
+We study electron transfer in labeled single azurins while they reacts with electron mediators. Redox potential around azurins is varied by applying electric potential to a fixed concentration of electron mediators. The distribution of electron transfer rates across many single azurins was compared with the distribution of electron transfer rate of a single azurin as a function of time. The dynamics of single azurins were characterized by their intensity time traces, intensity correlations, histograms of bright and dark times, and correlation of bright and dark times.
+
+% \begin{itemize}
+% 	\item Dynamic properties of enzymes have been focus of much research: Frauenfelder, Eaton, Onuchic, Kern. Single molecule: Xie HP Lu, H. Yang, van Oijen, Hofkens, Blank, Goldsmith
+% 	\item Also the dynamic properties of ET proteins are of high interest: Marcus, Canters, Eaton
+% 	\item Characteristic of ET-redox proteins are E0 and ET kinetics.
+% 	\item Question: are these properties distributed in an ensemble and if so in what sense. Ergodicity, time and ensemble averages: Barkai
+% 	\item We have investigated this by studying the E0 and the k's by SM techniques
+% 	\item Do this by applying electric potential and looking at life times of reduced and oxidized state.
+% 	\item Can do this by fluorescent labeling because the fluorescence is strongly dependent on the oxidation state through FRET.
+% 	\item We will show that $...$
+% \end{itemize}
+%%%%%%%%%%%%%%---------- EXPERIMENTAL SECTION ----------%%%%%%%%%%%%%%%%%%%%
 \section{Experimental Section}
 
 \paragraph*{Protein synthesis.}
@@ -352,7 +368,7 @@ From these observations, we conclude that the surface contribution to the hetero
 We can also rule out concentration fluctuations of reductant and oxidant, as the solution potential is precisely controlled by the potentiostat.
 
 The heterogeneity in the rates can now only be attributed to conformational changes of the protein.
-Midpoint potential changes (\SI{<4}{\kJ\per\mole}) are much smaller than the changes in the free energy(\SI{-23}{\kJ\per\mole}, $\Delta{G}=-nEF$) related to the change in the oxidation state of azurin. Such small changes can be attributed to subtle changes in the structure of the protein, each of these sub-structure are called conformational sub-states. XXXX Think about the argument XXXX
+Midpoint potential changes (\SI{<4}{\kJ\per\mole}) are much smaller than the changes in the free energy(\SI{-23}{\kJ\per\mole}, $\Delta{G}=-nEF$) related to the change in the oxidation state of azurin. Such small changes can be attributed to subtle changes in the structure of the protein, each of these sub-structure are called conformational sub-states. %XXXX Think about the argument XXXX
 
 The protein remains in certain conformational sub-states for a duration of time which can be observed in the time trace.
 A short on-time followed by short on-time represents one state while a long on-time followed by long on-time represents another sub-state.
