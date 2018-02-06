@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 import datetime
 
-
 from Analysis import *
 from autocorrelate import autocorrelate
 from pycorrelate import *

@@ -11,6 +11,8 @@ from pylab import *
 
 from pycorrelate import *
 from changepoint_process import *
+
+
 mpl.rcParams["font.family"] = "sans-serif"
 mpl.rcParams["font.size"] = "14"
 # =========Get the pointnumber, datn, emplot, FCS files with their filepath in a "GIVEN FOLDER"=====
@@ -384,7 +386,7 @@ def cp_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist=
                                              pars=(1, 0.01, 0.99, 2),
                                              overwrite=False)
                 [hdf5_anal, timestamps, cp_out] = out
-                onoff_out = onoff_fromCP(cp_out)
+                onoff_out = onoff_fromCP(cp_out, timestamps)
                 ton = onoff_out['tonav']
                 ton_err = onoff_out['tonav_err']
                 toff = onoff_out['toffav']
