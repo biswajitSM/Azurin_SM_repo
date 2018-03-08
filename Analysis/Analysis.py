@@ -383,7 +383,7 @@ def cp_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist=
                 file_path_hdf5 = df_specific_i['filepath[.hdf5]'][i]
                 # read and analyze change point
                 out = changepoint_photonhdf5(file_path_hdf5, time_sect=25,
-                                             pars=(1, 0.01, 0.99, 2),
+                                             pars=(1, 0.1, 0.9, 2),
                                              overwrite=False)
                 [hdf5_anal, timestamps, cp_out] = out
                 onoff_out = onoff_fromCP(cp_out, timestamps)
@@ -584,7 +584,7 @@ def Mid_potentials_slopem(folderpath=foldername, pointnumbers=range(5),
 
 def Mid_potentials_slopem_lmfit(folderpath=foldername, pointnumbers=range(5),
                           process='cp', plotting=True,
-                          min_pot=40, min_pot_num=1):
+                          min_pot=40, max_pot=150, min_pot_num=1):
     '''
     Argument: 
     process: 'fcs' or 'cp'
@@ -625,6 +625,7 @@ def Mid_potentials_slopem_lmfit(folderpath=foldername, pointnumbers=range(5),
         point = out.columns.levels[0][i]
         point_output_tot = out[point].dropna()
         point_output = point_output_tot[point_output_tot['Potential'] >= min_pot] #select a potential threshold
+        point_output = point_output_tot[point_output_tot['Potential'] <= max_pot] #select a potential threshold
         point_output.reset_index(drop=True, inplace=True)
         if len(point_output)>min_pot_num:
             potential = point_output['Potential']

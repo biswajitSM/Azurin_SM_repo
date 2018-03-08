@@ -370,7 +370,7 @@ def fcs_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
 # =========== FOLDERWISE ==============
 def fcs_folderwise(folderpath, t_fcsrange=[1e-6, 1], nbins=100, overwrite=False):
     start_time = time.time()
-    pt3_extension = [".pt3"]
+    pt3_extension = [".pt3", ".t3r"]
     for dirpath, dirname, filenames in os.walk(folderpath):
         for filename in [f for f in filenames if f.endswith(tuple(pt3_extension))]:
             file_path_pt3 = os.path.join(dirpath, filename)

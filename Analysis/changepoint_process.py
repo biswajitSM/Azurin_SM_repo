@@ -164,6 +164,10 @@ def changepoint_exec(timestamps, file_path_hdf5, time_sect, pars=[1, 0.1, 0.9, 2
         em_add_0 = pd.DataFrame([changepoint_em2.iloc[0, :].values])
         changepoint_em2 = pd.concat([em_add_0, changepoint_em2],
                                 axis=0).reset_index(drop=True)
+        min_countrate = min(changepoint_em2[1])
+        max_countrate = max(changepoint_em2[1])  
+        changepoint_em2[0][changepoint_em2[1]==min_countrate] = 1
+        changepoint_em2[0][changepoint_em2[1]==max_countrate] = 2
         changepoint_ts = pd.DataFrame(timestamps_sect[changepoint_cp[0].values] + timestamps_sect_corr)# + timestamps_sect_corr
         changepoint_comb = pd.concat([changepoint_cp[[0]], changepoint_ts[[0]],
                                 changepoint_em2[[0]], changepoint_em2[[1]]], axis=1)
@@ -204,10 +208,11 @@ def changepoint_output_corr(changepoint_output):
     cp_out_cor['cp_countrate'] = cp_countrate
     return cp_out_cor
 
-def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2),
+def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2),time_sect=25,
                           bintime=5e-3, int_photon=False,
                           nano_time=False, real_countrate=False,
-                          duration_cp=False):
+                          duration_cp=False, countrate_cp_bool=False,
+                          dig_bin_bool=False):
     """bin=1 in millisecond
     foldername should be given as r'D:\Research\...'
     """
@@ -220,7 +225,7 @@ def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2),
         right = A[idx]
         idx -= target - left < right - target
         return idx
-    out = changepoint_photonhdf5(file_path_hdf5, time_sect=25, pars=pars)
+    out = changepoint_photonhdf5(file_path_hdf5, time_sect=time_sect, pars=pars)
     [hdf5_anal, timestamps, cp_out] = out
     # removing consecutive repeatition in countrate
     cp_out_cor = changepoint_output_corr(cp_out)
@@ -257,21 +262,27 @@ def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2),
     # put them in dataframe IMP keep the sequence as it is
     df_dig = pd.DataFrame()
     df_dig['timestamps'] = timestamps
-    if nano_time:
-        df_dig['nanotimes'] = nanotimes
-    df_dig['dig_bin'] = dig_bin
-    df_dig['dig_bin'] = (bintime * (df_dig['dig_bin'] - 1) + tmin)
     df_dig['cp_no'] = dig_cp
-    df_dig['countrate_cp'] = dig_cp
-    if len(dig_uniq) == len(countrate_cp):
-        df_dig['countrate_cp'] = df_dig['countrate_cp'].replace(dig_uniq, countrate_cp)
-    elif len(dig_uniq) != len(countrate_cp):
-        df_dig['countrate_cp'] = df_dig['countrate_cp'].replace(dig_uniq[1:], countrate_cp)     
     df_dig['state'] = dig_cp  # initiating array for state assigment
-    avg_countrate = np.average(countrate_cp)  # from change point_list
-    # avg_countrate = 500
-    df_dig['state'][df_dig['countrate_cp'] < avg_countrate] = 1
-    df_dig['state'][df_dig['countrate_cp'] > avg_countrate] = 2
+    if len(dig_uniq) == len(state_cp):
+        df_dig['state'] = df_dig['state'].replace(dig_uniq, state_cp)
+    elif len(dig_uniq) != len(countrate_cp):
+        df_dig['state'] = df_dig['state'].replace(dig_uniq[1:], state_cp)         
+    if nano_time:
+        df_dig['nanotimes'] = nanotimes    
+    if dig_bin_bool:
+            df_dig['dig_bin'] = dig_bin
+            df_dig['dig_bin'] = (bintime * (df_dig['dig_bin'] - 1) + tmin)
+    if countrate_cp_bool:
+        df_dig['countrate_cp'] = dig_cp
+        if len(dig_uniq) == len(countrate_cp):
+            df_dig['countrate_cp'] = df_dig['countrate_cp'].replace(dig_uniq, countrate_cp)
+        elif len(dig_uniq) != len(countrate_cp):
+            df_dig['countrate_cp'] = df_dig['countrate_cp'].replace(dig_uniq[1:], countrate_cp)     
+    # avg_countrate = np.average(countrate_cp)  # from change point_list
+    # # avg_countrate = 500
+    # df_dig['state'][df_dig['countrate_cp'] < avg_countrate] = 1
+    # df_dig['state'][df_dig['countrate_cp'] > avg_countrate] = 2
     if real_countrate:
         df_dig['countrate'] = dig_bin  # initiating array for real countrate
         count = (1 / bintime) * df_dig.groupby('countrate').timestamps.count()
@@ -330,7 +341,7 @@ def onoff_fromCP(cp_out, timestamps):
     tmin = min(timestamps)
     tmax = max(timestamps)
     time_cp = df['cp_ts'].values
-    df_tag = df['cp_state'].values
+    state_cp = df['cp_state'].values
     countrate_cp = df['cp_countrate'].values
     idx_closest = find_closest(timestamps, time_cp)
     timestamps_closest = timestamps[idx_closest]    
@@ -339,18 +350,11 @@ def onoff_fromCP(cp_out, timestamps):
     df_dig = pd.DataFrame()
     df_dig['timestamps'] = timestamps    
     df_dig['cp_no'] = dig_cp
-    df_dig['countrate_cp'] = dig_cp
-    if len(dig_uniq) == len(countrate_cp):
-        df_dig['countrate_cp'] = df_dig['countrate_cp'].replace(dig_uniq, countrate_cp)
-    elif len(dig_uniq) != len(countrate_cp):
-        df_dig['countrate_cp'] = df_dig['countrate_cp'].replace(dig_uniq[1:], countrate_cp)
-    # elif len(dig_uniq) < len(countrate_cp):
-    #     df_dig['countrate_cp'] = df_dig['countrate_cp'].replace(dig_uniq, countrate_cp[:-1])        
     df_dig['state'] = dig_cp  # initiating array for state assigment
-    avg_countrate = np.average(countrate_cp)  # from change point_list
-    df_dig['state'][df_dig['countrate_cp'] < avg_countrate] = 1
-    df_dig['state'][df_dig['countrate_cp'] > avg_countrate] = 2
-
+    if len(dig_uniq) == len(state_cp):
+        df_dig['state'] = df_dig['state'].replace(dig_uniq, state_cp)
+    elif len(dig_uniq) != len(countrate_cp):
+        df_dig['state'] = df_dig['state'].replace(dig_uniq[1:], state_cp)
     df_on = df_dig[df_dig['state']==2]#.reset_index(drop=True)
     df_off = df_dig[df_dig['state']==1]#.reset_index(drop=True)
     # ontime calc
@@ -377,6 +381,9 @@ def onoff_fromCP(cp_out, timestamps):
     lambda_toff_upp = lambda_toff * (1+(1.96/np.sqrt(len(offtimes))))
     toffav_err = (1/lambda_toff_low) - (1/lambda_toff_upp);
     toffav_err = np.round(toffav_err, 4)
+    # rather have standard deviation and remove it if you want to calculate the above way
+    tonav_err = np.std(ontimes)
+    toffav_err = np.std(offtimes)
     # put it in dataframe
     onoff_out = {'ontimes': ontimes,
                  'abs_ontime': abs_ontime,
@@ -442,7 +449,8 @@ def sim_vs_changept(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=25,
     return fig
 
     # =========== FOLDERWISE ==============
-def changepoint_folderwise(folderpath, pars=(1, 0.1, 0.9, 2), overwrite=False):
+def changepoint_folderwise(folderpath, pars=(1, 0.1, 0.9, 2),
+                           time_sect=25, overwrite=False):
     start_time = time.time()
     pt3_extension = [".pt3"]
     for dirpath, dirname, filenames in os.walk(folderpath):
@@ -461,12 +469,12 @@ def changepoint_folderwise(folderpath, pars=(1, 0.1, 0.9, 2), overwrite=False):
                     tmin = min(df_datn[0])
                     tmax = max(df_datn[0])
                     changepoint_photonhdf5(file_path_hdf5, tmin=tmin,
-                                                            tmax=tmax, pars=pars,
-                                                            overwrite=overwrite)  # MOST iMPORTANT parameters
+                                           tmax=tmax, pars=pars, time_sect=time_sect,
+                                           overwrite=overwrite)  # MOST iMPORTANT parameters
                 except:
                     #print(file_path_datn)
                     changepoint_photonhdf5(file_path_hdf5, pars=pars,
-                                                            overwrite=overwrite)  # MOST iMPORTANT parameters
+                                           time_sect=time_sect, overwrite=overwrite)  # MOST iMPORTANT parameters
                 processtime = time.time() - start_time_i
                 print("---TOTAL time took for the file: %s IS: %s seconds ---\n" %
                       (file_path_hdf5, processtime))
