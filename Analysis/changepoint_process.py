@@ -64,7 +64,7 @@ def changepoint_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
     h5_saved.close()
     return file_path_hdf5analysis, timestamps, cp_out
 
-def changepoint_simulatedata(simulatedhdf5, time_sect=25, pars=[1, 0.1, 0.9, 2],
+def changepoint_simulatedata(simulatedhdf5, time_sect=100, pars=[1, 0.1, 0.9, 2],
                              exp=True, rise=False, overwrite=False):
     h5 = h5py.File(simulatedhdf5, 'r+')
     if exp:
@@ -208,23 +208,14 @@ def changepoint_output_corr(changepoint_output):
     cp_out_cor['cp_countrate'] = cp_countrate
     return cp_out_cor
 
-def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2),time_sect=25,
-                          bintime=5e-3, int_photon=False,
+def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
+                          time_lim=(None, None), bintime=5e-3, int_photon=False,
                           nano_time=False, real_countrate=False,
                           duration_cp=False, countrate_cp_bool=False,
                           dig_bin_bool=False):
     """bin=1 in millisecond
     foldername should be given as r'D:\Research\...'
     """
-    def find_closest(A, target):
-        # https://stackoverflow.com/questions/8914491/finding-the-nearest-value-and-return-the-index-of-array-in-python
-        #A must be sorted
-        idx = A.searchsorted(target)
-        idx = np.clip(idx, 1, len(A) - 1)
-        left = A[idx - 1]
-        right = A[idx]
-        idx -= target - left < right - target
-        return idx
     out = changepoint_photonhdf5(file_path_hdf5, time_sect=time_sect, pars=pars)
     [hdf5_anal, timestamps, cp_out] = out
     # removing consecutive repeatition in countrate
@@ -233,9 +224,13 @@ def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2),time_sect=25,
     # replace 1st nan by '0'
     state_diff = np.append([1], state_diff[1:], axis=0)
     df = cp_out_cor[state_diff != 0].reset_index(drop=True)
-
-    tmin = min(timestamps)
-    tmax = max(timestamps)
+    if not time_lim[0]:
+        tmin = min(timestamps)
+        tmax = max(timestamps)
+    else:
+        tmin = time_lim[0]
+        tmax = time_lim[1]
+    df = df[(df['cp_ts'] > tmin) & (df['cp_ts'] < tmax)].reset_index(drop=True)
     time_cp = df['cp_ts'].values
     state_cp = df['cp_state'].values
     countrate_cp = df['cp_countrate'].values
@@ -301,6 +296,69 @@ def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2),time_sect=25,
 
     return df_dig
 
+def digitize_simulatedphoton(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
+                          time_lim=(None, None),bintime=53-3, int_photon=False,
+                          duration_cp=False, countrate_cp_bool=False,
+                          dig_bin_bool=False):
+    out = changepoint_simulatedata(simulatedhdf5, time_sect=time_sect, pars=pars)
+    [hdf5_anal, timestamps, cp_out] = out
+    # removing consecutive repeatition in countrate
+    cp_out_cor = changepoint_output_corr(cp_out)
+    state_diff = cp_out_cor['cp_state'].diff().values
+    # replace 1st nan by '0'
+    state_diff = np.append([1], state_diff[1:], axis=0)
+    df = cp_out_cor[state_diff != 0].reset_index(drop=True)
+    if not time_lim[0]:
+        tmin = min(timestamps)
+        tmax = max(timestamps)
+    else:
+        tmin = time_lim[0]
+        tmax = time_lim[1]
+    df = df[(df['cp_ts'] > tmin) & (df['cp_ts'] < tmax)].reset_index(drop=True)
+    time_cp = df['cp_ts'].values
+    state_cp = df['cp_state'].values
+    countrate_cp = df['cp_countrate'].values
+    # extract from hdf5 file
+    mask = np.logical_and(timestamps >= tmin, timestamps <= tmax)
+    timestamps = timestamps[mask]
+    idx_closest = find_closest(timestamps, time_cp)
+    timestamps_closest = timestamps[idx_closest]
+    # photonwise tag initiation
+    dig_cp = np.digitize(timestamps, timestamps_closest)
+    dig_uniq = np.unique(dig_cp)
+    bins = int((max(timestamps) - min(timestamps)) / bintime)
+    cr, t = np.histogram(timestamps, bins=bins)  # cr for real countrate
+    dig_bin = np.digitize(timestamps, t[:-1])
+    # put them in dataframe IMP keep the sequence as it is
+    df_dig = pd.DataFrame()
+    df_dig['timestamps'] = timestamps
+    df_dig['cp_no'] = dig_cp
+    df_dig['state'] = dig_cp  # initiating array for state assigment
+    if len(dig_uniq) == len(state_cp):
+        df_dig['state'] = df_dig['state'].replace(dig_uniq, state_cp)
+    elif len(dig_uniq) != len(countrate_cp):
+        df_dig['state'] = df_dig['state'].replace(dig_uniq[1:], state_cp)    
+    if dig_bin_bool:
+            df_dig['dig_bin'] = dig_bin
+            df_dig['dig_bin'] = (bintime * (df_dig['dig_bin'] - 1) + tmin)
+    if countrate_cp_bool:
+        df_dig['countrate_cp'] = dig_cp
+        if len(dig_uniq) == len(countrate_cp):
+            df_dig['countrate_cp'] = df_dig['countrate_cp'].replace(dig_uniq, countrate_cp)
+        elif len(dig_uniq) != len(countrate_cp):
+            df_dig['countrate_cp'] = df_dig['countrate_cp'].replace(dig_uniq[1:], countrate_cp)         
+    if duration_cp:
+        df_dig['duration_cp'] = dig_cp
+        t_left = df_dig.groupby('cp_no').timestamps.min();
+        t_right = df_dig.groupby('cp_no').timestamps.max();
+        duration = (t_right-t_left).values;
+        df_dig['duration_cp'] = df_dig['duration_cp'].replace(dig_uniq, duration)                
+    if int_photon:
+        interphoton = np.diff(timestamps)
+        df_dig = df_dig[1:]
+        df_dig['int_photon'] = interphoton    
+    return df_dig
+
 def plot_changepoint_trace(ax, timestamps, changepoint_output, bintime,
                            x_lim_min=0, y_lim_min=0, x_lim_max=5, y_lim_max=6,
                            show_changepoint=True):
@@ -322,16 +380,7 @@ def plot_changepoint_trace(ax, timestamps, changepoint_output, bintime,
     ax.set_ylabel('Counts/kcps')
     return
 
-def onoff_fromCP(cp_out, timestamps):
-    def find_closest(A, target):
-        # https://stackoverflow.com/questions/8914491/finding-the-nearest-value-and-return-the-index-of-array-in-python
-        #A must be sorted
-        idx = A.searchsorted(target)
-        idx = np.clip(idx, 1, len(A) - 1)
-        left = A[idx - 1]
-        right = A[idx]
-        idx -= target - left < right - target
-        return idx
+def onoff_fromCP(cp_out, timestamps, sect=100):
     cp_out_cor = changepoint_output_corr(cp_out)
     state_diff = cp_out_cor['cp_state'].diff().values
     # replace 1st nan by '0'
@@ -395,7 +444,7 @@ def onoff_fromCP(cp_out, timestamps):
                  'toffav_err': toffav_err}
     return onoff_out
 
-def sim_vs_changept(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=25,
+def sim_vs_changept(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
                     range_on=(0, 0.1), bins_on=100,
                     range_off=(0, 0.5), bins_off=100,
                    countrate_max=5):
@@ -409,7 +458,7 @@ def sim_vs_changept(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=25,
     t_off_sim = h5['onexp_offexp']['offtimes_exp'][...]
     h5.close()
     plt.close('all')
-    fig = plt.figure(figsize=(10, 5))
+    fig = plt.figure(figsize=(10, 6))
     nrows=2;ncols=2;
     ax00 = plt.subplot2grid((nrows, ncols),(0,0), colspan=2)
     ax10 = plt.subplot2grid((nrows, ncols),(1,0))
@@ -423,10 +472,55 @@ def sim_vs_changept(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=25,
     # on/off from changepoint ananlysis
     out = changepoint_simulatedata(simulatedhdf5, time_sect=time_sect, pars=pars,
                                  exp=True, rise=False, overwrite=False)
-    [simulatedhdf5, timestamps, cp_out] = out    
-    onoff_out = onoff_fromCP(cp_out, timestamps)
+    [simulatedhdf5, timestamps, cp_out] = out   
+    cp_out_cor = changepoint_output_corr(cp_out)
+    state_diff = cp_out_cor['cp_state'].diff().values
+    # replace 1st nan by '0'
+    state_diff = np.append([1], state_diff[1:], axis=0)
+    df = cp_out_cor[state_diff != 0].reset_index(drop=True)
+    
+    no_div = int((timestamps[-1]-timestamps[0])/100)#100 can bereplaced by any number
+    if no_div<1:
+        no_div=1
+    time_div = np.linspace(min(timestamps), max(timestamps), no_div+1)
+    ontimes = []; offtimes=[];
+    for i in range(no_div):
+        t_left = time_div[i]
+        t_right = time_div[i+1]
+        mask = np.logical_and(timestamps>=t_left, timestamps<=t_right)
+        timestamps_i = timestamps[mask]
+        df_i = df[(df['cp_ts'] > t_left) & (df['cp_ts'] < t_right)].reset_index(drop=True)
+        time_cp = df_i['cp_ts'].values
+        state_cp = df_i['cp_state'].values
+        countrate_cp = df_i['cp_countrate'].values
+        idx_closest = find_closest(timestamps_i, time_cp)
+        timestamps_closest = timestamps_i[idx_closest]    
+        dig_cp = np.digitize(timestamps_i, timestamps_closest)
+        dig_uniq = np.unique(dig_cp)
+        df_dig = pd.DataFrame()
+        df_dig['timestamps'] = timestamps_i    
+        df_dig['cp_no'] = dig_cp
+        df_dig['state'] = dig_cp  # initiating array for state assigment
+        if len(dig_uniq) == len(state_cp):
+            df_dig['state'] = df_dig['state'].replace(dig_uniq, state_cp)
+        elif len(dig_uniq) != len(countrate_cp):
+            df_dig['state'] = df_dig['state'].replace(dig_uniq[1:], state_cp)
+        df_on = df_dig[df_dig['state']==2]#.reset_index(drop=True)
+        df_off = df_dig[df_dig['state']==1]#.reset_index(drop=True)
+        # ontime calc
+        time_left = df_on.groupby('cp_no').timestamps.min();
+        time_right = df_on.groupby('cp_no').timestamps.max();
+        abs_ontime = df_on.groupby('cp_no').timestamps.mean();
+        ontimes_i = time_right - time_left
+        ontimes.append(ontimes_i.values)
+        # offtime calc
+        time_left = df_off.groupby('cp_no').timestamps.min();
+        time_right = df_off.groupby('cp_no').timestamps.max();
+        abs_offtime = df_off.groupby('cp_no').timestamps.mean();
+        offtimes_i = time_right - time_left
+        offtimes.append(offtimes_i.values)
     # on histogram
-    t_on_cps = onoff_out['ontimes']#changepoint output
+    t_on_cps = [item for sublist in ontimes for item in sublist]#changepoint output
     n, t = np.histogram(t_on_cps, bins=bins_on, range=range_on, density=True)
     ax10.plot(t[:-1], n, label='Bright times\nChange Point')
     n, t = np.histogram(t_on_sim, bins=bins_on, range=range_on, density=True)
@@ -436,7 +530,7 @@ def sim_vs_changept(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=25,
     ax10.set_ylabel('#')
     ax10.legend()
     # off histogram
-    t_off_cps = onoff_out['offtimes']
+    t_off_cps = [item for sublist in offtimes for item in sublist]
     n, t = np.histogram(t_off_cps, bins=bins_off, range=range_off, density=True)
     ax11.plot(t[:-1], n, label='Dark times\nChange Point')
     n, t = np.histogram(t_off_sim, bins=bins_off, range=range_off, density=True)
@@ -483,3 +577,14 @@ def changepoint_folderwise(folderpath, pars=(1, 0.1, 0.9, 2),
     print("---TOTAL time took for the folder: %s seconds ---\n" %
           (time.time() - start_time))
     return
+
+
+def find_closest(A, target):
+    # https://stackoverflow.com/questions/8914491/finding-the-nearest-value-and-return-the-index-of-array-in-python
+    #A must be sorted
+    idx = A.searchsorted(target)
+    idx = np.clip(idx, 1, len(A) - 1)
+    left = A[idx - 1]
+    right = A[idx]
+    idx -= target - left < right - target
+    return idx

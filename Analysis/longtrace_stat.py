@@ -10,66 +10,55 @@ from Analysis import *
 from autocorrelate import autocorrelate
 from pycorrelate import *
 
-def histogram_on_off_1mol(foldername= foldername, input_potential=[100],
-						 pointnumbers=[1], time_lim = [0, 1e5], 
-						 bins_on=50, range_on=[0, 0.2], 
-						 bins_off=50, range_off=[0, 0.5], 
-                         E0range = [-100, 100], sum_points=10, G_lim=[0, 0.5], tlag_lim=[0, 100]):
-    df_datn_emplot, df_FCS, folder = dir_mV_molNo(foldername)
-    df_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
-    df_specific = df_specific[df_specific['Potential'].isin(input_potential)]; df_specific.reset_index(drop=True, inplace=True)
-    f_emplot_path = 'x'; f_datn_path='x'; t_ons=[];t_offs=[]
-    if not df_specific.empty:
-        f_datn_path = df_specific['filepath[.datn]'].values[0]
-        f_emplot_path = df_specific['filepath[.em.plot]'].values[0]
-        f_hdf5 = df_specific['filepath[.hdf5]'].values[0]
-    if os.path.isfile(f_emplot_path):
-        out_on_off = t_on_off_fromCP(f_emplot_path, time_lim = time_lim)
-        # df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err
-        t_ons = np.array(out_on_off[0]);
-        t_offs = np.array(out_on_off[1]);
-        # defining ====FIGURE-1======
-        plt.close('all')
-        fig1 = plt.figure(figsize=(8, 8))
-        nrows=4; ncols= 4;
-        ax00 = plt.subplot2grid((nrows,ncols), (0,0));
-        ax01 = plt.subplot2grid((nrows,ncols), (0,1), colspan=3);
-        ax10 = plt.subplot2grid((nrows,ncols), (1,0));
-        ax11 = plt.subplot2grid((nrows, ncols), (1,1), colspan=3);
-        ax20 = plt.subplot2grid((nrows,ncols), (2,0));
-        ax21 = plt.subplot2grid((nrows, ncols), (2,1), colspan=3)
-        ax30 = plt.subplot2grid((nrows,ncols), (3,0));
-        ax31 = plt.subplot2grid((nrows, ncols), (3,1), colspan=3)
-        timetrace_real(ax01, f_hdf5, f_emplot_path, time_lim,
-                        y_lim_max = 7e3, bintime= 5e-3);
-        waitime_hist_inset(t_ons, ax10, bins_on, range_on, [0, 0.02], risetime_fit,xlabel='t_ons');
-        t_av_on, t_av_off, t_abs = trace_on_off_times(ax11, t_ons, t_offs, sum_points,
-                                                 on_ylim =range_on, off_ylim =range_off, 
-                                                 time_lim=time_lim, plotting=True,
-                                                 trace_on=True, trace_off=False)
-        waitime_hist_inset(t_offs, ax20, bins_off, range_off, [0, 0.035], risetime_fit, xlabel='t_off/s')        
-        t_av_on, t_av_off, t_abs = trace_on_off_times(ax21, t_ons, t_offs, sum_points, 
-                                                on_ylim =range_on, off_ylim =range_off,
-                                                time_lim=time_lim, plotting=True,
-                                                trace_on=False, trace_off=True)
-        E0_list = trace_E0(ax31, t_av_on, t_av_off, t_abs, input_potential[0], E0range, time_lim)
-        out_E0fit = E0_gaussfit(ax30, E0_list, 50, E0range);
-        #defining =====FIGURE-2=====
-        fig2 = plt.figure(figsize=(6.3, 6.3))
-        nrows=2; ncols= 2;
-        ax00 = plt.subplot2grid((nrows,ncols), (0,0));
-        ax01 = plt.subplot2grid((nrows, ncols), (0,1))
-        ax10 = plt.subplot2grid((nrows, ncols), (1,0))
-        ax11 = plt.subplot2grid((nrows, ncols), (1,1))
-        # waitime_hist_inset(waitimes, axis, bins, binrange, insetrange, fit_func)
-        waitime_hist_inset(t_ons, ax00, bins_on, range_on, [0, 0.02], risetime_fit);
-        waitime_hist_inset(t_offs, ax01, bins_off, range_off, [0, 0.035], risetime_fit, xlabel='t_off/s')
-        # Autocorrelation of trace of average on and average off times
-        G = corr_onoff_av(ax10, t_av_on, t_av_off, tlag_lim, G_lim) #averaged
-        # fit of e0 values with a gaussian
-        out_E0fit = E0_gaussfit(ax11, E0_list, 40, [-100, 100])
-
+def histogram_on_off_1mol(file_path_hdf5, time_lim = [0, 1e3], input_potential=100,
+                          bins_on=50, range_on=[0, 0.2], 
+                          bins_off=50, range_off=[0, 0.5], 
+                          E0range = [-100, 200], sum_points=10,
+                          G_lim=[0, 0.5], tlag_lim=[0, 100]):
+    df = onoff_values(file_path_hdf5, time_lim=(0, 2.5e3))
+    df_mean = df.groupby(np.arange(len(df))//sum_points).mean().dropna().reset_index(drop=True)
+    df_roll_mean = df.rolling(sum_points).mean().dropna().reset_index(drop=True)    
+    df_select = df_roll_mean
+    # df_ton, df_toff, average_ton, average_toff, average_ton_err, average_toff_err
+    # defining ====FIGURE-1======
+    plt.close('all')
+    fig1 = plt.figure(figsize=(8, 8))
+    nrows=4; ncols= 4;
+    # ax00 = plt.subplot2grid((nrows,ncols), (0,0));
+    ax01 = plt.subplot2grid((nrows,ncols), (0,1), colspan=3);
+    ax10 = plt.subplot2grid((nrows,ncols), (1,0));
+    ax11 = plt.subplot2grid((nrows, ncols), (1,1), colspan=3);
+    ax20 = plt.subplot2grid((nrows,ncols), (2,0));
+    ax21 = plt.subplot2grid((nrows, ncols), (2,1), colspan=3)
+    ax30 = plt.subplot2grid((nrows,ncols), (3,0));
+    ax31 = plt.subplot2grid((nrows, ncols), (3,1), colspan=3)
+    # real plotting starts here
+    timetrace_real(ax01, file_path_hdf5, time_lim, y_lim_max = 7e3, bintime= 5e-3);
+    waitime_hist_inset(df['ontimes'], ax10, bins_on, range_on, [0, 0.02], risetime_fit,xlabel='t_ons');
+    ax11.plot(df_select['abstime_on'],df_select['ontimes'], 'b', label='Bright times')
+    ax11.set_xlim(time_lim)
+    waitime_hist_inset(df['offtimes'], ax20, bins_off, range_off, [0, 0.035], risetime_fit, xlabel='t_off/s')
+    ax21.plot(df_select['abstime_off'],df_select['offtimes'], 'r', label='Dark times')
+    ax21.set_xlim(time_lim)    
+    E0_list = trace_E0(ax31, df_select['ontimes'], df_select['offtimes'],
+                       df_select['abstime_on'], input_potential, E0range, time_lim)
+    out_E0fit = E0_gaussfit(ax30, E0_list, 50, E0range);
+    #defining =====FIGURE-2=====
+    fig2 = plt.figure(figsize=(6.3, 6.3))
+    nrows=2; ncols= 2;
+    ax00 = plt.subplot2grid((nrows,ncols), (0,0));
+    ax01 = plt.subplot2grid((nrows, ncols), (0,1))
+    ax10 = plt.subplot2grid((nrows, ncols), (1,0))
+    ax11 = plt.subplot2grid((nrows, ncols), (1,1))
+    # waitime_hist_inset(waitimes, axis, bins, binrange, insetrange, fit_func)
+    waitime_hist_inset(df['ontimes'], ax00, bins_on, range_on, [0, 0.02], risetime_fit);
+    waitime_hist_inset(df['offtimes'], ax01, bins_off, range_off, [0, 0.035], risetime_fit, xlabel='t_off/s')
+    # Autocorrelation of trace of average on and average off times
+    G = corr_onoff_av(ax10, df_select['ontimes'], df['offtimes'], tlag_lim, G_lim) #averaged
+    # fit of e0 values with a gaussian
+    out_E0fit = E0_gaussfit(ax11, E0_list, 40, E0range)
     return fig1, fig2
+    
 def plot_tt_zoomin(foldername= foldername, input_potential=[100],
                     pointnumbers=[1], time_lim_1 = [0, 1e2], time_lim_2 = [2e2, 3e2], bintime=5e-3):
     df_datn_emplot, df_FCS, folder = dir_mV_molNo(foldername)
@@ -95,21 +84,17 @@ def plot_tt_zoomin(foldername= foldername, input_potential=[100],
                         y_lim_max = 7e3, bintime= bintime);                                
     return        
 #=================plot time trace Original======================
-def timetrace_real(axis, f_hdf5, f_emplot_path, time_lim, 
-                y_lim_max, bintime, show_changepoint=False):
+def timetrace_real(axis, file_path_hdf5, time_lim, y_lim_max, bintime):
     #Real trace
-    h5 = h5py.File(f_hdf5);
+    h5 = h5py.File(file_path_hdf5);
     unit = h5['photon_data']['timestamps_specs']['timestamps_unit'][...]
     df = unit * h5['photon_data']['timestamps'][...]
     h5.close()
     tt_length=max(df)-min(df);
-    tt_length = round(tt_length, 0);
-    binpts=tt_length/bintime;
+    # tt_length = tt_length, 0);
+    binpts=int(tt_length/bintime);
     df_hist = np.histogram(df, bins=binpts,range=(min(df), max(df)));
     axis.plot(df_hist[1][:-1], df_hist[0]/bintime, 'b')#original data
-    df = pd.read_csv(f_emplot_path, header=None, sep='\t') #change-point    
-    if show_changepoint == True:
-        axis.plot(df[0], df[1]*0.8/1000, 'r', linewidth=2, label='')#change-point analysis
     axis.set_xlim(time_lim);
     axis.set_xticks([])
     axis.set_ylim(0, y_lim_max)# 1.5*max(df[1]/1000)
@@ -128,8 +113,11 @@ def waitime_hist_inset(waitimes, axis, bins, binrange, insetrange, fit_func, xla
     	p0 = [10,1.1]
     elif fit_func.__code__.co_code == risetime_fit.__code__.co_code:
     	p0=[10,1.1, 0.1]
+    elif fit_func.__code__.co_code == streched_exp.__code__.co_code:
+        p0=[2,0.8, 100]        
     fit, pcov = curve_fit(fit_func, t, n, p0=p0, bounds=(0, np.inf))
     print('k1:'+str(fit[0]))
+    print(fit)
     #fit streched
     # fit_str, pcov_str = curve_fit(streched_exp, t[5:], n[5:], p0=[10, 0.3, 100], bounds=(-np.inf, np.inf))
     #plot as bar
@@ -141,8 +129,8 @@ def waitime_hist_inset(waitimes, axis, bins, binrange, insetrange, fit_func, xla
     axis.set_xlim(0, None)
     axis.set_ylim(1e0, None)
     axis.set_yscale('log')
-    axis.get_yaxis().set_ticklabels([])
-    axis.get_xaxis().set_ticklabels([])
+    # axis.get_yaxis().set_ticklabels([])
+    # axis.get_xaxis().set_ticklabels([])
     # axis.set_xlabel(xlabel)
     # axis.set_ylabel('#')
     #inset
@@ -153,45 +141,14 @@ def waitime_hist_inset(waitimes, axis, bins, binrange, insetrange, fit_func, xla
     axis_in.set_xlim(insetrange)
     axis_in.get_yaxis().set_ticklabels([])
 #==========trace of on off time and potential distribution==================
-def trace_on_off_times(axis, t_ons, t_offs, sum_points, on_ylim, off_ylim, time_lim,
-                     plotting=True, trace_on=False, trace_off=False):
-    if len(t_ons)> len(t_offs):
-        t_ons = t_ons[:len(t_offs)]
-    else:
-        t_offs = t_offs[:len(t_ons)]
-
-    t_av_on = []; t_av_off = []; t_abs = [];
-    start=0;
-    num_outputs = int(len(t_ons)/sum_points);
-    for i in range(num_outputs):
-        t_av_on_temp = sum(t_ons[start:start+sum_points])/sum_points
-        t_av_of_temp = sum(t_offs[start:start+sum_points])/sum_points
-        start += sum_points
-        t_av_on.append(t_av_on_temp)
-        t_av_off.append(t_av_of_temp)
-        t_abs_temp = sum(t_ons[:start+sum_points]) + sum(t_offs[:start+sum_points])
-        t_abs.append(t_abs_temp)
-    t_av_on = pd.Series(t_av_on);
-    t_av_off = pd.Series(t_av_off)
-    t_on_ratio = t_av_off/t_av_on;
-    #plotting
-    if plotting and trace_on:
-        axis.plot(t_abs, t_av_on, 'b', label='On_av')
-        axis.set_ylim(on_ylim)#CAREFUL
-        # axis.set_xlim(time_lim)
-        axis.tick_params('y', colors='b')
-        axis.set_ylabel('ton_av/s', color='b')
-        axis.set_xticks([])
-        axis.legend(loc='center right')
-
-    elif plotting and trace_off:
-        axis.plot(t_abs, t_av_off, 'r', label='On_av')
-        axis.set_ylim(off_ylim)#CAREFUL
-        # axis.set_xlim(time_lim)
-        axis.tick_params('y', colors='r')
-        axis.set_ylabel('toff_av/s', color='r')
-        axis.set_xticks([])
-        axis.legend(loc='center right');
+def durations_plot(axis, abstime, duration, _ylim, time_lim):
+    axis.plot(abstime, duration, 'b', label='On_av')
+    axis.set_ylim(on_ylim)#CAREFUL
+    # axis.set_xlim(time_lim)
+    axis.tick_params('y', colors='b')
+    axis.set_ylabel('ton_av/s', color='b')
+    axis.set_xticks([])
+    axis.legend(loc='center right')
     axis.yaxis.set_label_position("right")
     axis.yaxis.tick_right()
     axis.set_xlim(min(t_abs), max(t_abs))
@@ -257,19 +214,30 @@ def corr_onoff_av(axis, t_av_on, t_av_off, tlag_lim, G_lim):
     axis.set_ylim(G_lim)#+0.01*ymax_lim
     axis.set_xlim(tlag_lim)       
     return G      
-def t_ons_t_offs(df_dig):
-    df_ons = df_dig[df_dig['count_rate'] > min(df_dig['count_rate'])];
-    df_ons_mins = df_ons.groupby('dig_cp').timestamps.min().values;
-    df_ons_maxs = df_ons.groupby('dig_cp').timestamps.max().values;
-    t_ons = df_ons_maxs - df_ons_mins;
-    t_ons = t_ons[np.nonzero(t_ons)]
-
-    df_offs = df_dig[df_dig['count_rate'] < max(df_dig['count_rate'])];
-    df_offs_mins = df_offs.groupby('dig_cp').timestamps.min().values;
-    df_offs_maxs = df_offs.groupby('dig_cp').timestamps.max().values;
-    t_offs = df_offs_maxs - df_offs_mins;
-    t_offs = t_offs[np.nonzero(t_offs)]
-    return t_ons, t_offs
+def onoff_values(file_path_hdf5, time_lim=(0, 1e5)):
+    df_dig = digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2),
+                                   time_sect=100, time_lim=time_lim, bintime=5e-3,
+                                   int_photon=False, nano_time=False, duration_cp=False)
+    df_dig = df_dig[df_dig['timestamps'] < time_lim[1]]
+    df_dig = df_dig[df_dig['timestamps'] > time_lim[0]]
+    df_on = df_dig[df_dig['state']==2].reset_index(drop=True)
+    df_off = df_dig[df_dig['state']==1].reset_index(drop=True)
+    time_left = df_on.groupby('cp_no').timestamps.min();
+    time_right = df_on.groupby('cp_no').timestamps.max();
+    abstime_on = df_on.groupby('cp_no').timestamps.mean();
+    ontimes = time_right - time_left
+    
+    time_left = df_off.groupby('cp_no').timestamps.min();
+    time_right = df_off.groupby('cp_no').timestamps.max();    
+    abstime_off = df_off.groupby('cp_no').timestamps.mean();
+    offtimes = time_right - time_left
+    l = len(abstime_on) - 2
+    df = pd.DataFrame()
+    df['abstime_on'] = abstime_on.values[:l]
+    df['ontimes'] = ontimes.values[:l]
+    df['abstime_off'] = abstime_off.values[:l]
+    df['offtimes'] = offtimes.values[:l]
+    return df
 # ===============================================
 # ============= Changepoint free ===============
 # ===============================================
@@ -443,4 +411,4 @@ def mono_exp(t, k1, A):
 def gaussian(x, a, b, c):
     return a*exp((-(x-b)**2)/(2*c**2))    
 def streched_exp(t, k, b, A):
-    return A*np.exp(-(k**b)*t)
+    return A*np.exp(-(k*t)**b)
