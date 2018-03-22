@@ -343,17 +343,17 @@ def longtrace_byparts(timestamps, nanotimes, save_folder,
             fig.savefig(savename, dpi=300)
     return df_ts, df_lt, df_fcs, df_ip
 
-def plot_timetrace(ax, timestamps, bintime):
+def plot_timetrace(ax, timestamps, bintime, color='b'):
     tmin = min(timestamps)
     tmax = max(timestamps)
     tt_length = tmax - tmin
     binpts = int(tt_length / bintime)
     hist, trace = np.histogram(timestamps, bins=binpts,
                                range=(tmin, tmax))
-    ax.plot(trace[:-1], hist * 1e-3 / bintime, 'b')
+    ax.plot(trace[:-1], hist * 1e-3 / bintime, color=color)
     ax.set_ylabel('counts/kcps')
     ax.set_xlabel('time/s')
-    ax.set_xlim(tmin, tmax)
+    # ax.set_xlim(tmin, tmax)
     #ax.set_title('bintime: ' + str(bintime))
     return
 
