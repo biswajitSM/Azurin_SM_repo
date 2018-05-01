@@ -99,7 +99,7 @@ def simulate_nanotimes(lifetime=2e-9, num_samples=1e5, plotting=False):
     num_samples = int(5e5)
     tau = lifetime  # 0.2e-9
     baseline_fraction = 0.03
-    offset = 3.5e-9
+    offset = 1.5e-9 # 3.5 for ATTO 655 data
 
     sample_decay = np.random.exponential(scale=tau / time_step_s,
                                          size=num_samples) + offset / time_step_s
@@ -117,6 +117,7 @@ def simulate_nanotimes(lifetime=2e-9, num_samples=1e5, plotting=False):
     return nanotimes
 def timestamps_from_onofftrace(ontimes, offtimes,
                           i_on_mu=2000, i_off_mu=200,
+                          lifetime_on = 3.8e-9, lifetime_off=0.6e-9,
                           plotting=False):
     '''
     Arguments:
@@ -137,8 +138,8 @@ def timestamps_from_onofftrace(ontimes, offtimes,
     pdf_int_off = i_off_mu * np.exp(-i_off_mu*t_int_off_pdf);
     pdf_int_off = pdf_int_off/sum(pdf_int_off);
     #pdf for nanotimes
-    pdf_nanotimes_on = simulate_nanotimes(lifetime=1.9e-9, num_samples=1e5, plotting=False)
-    pdf_nanotimes_off = simulate_nanotimes(lifetime=0.3e-9, num_samples=1e5, plotting=False)
+    pdf_nanotimes_on = simulate_nanotimes(lifetime=lifetime_on, num_samples=1e5, plotting=False)
+    pdf_nanotimes_off = simulate_nanotimes(lifetime=lifetime_off, num_samples=1e5, plotting=False)
     #number of photons on each on or off levels
     ontimes_counts = np.round(ontimes * (i_on_mu+i_off_mu));
     ontimes_counts = ontimes_counts.astype('int')
@@ -178,7 +179,8 @@ def timestamps_from_onofftrace(ontimes, offtimes,
     return timestamps, timestamps_marker, nanotimes
 def save_simulated_trace(ton1=0.016, ton2=0.002, toff1=0.250,
                     toff2=0.02, time_len=10, 
-                    i_on_mu=3000, i_off_mu=200, 
+                    i_on_mu=3000, i_off_mu=200,
+                    lifetime_on = 3.8e-9, lifetime_off=0.6e-9,                    
                     allcomb=False):
     '''
     time traces are simulated with photon arrival times
@@ -213,7 +215,7 @@ def save_simulated_trace(ton1=0.016, ton2=0.002, toff1=0.250,
     grp_rise.create_dataset('ontimes_exp_rise', data=ontimes_exp_rise);
     grp_rise.create_dataset('offtimes_exp_rise', data=offtimes_exp_rise);
     out_ts = timestamps_from_onofftrace(ontimes_exp_rise, offtimes_exp_rise, 
-                                     i_on_mu, i_off_mu);
+                                     i_on_mu, i_off_mu, lifetime_on, lifetime_off);
     [timestamps, timestamps_marker, nanotimes] = out_ts;
     grp_rise.create_dataset('timestamps', data=timestamps);
     grp_rise.create_dataset('nanotimes', data=nanotimes);
@@ -224,7 +226,7 @@ def save_simulated_trace(ton1=0.016, ton2=0.002, toff1=0.250,
     grp_exp.create_dataset('ontimes_exp', data=ontimes_exp_1);
     grp_exp.create_dataset('offtimes_exp', data=offtimes_exp_1);
     out_ts = timestamps_from_onofftrace(ontimes_exp_1, offtimes_exp_1, 
-                                     i_on_mu, i_off_mu);
+                                     i_on_mu, i_off_mu, lifetime_on, lifetime_off);
     [timestamps, timestamps_marker, nanotimes] = out_ts;
     grp_exp.create_dataset('timestamps', data=timestamps);
     grp_exp.create_dataset('nanotimes', data=nanotimes);

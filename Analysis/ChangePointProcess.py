@@ -14,7 +14,7 @@ changepoint_exe = "changepoint_program/changepoint.exe"
 changepoint_exe = os.path.abspath(changepoint_exe)
 
 def changepoint_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
-                           time_sect=25, pars=(1, 0.1, 0.9, 2),
+                           time_sect=100, pars=(1, 0.1, 0.9, 2),
                            overwrite=False):
     '''
     '''
@@ -210,7 +210,7 @@ def changepoint_output_corr(changepoint_output):
 
 def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
                           time_lim=(None, None), bintime=5e-3, int_photon=False,
-                          nano_time=False, real_countrate=False,
+                          nanotimes_bool=False, real_countrate=False,
                           duration_cp=False, countrate_cp_bool=False,
                           dig_bin_bool=False):
     """bin=1 in millisecond
@@ -224,7 +224,7 @@ def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
     # replace 1st nan by '0'
     state_diff = np.append([1], state_diff[1:], axis=0)
     df = cp_out_cor[state_diff != 0].reset_index(drop=True)
-    if not time_lim[0]:
+    if time_lim[0] is None:
         tmin = min(timestamps)
         tmax = max(timestamps)
     else:
@@ -262,8 +262,8 @@ def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
     if len(dig_uniq) == len(state_cp):
         df_dig['state'] = df_dig['state'].replace(dig_uniq, state_cp)
     elif len(dig_uniq) != len(countrate_cp):
-        df_dig['state'] = df_dig['state'].replace(dig_uniq[1:], state_cp)         
-    if nano_time:
+        df_dig['state'] = df_dig['state'].replace(dig_uniq[1:], state_cp)
+    if nanotimes_bool:
         df_dig['nanotimes'] = nanotimes    
     if dig_bin_bool:
             df_dig['dig_bin'] = dig_bin
@@ -298,8 +298,8 @@ def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
 
 def digitize_simulatedphoton(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
                           time_lim=(None, None),bintime=53-3, int_photon=False,
-                          duration_cp=False, countrate_cp_bool=False,
-                          dig_bin_bool=False):
+                          nanotimes_bool=False, duration_cp=False,
+                          countrate_cp_bool=False, dig_bin_bool=False):
     out = changepoint_simulatedata(simulatedhdf5, time_sect=time_sect, pars=pars)
     [hdf5_anal, timestamps, cp_out] = out
     # removing consecutive repeatition in countrate
@@ -308,7 +308,7 @@ def digitize_simulatedphoton(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=100
     # replace 1st nan by '0'
     state_diff = np.append([1], state_diff[1:], axis=0)
     df = cp_out_cor[state_diff != 0].reset_index(drop=True)
-    if not time_lim[0]:
+    if time_lim[0] is None:
         tmin = min(timestamps)
         tmax = max(timestamps)
     else:
@@ -319,8 +319,15 @@ def digitize_simulatedphoton(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=100
     state_cp = df['cp_state'].values
     countrate_cp = df['cp_countrate'].values
     # extract from hdf5 file
+    h5 = h5py.File(simulatedhdf5)
+    #replaces the old time stamps
+    timestamps = h5['onexp_offexp']['timestamps'][...]
+    nanotimes = h5['onexp_offexp']['nanotimes'][...]
+    h5.close()
+
     mask = np.logical_and(timestamps >= tmin, timestamps <= tmax)
     timestamps = timestamps[mask]
+    nanotimes = 1e9*nanotimes[mask]
     idx_closest = find_closest(timestamps, time_cp)
     timestamps_closest = timestamps[idx_closest]
     # photonwise tag initiation
@@ -337,7 +344,9 @@ def digitize_simulatedphoton(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=100
     if len(dig_uniq) == len(state_cp):
         df_dig['state'] = df_dig['state'].replace(dig_uniq, state_cp)
     elif len(dig_uniq) != len(countrate_cp):
-        df_dig['state'] = df_dig['state'].replace(dig_uniq[1:], state_cp)    
+        df_dig['state'] = df_dig['state'].replace(dig_uniq[1:], state_cp)
+    if nanotimes_bool:
+        df_dig['nanotimes'] = nanotimes
     if dig_bin_bool:
             df_dig['dig_bin'] = dig_bin
             df_dig['dig_bin'] = (bintime * (df_dig['dig_bin'] - 1) + tmin)
@@ -431,8 +440,8 @@ def onoff_fromCP(cp_out, timestamps, sect=100):
     toffav_err = (1/lambda_toff_low) - (1/lambda_toff_upp);
     toffav_err = np.round(toffav_err, 4)
     # rather have standard deviation and remove it if you want to calculate the above way
-    tonav_err = np.std(ontimes)
-    toffav_err = np.std(offtimes)
+    # tonav_err = np.std(ontimes)
+    # toffav_err = np.std(offtimes)
     # put it in dataframe
     onoff_out = {'ontimes': ontimes,
                  'abs_ontime': abs_ontime,

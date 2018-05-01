@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import phconvert as phc
-from pathlib import Path
+# from pathlib import Path
 
 def pt3_to_hdf5(filename, print_exist=True):
     """
@@ -74,7 +74,7 @@ def t3r_to_hdf5(filename):
     Returns:
     Nothing. It creates a file with the same name but with hdf5 extension
     """
-    file_path = Path(filename)
+    file_path = os.path.abspath(filename)
     if not file_path.is_file():
         print('t3r file not found')
     file_path_hdf5 = Path(filename[:-3]+'hdf5')

@@ -3,14 +3,14 @@ import numpy as np
 import pandas as pd
 pd.set_option('precision', 9)
 import h5py
-import re
+# import re
 from scipy.optimize import curve_fit
 from lmfit import  Model, Parameter, Parameters
 import matplotlib.pyplot as plt
 from pylab import *
 
 from pycorrelate import *
-from changepoint_process import *
+from ChangePointProcess import *
 
 
 mpl.rcParams["font.family"] = "sans-serif"
@@ -387,7 +387,7 @@ def cp_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist=
                 file_path_hdf5 = df_specific_i['filepath[.hdf5]'][i]
                 # read and analyze change point
                 out = changepoint_photonhdf5(file_path_hdf5, time_sect=100,
-                                             pars=(1, 0.1, 0.9, 2),
+                                             pars=(1, 0.01, 0.99, 2),
                                              overwrite=False)
                 [hdf5_anal, timestamps, cp_out] = out
                 onoff_out = onoff_fromCP(cp_out, timestamps)
