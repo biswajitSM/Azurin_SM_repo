@@ -13,9 +13,9 @@ def pt3_to_hdf5(filename, print_exist=True):
     file_path = os.path.abspath(filename)
     if not os.path.isfile(file_path):
         print('pt3 file not found')
-    file_path_hdf5 = file_path[:-3]+'hdf5'
+    file_path_hdf5 = file_path+'.hdf5'
     if os.path.isfile(file_path_hdf5) and print_exist:
-        print(filename[:-3]+'hdf5 already exists')
+        print(os.path.basename(file_path_hdf5)+'hdf5 already exists')
         #break
     elif os.path.isfile(file_path_hdf5):
         x=0;
@@ -64,7 +64,7 @@ def pt3_to_hdf5(filename, print_exist=True):
 
         d['user'] = {'picoquant': meta}
         #Save to Phton-HDF5
-        phc.hdf5.save_photon_hdf5(d, overwrite=True)
+        phc.hdf5.save_photon_hdf5(d, h5_fname = file_path_hdf5, overwrite=True)
     return(file_path_hdf5)
 
 def t3r_to_hdf5(filename):
@@ -77,7 +77,7 @@ def t3r_to_hdf5(filename):
     file_path = os.path.abspath(filename)
     if not file_path.is_file():
         print('t3r file not found')
-    file_path_hdf5 = Path(filename[:-3]+'hdf5')
+    file_path_hdf5 = Path(filename+'.hdf5')
     if file_path_hdf5.is_file():
         print(filename[:-3]+'hdf5 already exists')
         #break
@@ -112,10 +112,10 @@ def t3r_to_hdf5(filename):
 
         d['user'] = {'picoquant': meta}
         #Save to Phton-HDF5
-        phc.hdf5.save_photon_hdf5(d, overwrite=True)
+        phc.hdf5.save_photon_hdf5(d, h5_fname = file_path_hdf5, overwrite=True)
     return(file_path_hdf5)
 
-def pt3t3r_to_hdf5_folder(folderpath, to_hdf5=True, remove_hdf5=False):
+def pt3t3r_to_hdf5_folder(folderpath, to_hdf5=True):
     """
     Arguments:
     folderpath:  Give the full path of the folder
@@ -140,8 +140,4 @@ def pt3t3r_to_hdf5_folder(folderpath, to_hdf5=True, remove_hdf5=False):
             file_path = os.path.join(dirpath, filename)
             if to_hdf5:
                 t3r_to_hdf5(filename=file_path)
-            if remove_hdf5:
-                hdf5_file = file_path[:-3]+'hdf5' 
-                if os.path.isfile(hdf5_file):
-                    os.remove(hdf5_file)
     return

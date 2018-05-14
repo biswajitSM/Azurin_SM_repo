@@ -166,7 +166,7 @@ def normalize_G(t, u, bins):
     return Gn
 # ============ fitting ========
 def t_on_off_fromFCS(lag_time, Gn, tmin=1e-5, tmax=1.0e0,
-                     signal=3.0e3, bg=2.0e2, bg_corr=True,
+                     signal=3.0e3, bg=2.0e2, bg_corr=False,
                      fitype='mono_exp', plotting=False, ax=None):
     '''
     Argument:
@@ -186,7 +186,8 @@ def t_on_off_fromFCS(lag_time, Gn, tmin=1e-5, tmax=1.0e0,
     if fitype=='mono_exp':
         monofit, pcov = curve_fit(mono_exp, xdata, ydata, p0 = [1, 1], bounds=(0, np.inf))
         perr = np.sqrt(np.diag(pcov))
-        A1=monofit[0]; t_ac1 = monofit[1]; t_ac1_err = perr[1]
+        A1=monofit[0]; A1_err = perr[0]
+        t_ac1 = monofit[1]; t_ac1_err = perr[1]
         toff1 = t_ac1*(1+A1); ton1 = t_ac1*(1+(1/A1));
         toff1_err = t_ac1_err*(1+A1); ton1_err = t_ac1_err*(1+(1/A1));
         #rounding figures
@@ -194,10 +195,16 @@ def t_on_off_fromFCS(lag_time, Gn, tmin=1e-5, tmax=1.0e0,
         roundMylist = ['%.4f' % elem for elem in Mylist]
         # roundMylist = [ np.round(elem, 3) for elem in Mylist ]
         [ton1, ton1_err, toff1, toff1_err] = roundMylist
-        fcs_fit_result = {'ton1': ton1,
-                          'ton1_err': ton1_err,
-                          'toff1': toff1,
-                          'toff1_err': toff1_err}        
+        fcs_fit_result = {
+                        'A1': A1,
+                        'A1_err': A1_err,
+                        't_ac1': t_ac1,
+                        't_ac1_err': t_ac1_err,
+                        'ton1': ton1,
+                        'ton1_err': ton1_err,
+                        'toff1': toff1,
+                        'toff1_err': toff1_err
+                          }        
     if fitype=='bi_exp':
         bifit, pcov = curve_fit(bi_exp, xdata, ydata, p0 = [1, 1, 1, 1], bounds=(0, np.inf))
         perr = np.sqrt(np.diag(pcov))

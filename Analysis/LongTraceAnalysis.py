@@ -8,7 +8,8 @@ from scipy.optimize import curve_fit
 
 from ChangePointProcess import digitize_photonstamps, digitize_simulatedphoton
 from autocorrelate import autocorrelate
-from pycorrelate import make_loglags, normalize_G
+from pycorrelate import make_loglags, normalize_G, t_on_off_fromFCS
+from LifeTimeFluorescence import LifeTimeFitTail, BiExpLifetime
 
 class LongTraceClass(object):
     """docstring for LongTraceClass"""
@@ -32,9 +33,9 @@ class LongTraceClass(object):
                 "ChangePointParams" : (1, 0.01, 0.99, 2)
                 }
 
-    def __init__(self, file_path_hdf5, Simulation = False,
-        parameters=parameters):
+    def __init__(self, file_path_hdf5, Simulation = False, parameters=parameters):
 
+        print('Input file is {}'.format(os.path.basename(file_path_hdf5)))
         self.Simulation = Simulation
         self.file_path_hdf5 = file_path_hdf5
         for key in parameters:
@@ -193,12 +194,17 @@ class LongTraceClass(object):
                             tlag_lim = self.LagTimeLimitCorrelation,
                             G_lim = self.ContrastLimitCorrelation)
 
-    def PlotFCS(self):
+    def PlotFCS(self, BinsFCS=10, RangeFCS=[-6, 2]):
+        # update timestamps and nanotimes
+        mask = np.logical_and(self.timestamps >= self.TimeLimit[0],
+                                self.timestamps <= self.TimeLimit[1])
+        timestamps = self.timestamps[mask]
+
         self.FigureCorrelation = plt.figure(figsize=(6, 3))
         nrows=1; ncols= 1;
         self.axis00 = plt.subplot2grid((nrows,ncols), (0,0), colspan=1)
-        bin_lags = make_loglags(-6, 2, 10)
-        G = normalize_G(self.timestamps, self.timestamps, bin_lags)
+        bin_lags = make_loglags(RangeFCS[0], RangeFCS[1], BinsFCS)
+        G = normalize_G(timestamps, timestamps, bin_lags)
         self.G = np.hstack((G[:1], G)) - 1
         self.axis00.plot(bin_lags, self.G)
         self.axis00.set_xlabel('lag time/s')
@@ -209,7 +215,7 @@ class LongTraceClass(object):
     def LongTraceByParts(self,
         TimeWindow = 1e2, TimePeriod = 1e2,
         PhotonWindow = 1e4, PhotonPeriod = 1e4,
-        by_photon=False, plotting=False):
+        by_photon=False):
         '''
         Arguments:
         timestamps and nanotimes should be of equal length and
@@ -257,13 +263,13 @@ class LongTraceClass(object):
                 df_ip['t'] = t
                 df_ip[str(tleft)] = n / max(n)
                 # lifetime histogram
-                binned_trace = np.histogram(t_mic_temp, bins=50, range=(0, 8))
+                binned_trace = np.histogram(t_mic_temp, bins=100, range=(0, 8))
                 t = binned_trace[1][:-1]
                 n = binned_trace[0]
                 df_lt['t'] = t
                 df_lt[str(tleft)] = n / max(n)
                 # FCS
-                bin_lags = make_loglags(-6, 0, 10)
+                bin_lags = make_loglags(-5, 1, 20)
                 Gn = normalize_G(t_mac_temp, t_mac_temp, bin_lags)
                 Gn = np.hstack((Gn[:1], Gn)) - 1
                 df_fcs['t'] = bin_lags
@@ -312,60 +318,112 @@ class LongTraceClass(object):
                 df_fcs[str(tleft)] = Gn
                 col_names.append(str(tleft))
 
-            df_ts_temp = pd.DataFrame({str(tleft):t_mac_temp})
-            df_ts = pd.concat([df_ts_temp, df_ts], ignore_index=True, axis=1)
-            col_names.append(str(tright))
-            print(col_names)
+            # df_ts_temp = pd.DataFrame({str(tleft):t_mac_temp})
+            # df_ts = pd.concat([df_ts_temp, df_ts], ignore_index=True, axis=1)
+            # col_names.append(str(tright))
+            # print(col_names)
             df_ts.columns = col_names
-        if plotting:
-            nrows = 3
-            ncols = 2
-            self.FigureByParts = plt.figure(figsize=(10, 8))
-            self.axis00 = plt.subplot2grid((nrows, ncols), (0, 0), colspan=2)
-            self.axis10 = plt.subplot2grid((nrows, ncols), (1, 0))
-            self.axis11 = plt.subplot2grid((nrows, ncols), (1, 1))
-            self.axis20 = plt.subplot2grid((nrows, ncols), (2, 0))
-            self.axis21 = plt.subplot2grid((nrows, ncols), (2, 1))        
-            cmap = plt.get_cmap('jet')#jet_r
-            N=len(df_ts.columns)
-            i=1
-            for column in df_ts.iloc[:, 1:-1]:
-                color = cmap(float(i)/N)
-                i=i+1
-                #plot all
-                plot_timetrace(self.axis00, df_ts[column], bintime=5e-3, color=color)#timestamps
-                #plot individual
-                self.axis11.plot(df_lt.iloc[:, 0], df_lt[column],color=color)
-                self.axis20.plot(df_ip.iloc[:, 0], df_ip[column],color=color)
-                self.axis21.plot(df_fcs.iloc[:, 0], df_fcs[column],color=color)
-            self.axis00.axvspan(min(df_ts[column]), max(df_ts[column]),color=color
-                         ,alpha=0.3, lw=0)          
-            # axis properties
-            plot_timetrace(self.axis10, df_ts[column], bintime=5e-3, color=color)
-            self.axis00.set_ylim(0, None)
-            self.axis00.set_xlim(min(timestamps), max(df_ts[column]))
-            self.axis10.set_ylim(0, None)
-            self.axis10.set_xlim(min(df_ts[column]), max(df_ts[column]))
-            self.axis10.legend(['Highlighted part of the trace'])
-            self.axis11.set_xlim(2, 8)
-            self.axis11.set_ylim(1e-1, None)
-            self.axis11.set_yscale('log')
-            self.axis11.set_xlabel('Lifetime/ns')
-            self.axis11.set_ylabel('#')
-            self.axis20.set_xlim(1e-5, 1e-1)
-            self.axis20.set_xscale('log')
-            self.axis20.set_yscale('log')
-            self.axis20.set_xlabel('Interphoton time/s')
-            self.axis20.set_ylabel('#')
-            self.axis21.set_xlim(1e-5, 1)
-            self.axis21.set_ylim(0, 4)
-            self.axis21.set_xscale('log')
-            self.axis21.set_xlabel('lag time/s')
-            self.axis21.set_ylabel('G(t)-1')
-            self.axis11.text(3, 0.15, 'Life time histogram', style='italic')
-            self.axis20.text(2e-5, 1e-5, 'Inter photon times')
-            self.axis21.text(2e-5, 1,'FCS')
+        self.df_ts = df_ts
+        self.df_lt = df_lt
+        self.df_fcs = df_fcs
+        self.df_ip = df_ip
         return df_ts, df_lt, df_fcs, df_ip
+
+    def PlotLongTraceByParts(self):
+        try:
+            print('looking for df_ts',len(self.df_ts))
+        except:
+            self.LongTraceByParts()
+        df_ts = self.df_ts
+        df_lt = self.df_lt
+        df_fcs = self.df_fcs
+        df_ip = self.df_ip
+        nrows = 3
+        ncols = 2
+        self.FigureByParts = plt.figure(figsize=(10, 8))
+        self.axis00 = plt.subplot2grid((nrows, ncols), (0, 0), colspan=2)
+        self.axis10 = plt.subplot2grid((nrows, ncols), (1, 0))
+        self.axis11 = plt.subplot2grid((nrows, ncols), (1, 1))
+        self.axis20 = plt.subplot2grid((nrows, ncols), (2, 0))
+        self.axis21 = plt.subplot2grid((nrows, ncols), (2, 1))        
+        cmap = plt.get_cmap('jet')#jet_r
+        N=len(df_ts.columns)
+        i=1
+        for column in df_ts.columns:
+            color = cmap(float(i)/N)
+            i=i+1
+            #plot all
+            plot_timetrace(self.axis00, df_ts[column], bintime=5e-3, color=color)#timestamps
+            #plot individual
+            self.axis11.plot(df_lt.iloc[:, 0], df_lt[column],color=color)
+            self.axis20.plot(df_ip.iloc[:, 0], df_ip[column],color=color)
+            self.axis21.plot(df_fcs.iloc[:, 0], df_fcs[column],color=color)
+        self.axis00.axvspan(min(df_ts[column]), max(df_ts[column]),color=color
+                     ,alpha=0.3, lw=0)          
+        # axis properties
+        plot_timetrace(self.axis10, df_ts[column], bintime=5e-3, color=color)
+        self.axis00.set_ylim(0, None)
+        self.axis00.set_xlim(self.TimeLimit[0], max(df_ts[column]))
+        self.axis10.set_ylim(0, None)
+        self.axis10.set_xlim(min(df_ts[column]), max(df_ts[column]))
+        self.axis10.legend(['Highlighted part of the trace'])
+        self.axis11.set_xlim(2, 8)
+        self.axis11.set_ylim(1e-1, None)
+        self.axis11.set_yscale('log')
+        self.axis11.set_xlabel('Lifetime/ns')
+        self.axis11.set_ylabel('#')
+        self.axis20.set_xlim(1e-5, 1e-1)
+        self.axis20.set_xscale('log')
+        self.axis20.set_yscale('log')
+        self.axis20.set_xlabel('Interphoton time/s')
+        self.axis20.set_ylabel('#')
+        self.axis21.set_xlim(1e-5, 1)
+        self.axis21.set_ylim(0, 4)
+        self.axis21.set_xscale('log')
+        self.axis21.set_xlabel('lag time/s')
+        self.axis21.set_ylabel('G(t)-1')
+        self.axis11.text(3, 0.15, 'Life time histogram', style='italic')
+        self.axis20.text(2e-5, 1e-5, 'Inter photon times')
+        self.axis21.text(2e-5, 1,'FCS')
+    
+    def StatsLongTraceByParts(self):
+        try:
+            print('looking for df_ts',len(self.df_ts))
+        except:
+            self.LongTraceByParts()
+        df_ts = self.df_ts
+        df_lt = self.df_lt
+        df_fcs = self.df_fcs
+        df_ip = self.df_ip
+
+        lag_time = df_fcs.iloc[:, 0]
+        cols_fcs = ['A1', 'A1_err', 't_ac1', 't_ac1_err',
+                    'ton1', 'ton1_err', 'toff1', 'toff1_err']
+        df_fcs_fit = pd.DataFrame(columns=cols_fcs)
+        cols_lt = ['ampl1', 'tau1', 'ampl2', 'tau2', 'baseline']
+        cols_lt = cols_lt + [s + 'err' for s in cols_lt]
+        df_lt_fit = pd.DataFrame(columns=cols_lt)
+        for column in df_ts.columns:
+            # fcs fit
+            G = df_fcs[column]
+            result_fcs = t_on_off_fromFCS(lag_time, G,
+                                tmin=1e-5, tmax=1.0e0,
+                                fitype='mono_exp')
+            df_fcs_fit.loc[column] = list(result_fcs.values())
+            # lifetime fit
+            time_ns = df_lt['t'].values
+            decay = df_lt[column].values
+            result_lt = LifeTimeFitTail(time_ns, decay,
+                                offset=None, model='biexp')
+            [fit_res, time_ns_tail, decay_hist_tail] = result_lt
+            params = fit_res.params
+            fit_values = {k: v.value for k, v in params.items()}
+            fit_errs = {k: v.stderr for k, v in params.items()}
+            df_lt_fit.loc[column] = list(fit_values.values()) +\
+                                    list(fit_errs.values())#append to rows
+        self.df_fcs_fit = df_fcs_fit
+        self.df_lt_fit = df_lt_fit
+        return
 
 def plot_timetrace(axis, timestamps, bintime, color='b'):
     tmin = min(timestamps)
@@ -396,7 +454,7 @@ def waitime_hist_inset(waitimes, axis, bins, binrange,
     elif fit_func.__code__.co_code == risetime_fit.__code__.co_code:
         p0=[10,1.1, 0.1]
     elif fit_func.__code__.co_code == streched_exp.__code__.co_code:
-        p0=[2,0.8, 100]        
+        p0=[10,0.5, 1000]        
     fit, pcov = curve_fit(fit_func, t, n, p0=p0, bounds=(0, np.inf))
     print('k1:'+str(fit[0]))
     print(fit)
@@ -486,10 +544,13 @@ def CorrelationBrightDark(axis, t_av_on, t_av_off, tlag_lim, G_lim):
 #===============fitting functions=============
 def risetime_fit(t, k1, k2, A):
     return ((A*k1*k2/(k2-k1)) * (np.exp(-k1*t) - np.exp(-k2*t)))
+
 def mono_exp(t, k1, A):
     return A*np.exp(-k1*t)
+
 def gaussian(x, a, b, c):
     return a*np.exp((-(x-b)**2)/(2*c**2))    
+
 def streched_exp(t, k, b, A):
     return A*np.exp(-(k*t)**b)
     

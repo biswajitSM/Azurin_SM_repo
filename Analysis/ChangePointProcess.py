@@ -1,9 +1,11 @@
 import sys
 import os
 import time
+import datetime
 import numpy as np
 import pandas as pd
 import h5py
+import yaml
 import matplotlib.pyplot as plt
 import scipy
 import lmfit
@@ -19,7 +21,7 @@ def changepoint_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
     '''
     '''
     file_path_hdf5 = os.path.abspath(file_path_hdf5)
-    file_path_hdf5analysis = file_path_hdf5[:-5] + '_analysis.hdf5'
+    file_path_hdf5analysis = file_path_hdf5[:-5] + '.analysis.hdf5'
     # check if output hdf5 file exist, else create one
     if not os.path.isfile(file_path_hdf5analysis):
         h5_analysis = h5py.File(file_path_hdf5analysis, 'w')
@@ -552,41 +554,48 @@ def sim_vs_changept(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
     return fig
 
     # =========== FOLDERWISE ==============
+
 def changepoint_folderwise(folderpath, pars=(1, 0.1, 0.9, 2),
                            time_sect=25, overwrite=False):
     start_time = time.time()
-    pt3_extension = [".pt3"]
+    pt3hdf5_extension = [".pt3.hdf5"]
+    report_file = os.path.split(folderpath)[1] + '.csv'
+    # os.path.dirname(folderpath)+'.csv'
+    report_ar = np.empty((0,4))
     for dirpath, dirname, filenames in os.walk(folderpath):
-        for filename in [f for f in filenames if f.endswith(tuple(pt3_extension))]:
-            file_path_pt3 = os.path.join(dirpath, filename)
-            file_path_hdf5 = file_path_pt3[:-3] + 'hdf5'
-            file_path_datn = file_path_hdf5[:-4] + 'pt3.datn'
-            if os.path.isfile(file_path_datn):
-                start_time_i = time.time()
-                import datetime
-                date = datetime.datetime.today().strftime('%Y%m%d_%H%M')
-                print("---%s : Changepoint execution started for %s\n" %
-                      (date, file_path_hdf5))
-                try:
-                    df_datn = pd.read_csv(file_path_datn, header=None)
-                    tmin = min(df_datn[0])
-                    tmax = max(df_datn[0])
-                    changepoint_photonhdf5(file_path_hdf5, tmin=tmin,
-                                           tmax=tmax, pars=pars, time_sect=time_sect,
-                                           overwrite=overwrite)  # MOST iMPORTANT parameters
-                except:
-                    #print(file_path_datn)
-                    changepoint_photonhdf5(file_path_hdf5, pars=pars,
-                                           time_sect=time_sect, overwrite=overwrite)  # MOST iMPORTANT parameters
-                processtime = time.time() - start_time_i
-                print("---TOTAL time took for the file: %s IS: %s seconds ---\n" %
-                      (file_path_hdf5, processtime))
-            else:
-                print(file_path_datn + ' : doesnot exist\n')
+        for filename in [f for f in filenames if f.endswith(tuple(pt3hdf5_extension))]:
+            # file_path_pt3 = os.path.join(dirpath, filename)
+            FilePathHdf5 = os.path.join(dirpath, filename)
+            # file_path_hdf5 = file_path_pt3[:-3] + 'hdf5'
+            FilePathYaml = FilePathHdf5[:-4] + 'yaml'
+            
+            start_time_i = time.time()
+            date = datetime.datetime.today().strftime('%Y%m%d_%H%M')
+            print("---%s : Changepoint execution started for %s\n" %
+                  (date, FilePathHdf5))
+            with open(FilePathYaml) as f:
+                dfyaml = yaml.load(f)
+            tmin = dfyaml['TimeLimit']['MinTime']
+            tmax = dfyaml['TimeLimit']['MaxTime']
+            try:
+                changepoint_photonhdf5(FilePathHdf5, tmin=tmin,
+                                       tmax=tmax, pars=pars, time_sect=time_sect,
+                                       overwrite=overwrite)  # MOST iMPORTANT parameters
+            except:
+                print('Did not succeed')
+                report_ar = np.append(report_ar,
+                    np.array([[FilePathHdf5, pars[1], pars[2], time_sect]]), axis=0)                
+                pass
+            processtime = time.time() - start_time_i
+            print("---TOTAL time took for the file: %s IS: %s seconds ---\n" %
+                  (FilePathHdf5, processtime))
+    if len(report_ar) != 0:
+        np.savetxt(report_file, report_ar, delimiter=",", fmt='%s')
+        print(report_ar)
+        print(len(report_ar))
     print("---TOTAL time took for the folder: %s seconds ---\n" %
           (time.time() - start_time))
     return
-
 
 def find_closest(A, target):
     # https://stackoverflow.com/questions/8914491/finding-the-nearest-value-and-return-the-index-of-array-in-python
