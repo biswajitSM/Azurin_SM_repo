@@ -28,7 +28,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -46,8 +46,8 @@
      id="namedview353"
      showgrid="false"
      units="cm"
-     inkscape:zoom="2.5047222"
-     inkscape:cx="312.71116"
+     inkscape:zoom="2.5347083"
+     inkscape:cx="283.46457"
      inkscape:cy="159.44882"
      inkscape:window-x="0"
      inkscape:window-y="24"
@@ -92,13 +92,7 @@
          style="stroke-linecap:butt;stroke-linejoin:round">
         <g
            id="text_1"
-           style="stroke-linecap:butt;stroke-linejoin:round">
-          <text
-             style="font-style:normal;font-weight:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round"
-             x="369"
-             y="172.15843"
-             id="text18">Time/s</text>
-        </g>
+           style="stroke-linecap:butt;stroke-linejoin:round" />
       </g>
       <g
          id="matplotlib.axis_2"
@@ -161,13 +155,7 @@
           </g>
           <g
              id="text_3"
-             style="stroke-linecap:butt;stroke-linejoin:round">
-            <text
-               style="font-style:normal;font-weight:normal;font-size:16px;font-family:'DejaVu Sans';text-anchor:end;stroke-linecap:butt;stroke-linejoin:round"
-               x="83"
-               y="139.45876"
-               id="text40">2</text>
-          </g>
+             style="stroke-linecap:butt;stroke-linejoin:round" />
         </g>
         <g
            id="ytick_3"
@@ -219,24 +207,11 @@
           </g>
           <g
              id="text_5"
-             style="stroke-linecap:butt;stroke-linejoin:round">
-            <text
-               style="font-style:normal;font-weight:normal;font-size:16px;font-family:'DejaVu Sans';text-anchor:end;stroke-linecap:butt;stroke-linejoin:round"
-               x="83"
-               y="85.098747"
-               id="text58">6</text>
-          </g>
+             style="stroke-linecap:butt;stroke-linejoin:round" />
         </g>
         <g
            id="text_6"
-           style="stroke-linecap:butt;stroke-linejoin:round">
-          <text
-             style="font-style:normal;font-weight:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round"
-             transform="matrix(0,-1,1,0,-39.459688,172.94031)"
-             x="66.740311"
-             y="106.2"
-             id="text61">Counts/kcps</text>
-        </g>
+           style="stroke-linecap:butt;stroke-linejoin:round" />
       </g>
       <g
          id="line2d_5"
@@ -288,15 +263,6 @@
          id="legend_1"
          style="stroke-linecap:butt;stroke-linejoin:round">
         <g
-           id="line2d_7"
-           style="stroke-linecap:butt;stroke-linejoin:round">
-          <path
-             d="m 104.4,72.7975 32,0"
-             style="opacity:0.5;fill:none;stroke:#0000ff;stroke-width:2.3812499;stroke-linecap:square;stroke-linejoin:round"
-             id="path83"
-             inkscape:connector-curvature="0" />
-        </g>
-        <g
            id="line2d_8"
            style="stroke-linecap:butt;stroke-linejoin:round" />
         <g
@@ -318,9 +284,9 @@
          sodipodi:linespacing="125%"><tspan
            sodipodi:role="line"
            id="tspan4485"
-           style="stroke-linecap:butt;stroke-linejoin:round;font-size:15.87500075px"
+           style="font-size:15.87500095px;stroke-linecap:butt;stroke-linejoin:round"
            x="272.28171"
-           y="67.929253">ZnAzurinATTO647N</tspan></text>
+           y="67.929253">Zn Azurin ATTO647N</tspan></text>
     </g>
     <g
        id="axes_2"
@@ -339,13 +305,7 @@
          style="stroke-linecap:butt;stroke-linejoin:round">
         <g
            id="text_8"
-           style="stroke-linecap:butt;stroke-linejoin:round">
-          <text
-             style="font-style:normal;font-weight:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round"
-             x="369"
-             y="280.87845"
-             id="text95">Time/s</text>
-        </g>
+           style="stroke-linecap:butt;stroke-linejoin:round" />
       </g>
       <g
          id="matplotlib.axis_4"
@@ -400,13 +360,7 @@
           </g>
           <g
              id="text_10"
-             style="stroke-linecap:butt;stroke-linejoin:round">
-            <text
-               style="font-style:normal;font-weight:normal;font-size:16px;font-family:'DejaVu Sans';text-anchor:end;stroke-linecap:butt;stroke-linejoin:round"
-               x="83"
-               y="248.17876"
-               id="text114">2</text>
-          </g>
+             style="stroke-linecap:butt;stroke-linejoin:round" />
         </g>
         <g
            id="ytick_7"
@@ -458,24 +412,11 @@
           </g>
           <g
              id="text_12"
-             style="stroke-linecap:butt;stroke-linejoin:round">
-            <text
-               style="font-style:normal;font-weight:normal;font-size:16px;font-family:'DejaVu Sans';text-anchor:end;stroke-linecap:butt;stroke-linejoin:round"
-               x="83"
-               y="193.81876"
-               id="text132">6</text>
-          </g>
+             style="stroke-linecap:butt;stroke-linejoin:round" />
         </g>
         <g
            id="text_13"
-           style="stroke-linecap:butt;stroke-linejoin:round">
-          <text
-             style="font-style:normal;font-weight:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round"
-             transform="matrix(0,-1,1,0,-148.17969,281.66031)"
-             x="66.740311"
-             y="214.92"
-             id="text135">Counts/kcps</text>
-        </g>
+           style="stroke-linecap:butt;stroke-linejoin:round" />
       </g>
       <g
          id="line2d_13"
@@ -526,15 +467,6 @@
       <g
          id="legend_2"
          style="stroke-linecap:butt;stroke-linejoin:round">
-        <g
-           id="line2d_15"
-           style="stroke-linecap:butt;stroke-linejoin:round">
-          <path
-             d="m 104.4,245.9525 32,0"
-             style="opacity:0.5;fill:none;stroke:#0000ff;stroke-width:2.3812499;stroke-linecap:square;stroke-linejoin:round"
-             id="path157"
-             inkscape:connector-curvature="0" />
-        </g>
         <g
            id="line2d_16"
            style="stroke-linecap:butt;stroke-linejoin:round" />
@@ -954,13 +886,7 @@
           </g>
           <g
              id="text_28"
-             style="stroke-linecap:butt;stroke-linejoin:round">
-            <text
-               style="font-style:normal;font-weight:normal;font-size:16px;font-family:'DejaVu Sans';text-anchor:end;stroke-linecap:butt;stroke-linejoin:round"
-               x="83"
-               y="356.89874"
-               id="text290">2</text>
-          </g>
+             style="stroke-linecap:butt;stroke-linejoin:round" />
         </g>
         <g
            id="ytick_11"
@@ -1012,24 +938,11 @@
           </g>
           <g
              id="text_30"
-             style="stroke-linecap:butt;stroke-linejoin:round">
-            <text
-               style="font-style:normal;font-weight:normal;font-size:16px;font-family:'DejaVu Sans';text-anchor:end;stroke-linecap:butt;stroke-linejoin:round"
-               x="83"
-               y="302.53876"
-               id="text308">6</text>
-          </g>
+             style="stroke-linecap:butt;stroke-linejoin:round" />
         </g>
         <g
            id="text_31"
-           style="stroke-linecap:butt;stroke-linejoin:round">
-          <text
-             style="font-style:normal;font-weight:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round"
-             transform="matrix(0,-1,1,0,-256.89969,390.38031)"
-             x="66.740311"
-             y="323.64001"
-             id="text311">Counts/kcps</text>
-        </g>
+           style="stroke-linecap:butt;stroke-linejoin:round" />
       </g>
       <g
          id="line2d_32"
@@ -1079,16 +992,8 @@
       </g>
       <g
          id="legend_3"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <g
-           id="line2d_34"
-           style="stroke-linecap:butt;stroke-linejoin:round">
-          <path
-             d="m 526.645,354.6725 32,0"
-             style="opacity:0.5;fill:none;stroke:#0000ff;stroke-width:2.3812499;stroke-linecap:square;stroke-linejoin:round"
-             id="path333"
-             inkscape:connector-curvature="0" />
-        </g>
+         style="stroke-linecap:butt;stroke-linejoin:round"
+         transform="translate(-429.89566,5.5114823)">
         <g
            id="line2d_35"
            style="stroke-linecap:butt;stroke-linejoin:round" />

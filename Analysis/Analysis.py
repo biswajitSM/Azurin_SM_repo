@@ -10,59 +10,15 @@ import matplotlib.pyplot as plt
 from pylab import *
 import yaml
 import datetime
-from pycorrelate import *
+from pycorrelate import fcs_photonhdf5, t_on_off_fromFCS
 from ChangePointProcess import *
 
 
 mpl.rcParams["font.family"] = "sans-serif"
-mpl.rcParams["font.size"] = "14"
+mpl.rcParams["font.size"] = "12"
 # =========Get the pointnumber, datn, emplot, FCS files with their filepath in a "GIVEN FOLDER"=====
 foldername = r'/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data/201702_S101toS104/S101d14Feb17_60.5_635_A2_CuAzu655'
-def dir_mV_molNo_pt3(foldername=foldername):
-    extensions_pt3 = [".pt3"] #file extensions we are interested in
-    string_pt3 = '.pt3'
-    string_mV = 'mV'
-    columns = ['Point number', 'Potential', 'filename[pt3]', 'filepath[pt3]']
-    pt3_list = pd.DataFrame(index=None, columns=columns)
-    for dirpath, dirnames, filenames in os.walk(foldername):
-        for filename in [f for f in filenames if f.endswith(tuple(extensions_pt3))]:
-            position_num = filename.find(string_pt3)
-            pos_num_val_1 = filename[position_num-1]
-            pos_num_val_2 = filename[position_num-2]
-            pos_num_val_3 = filename[position_num-3]
-            if not pos_num_val_1.isdigit():
-                #print('Point number in %s is not properly placed(found): ' %filename)
-                point_number = 1000
-            elif pos_num_val_2 in ['_']:
-                point_number = pos_num_val_1
-            elif pos_num_val_3 in ['_']:
-                point_number = pos_num_val_2 + pos_num_val_1
-            point_number = int(point_number)
-            #print(point_number)
-            #potential extraction
-            position_pot = filename.find(string_mV)
-            pos_pot_val_1 = filename[position_pot-1]
-            pos_pot_val_2 = filename[position_pot-2]
-            pos_pot_val_3 = filename[position_pot-3]
-            pos_pot_val_4 = filename[position_pot-4]
-            pos_pot_val_5 = filename[position_pot-5]
-            if not pos_num_val_1.isdigit():
-                #print('potential value in %s is not properly defined' %filename)
-                potentail_val = 1000
-            elif pos_pot_val_2 in ['_']:
-                potentail_val = pos_pot_val_1
-            elif pos_pot_val_3 in ['_']:
-                potentail_val = pos_pot_val_2 + pos_pot_val_1
-            elif pos_pot_val_4 in ['_']:
-                potentail_val = pos_pot_val_3 + pos_pot_val_2 + pos_pot_val_1
-            elif pos_pot_val_5 in ['_']:
-                potentail_val = pos_pot_val_4 +pos_pot_val_3 + pos_pot_val_2 + pos_pot_val_1
-            potentail_val = int(potentail_val)
-            file_pt3_path = os.path.join(dirpath, filename)
-            temp_pt3list = pd.DataFrame([[point_number, potentail_val, filename, file_pt3_path]], columns=columns)
-            pt3_list = pt3_list.append(temp_pt3list, ignore_index=True)
-    return pt3_list
-    
+   
 def MetaFromPt3Hdf5(FilePathHdf5):
     FileNameHdf5 = os.path.basename(FilePathHdf5)
     string_pt3 = '.pt3'
@@ -72,7 +28,8 @@ def MetaFromPt3Hdf5(FilePathHdf5):
     pos_num_val_2 = FileNameHdf5[position_num-2]
     pos_num_val_3 = FileNameHdf5[position_num-3]
     if not pos_num_val_1.isdigit():
-        #print('Point number in %s is not properly placed(found): ' %FileNameHdf5)
+        #print('Point number in %s is\\
+        #  not properly placed(found): ' %FileNameHdf5)
         point_number = 1000
     elif pos_num_val_2 in ['_']:
         point_number = pos_num_val_1
@@ -88,7 +45,8 @@ def MetaFromPt3Hdf5(FilePathHdf5):
     pos_pot_val_4 = FileNameHdf5[position_pot-4]
     pos_pot_val_5 = FileNameHdf5[position_pot-5]
     if not pos_num_val_1.isdigit():
-        #print('potential value in %s is not properly defined' %FileNameHdf5)
+        #print('potential value in %s is\\
+        #  not properly defined' %FileNameHdf5)
         potentail_val = 1000
     elif pos_pot_val_2 in ['_']:
         potentail_val = pos_pot_val_1
@@ -109,7 +67,8 @@ def ListsPt3Hdf5(foldername):
     columns = ['PointNumber', 'Potential', 'FileName', 'FilePathHdf5']
     pt3hdf5list = pd.DataFrame(index=None, columns=columns)
     for dirpath, dirnames, filenames in os.walk(foldername):
-        for filename in [f for f in filenames if f.endswith(tuple(extensions_pt3))]:
+        for filename in [f for f in 
+            filenames if f.endswith(tuple(extensions_pt3))]:
             MetaData = MetaFromPt3Hdf5(filename)
             FilePathHdf5 = os.path.join(dirpath, filename)  
             templist = pd.DataFrame([[MetaData['PointNumber'],
@@ -149,7 +108,8 @@ def CreateYamlFromPt3Hdf5Folderwise(folderpath):
     '''
     extensions_pt3 = [".pt3.hdf5"] #file extensions we are interested in
     for dirpath, dirnames, filenames in os.walk(folderpath):
-        for filename in [f for f in filenames if f.endswith(tuple(extensions_pt3))]:
+        for filename in [f for f in filenames if 
+                        f.endswith(tuple(extensions_pt3))]:
             FilePathHdf5 = os.path.join(dirpath, filename)
             dfyaml, FilePathYaml = CreateYamlForPt3Hdf5(FilePathHdf5)
             MetaData = MetaFromPt3Hdf5(FilePathHdf5)
@@ -169,7 +129,8 @@ def CreateYamlFromPt3Hdf5Folderwise(folderpath):
                     print(FilePathDatn)
             else:
                 h5 = h5py.File(FilePathHdf5, 'r')
-                unit = h5['photon_data']['timestamps_specs']['timestamps_unit'][...]
+                unit = h5['photon_data']['timestamps_specs'][
+                        'timestamps_unit'][...]
                 timestamps = unit * h5['photon_data']['timestamps'][...]
                 MinTime = min(timestamps)
                 MaxTime = max(timestamps)
@@ -181,116 +142,78 @@ def CreateYamlFromPt3Hdf5Folderwise(folderpath):
                 yaml.dump(dfyaml, f, default_flow_style=False)            
     return
 
-def dir_mV_molNo(foldername = foldername):
-    pt3_list = dir_mV_molNo_pt3(foldername=foldername)
-    extensions = [".dat", ".datn"]
-    datn_em_list = pd.DataFrame()
-    for i in range(len(pt3_list)):
-        pt3_filename = pt3_list['filename[pt3]'][i]
-        point_number = int(pt3_list['Point number'][i])
-        potential = int(pt3_list['Potential'][i])
-        pt3_path = pt3_list['filepath[pt3]'][i]
-        # check if datn exist
-        datn_file_path = pt3_path + '.datn'
-        #add .datn and .em.plot
-        if os.path.isfile(datn_file_path):
-            emplot_path = datn_file_path + '.em.plot'
-            filename_hdf5 = pt3_filename[:-3] + 'hdf5'
-            hdf5_filepath = pt3_path[:-3] + 'hdf5'
-            columns_datn_em = ['Point number', 'Potential',
-                                              'pt3_filename', 'pt3_path',
-                                              'filepath[.datn]',
-                                              'filepath[.em.plot]',
-                                              'filepath[.hdf5]'
-                                            ]
-            temp_datn_list = pd.DataFrame([[point_number, potential,
-                                                                  pt3_filename, pt3_path,
-                                                                  datn_file_path,
-                                                                  emplot_path,
-                                                                  hdf5_filepath]],
-                                          columns=columns_datn_em)
-            datn_em_list = datn_em_list.append(temp_datn_list, ignore_index=True)
-    pt3_list = pt3_list.sort_values(by=['Point number'], ascending=True)
-    pt3_list.reset_index(drop=True, inplace=True)
-    datn_em_list = datn_em_list.sort_values(by=['Point number'], ascending=True)
-    datn_em_list.reset_index(drop=True, inplace=True)
-    return datn_em_list
-
-def point_list(foldername = foldername, pointnumbers=range(100)):
-    df_datn_emplot = dir_mV_molNo(foldername=foldername)
-    df_datn_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]
-    df_groupby = df_datn_specific.groupby(['Point number'])
-    out_total = pd.DataFrame()
-    for name, group in df_groupby:
-        temp = df_groupby.get_group(name)
-        temp = temp['Potential']
-        df_point = pd.DataFrame(sort(array(temp)), columns=['Point_'+str(int(name))])
-        out_total=pd.concat([out_total, df_point], axis=1)
-    out_total = out_total.replace(np.nan, '', regex=True)
-    return(out_total)
-
-def GetSpecificPoints(foldername = foldername, input_potential=[0, 25, 50, 100], pointnumbers=[1]):
+def GetSpecificPoints(foldername = foldername,
+                    input_potential = [0, 25, 50, 100],
+                    pointnumbers=[1]):
     """bin=1 in millisecond
     foldername should be a path to the folder
     """
-    df_datn_emplot = dir_mV_molNo(foldername)
-    df_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
-    df_specific = df_specific[df_specific['Potential'].isin(input_potential)]; df_specific.reset_index(drop=True, inplace=True)
-    df_specific =df_specific.sort_values(by=['Potential'], ascending=True); df_specific.reset_index(drop=True, inplace=True)
+    df_pt3hdf5list = ListsPt3Hdf5(foldername)
+    df_specific = df_pt3hdf5list[df_pt3hdf5list['PointNumber'].isin(
+        pointnumbers)]  # keep all the points that exist
+    df_specific = df_specific[df_specific['Potential'].isin(input_potential)]
+    df_specific.reset_index(drop=True, inplace=True)
+    df_specific = df_specific.sort_values(by=['Potential'], ascending=True)
+    df_specific.reset_index(drop=True, inplace=True)
     return df_specific
 #=========== TIME_TRACE_PLOT and FCS_PLOT: given folder name, point number and list of potential, plot time traces at diff potentialof same molecule ======
-def timetraceplot_potentials(foldername=foldername, input_potential=[0, 25, 50, 100],
-                                            pointnumbers=[2], x_lim_min=0, x_lim_max=5,
-                                            y_lim_min=0, y_lim_max=3, bintime=5e-3,
-                                            show_changepoint=True, figsize=(10, 8)):
+def timetraceplot_potentials(foldername=foldername,
+                            input_potential=[0, 25, 50, 100],
+                            pointnumbers=[2], x_lim_min=0, x_lim_max=5,
+                            y_lim_min=0, y_lim_max=3, bintime=5e-3,
+                            show_changepoint=True, figsize=(10, 8)):
     """bin=1 in millisecond
     foldername should be a path to the folder
     """
-    df_specific = GetSpecificPoints(foldername, input_potential=input_potential,
-                                      pointnumbers=pointnumbers)
+    df_specific = GetSpecificPoints(foldername,
+                                    input_potential=input_potential,
+                                    pointnumbers=pointnumbers)
     fig, ax = plt.subplots(figsize=figsize, sharex=True, sharey=True)
     subplots_adjust(hspace=0.000)
     for i in range(len(df_specific)):
         given_potential = df_specific['Potential'][i]
-        file_path_hdf5 = df_specific['filepath[.hdf5]'][i]
+        file_path_hdf5 = df_specific['FilePathHdf5'][i]
 
         ax = subplot(len(df_specific), 1, i + 1)
-        out = changepoint_photonhdf5(file_path_hdf5, time_sect=25,
+        out = changepoint_photonhdf5(file_path_hdf5, time_sect=100,
                                      pars=(1, 0.01, 0.99, 2))
         [hdf5_anal, timestamps, changepoint_output] = out
         plot_changepoint_trace(ax, timestamps, changepoint_output,
                                bintime, x_lim_min=0, x_lim_max=5,
                                y_lim_min=0, y_lim_max=6,
                                show_changepoint=True)
-        ax.legend([str(given_potential) + " mV"], fontsize=16, frameon=False)
+        ax.legend([str(given_potential) + " mV"],
+                    fontsize=16, frameon=False)
         xlim(x_lim_min, x_lim_max)
         ylim(0, y_lim_max)  # 1.5*max(df[1]/1000)
 
         xticks([])
         yticks(range(0, y_lim_max, 2), fontsize=16)
         if i == len(df_specific) - 1:
-            xticks(range(0, x_lim_max+1, 1), fontsize=16)
+            xticks(range(0, x_lim_max + 1, 1), fontsize=16)
             ax.set_xlabel('time/s', fontsize=16)
     fig.text(0.04, 0.5, 'Fluorescence(kcps)', va='center',
              rotation='vertical', fontsize=16)
     return fig
 
-def fcsplot_potentials(foldername=foldername, input_potential=[0, 25, 50, 100],
-                       pointnumbers=[2], tmin=1e-5, tmax=1.0e0,
-                      V_th = 60, figsize=(5, 10), same_axis=True):
+def fcsplot_potentials(foldername=foldername,
+                        input_potential=[0, 25, 50, 100],
+                        pointnumbers=[2], tmin=1e-5, tmax=1.0e0,
+                        V_th = 60, figsize=(5, 10), same_axis=True):
     '''
     Arguments:
     V_th: Potential above which monoexponential fit will be used
           and below which biexponential fit will be used
     '''
-    df_specific = GetSpecificPoints(foldername, input_potential=input_potential,
-                                      pointnumbers=pointnumbers)
+    df_specific = GetSpecificPoints(foldername,
+                                    input_potential=input_potential,
+                                    pointnumbers=pointnumbers)
     fig, ax = plt.subplots(figsize=figsize, sharex=True, sharey=True)
     subplots_adjust(hspace=0.000)
     pot_leg = []
     for i in range(len(df_specific)):
         potential = df_specific['Potential'][i]
-        file_path_hdf5 = df_specific['filepath[.hdf5]'][i]
+        file_path_hdf5 = df_specific['FilePathHdf5'][i]
         out = fcs_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
                              t_fcsrange=[1e-6, 10], nbins=100)
         [file_path_hdf5analysis, fcs_out] = out       
@@ -318,32 +241,38 @@ def fcsplot_potentials(foldername=foldername, input_potential=[0, 25, 50, 100],
              rotation='vertical', fontsize=16)
     return fig
 # ============== ON/OFF times from changepoint and FCS ==================
-def on_off_all_folder(folderlist, input_potential=[100], pointnumbers=range(100), pars=(1, 0.1, 0.9, 2)):
-    t_ons = []; t_offs = []; n_on = []; n_off = []
+
+def on_off_all_folder(folderlist,
+                      input_potential=[100],
+                      pointnumbers=range(100),
+                      pars=(1, 0.01, 0.99, 2)):
+    t_ons = []
+    t_offs = []
+    n_on = []
+    n_off = []
     for folder in folderlist:
-        df_datn_emplot = dir_mV_molNo(folder)
-        df_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]#keep all the points that exist
-        df_specific = df_specific[df_specific['Potential'].isin(input_potential)]; df_specific.reset_index(drop=True, inplace=True)
+        df_pt3hdf5list = ListsPt3Hdf5(foldername=folder)
+        df_specific = df_pt3hdf5list[df_pt3hdf5list['PointNumber'].isin(
+            pointnumbers)]
+        df_specific = df_specific[df_specific['Potential'].isin(
+            input_potential)]
+        df_specific.reset_index(drop=True, inplace=True)
         for i in range(len(df_specific)):
-            Point_number = df_specific['Point number'][i]
-            f_datn_path = df_specific['filepath[.datn]'].values[i]
-            file_path_hdf5 = df_specific['filepath[.hdf5]'][i]
-            if os.path.isfile(f_datn_path):
-                try:
-                    out = changepoint_photonhdf5(file_path_hdf5, time_sect=100,
-                                                 pars=pars,
-                                                 overwrite=False)
-                    [hdf5_anal, timestamps, cp_out] = out
-                    onoff_out = onoff_fromCP(cp_out, timestamps)
-                    df_ton = onoff_out['ontimes']
-                    df_toff = onoff_out['offtimes']
-                except:
-                    print('em.plot file: %s doesn''t contain proper data' %df_emplot_filename)
-                    df_ton=[]; df_toff=[]
-                    pass
-            else:
-                print('em.plot file of %s with potential %s doesn''t exist' %(Point_number, input_potential))
-                df_ton=[]; df_toff=[]
+            Point_number = df_specific['PointNumber'][i]
+            file_path_hdf5 = df_specific['FilePathHdf5'][i]
+            try:
+                out = changepoint_photonhdf5(file_path_hdf5,
+                                             time_sect=100,
+                                             pars=pars,
+                                             overwrite=False)
+                [hdf5_anal, timestamps, cp_out] = out
+                onoff_out = onoff_fromCP(cp_out, timestamps)
+                df_ton = onoff_out['ontimes']
+                df_toff = onoff_out['offtimes']
+            except:
+                df_ton = []
+                df_toff = []
+                pass
             t_ons = np.concatenate((t_ons, df_ton), axis=0)
             t_offs = np.concatenate((t_offs, df_toff))
     return t_ons, t_offs
@@ -380,7 +309,11 @@ def hist2D_on_off(foldername=foldername, input_potential=[100],
         fig = plt.figure(figsize=figsize)
 
         ax1 = fig.add_subplot(2,3,1)#2,2,1
-        C_on_1,Ex_on_1,Ey_on_1, figu = hist2d(t_on_shifted_1[1:], t_ons[1:], range=[range_on, range_on], bins=bins_on, norm=mpl.colors.LogNorm(), cmap=colormap)
+        out = hist2d(t_on_shifted_1[1:], t_ons[1:],
+                    range=[range_on, range_on], 
+                    bins=bins_on,
+                    norm=mpl.colors.LogNorm(), cmap=colormap)
+        [C_on_1, Ex_on_1, Ey_on_1, fig] = out
         Ex_on_1,Ey_on_1 = meshgrid(Ex_on_1,Ey_on_1)
         # ax1.pcolormesh(Ex_on_1, Ey_on_1, C_on_1, cmap=colormap)#,norm=mpl.colors.LogNorm()
         colorbar()
@@ -389,7 +322,11 @@ def hist2D_on_off(foldername=foldername, input_potential=[100],
         ax1.set_ylabel(r'$\tau_{on}+1/s$')
 
         ax2 = fig.add_subplot(2,3,2)#2,2,1
-        C_on_x,Ex_on_x,Ey_on_x, figu = hist2d(t_on_shifted_x[x_shift:], t_ons[x_shift:], range=[range_on, range_on], bins=bins_on, norm=mpl.colors.LogNorm(), cmap=colormap)
+        out = hist2d(t_on_shifted_x[x_shift:], t_ons[x_shift:],
+                    range=[range_on, range_on],
+                    bins=bins_on,
+                    norm=mpl.colors.LogNorm(), cmap=colormap)
+        [C_on_x,Ex_on_x,Ey_on_x, fig] = out
         Ex_on_x,Ey_on_x = meshgrid(Ex_on_x,Ey_on_x)
         # ax2.pcolormesh(Ex_on_x, Ey_on_x, C_on_x, cmap=colormap)#,norm=mpl.colors.LogNorm()
         colorbar()
@@ -400,11 +337,17 @@ def hist2D_on_off(foldername=foldername, input_potential=[100],
         ax3 = fig.add_subplot(2,3,3)
         C_on_diff = C_on_1-C_on_x
         pcm=ax3.pcolormesh(Ex_on_x, Ey_on_x, C_on_diff,
-                       norm=mpl.colors.SymLogNorm(linthresh=2, linscale=2,vmin=C_on_diff.min(), vmax=C_on_diff.max()), cmap=colormap)
+                       norm=mpl.colors.SymLogNorm(linthresh=2, 
+                       linscale=2,vmin=C_on_diff.min(), vmax=C_on_diff.max()),
+                       cmap=colormap)
         fig.colorbar(pcm, ax=ax3, extend='max')
 
         ax4 = fig.add_subplot(2,3,4)
-        C_off_1, Ex_off_1, Ey_off_1, figu= hist2d(t_off_shifted_1[1:], t_offs[1:], range=[range_off, range_off],bins=bins_off, norm=mpl.colors.LogNorm(), cmap=colormap) #, norm=mpl.colors.LogNorm()
+        out = hist2d(t_off_shifted_1[1:], t_offs[1:],
+                    range=[range_off, range_off],
+                    bins=bins_off,
+                    norm=mpl.colors.LogNorm(), cmap=colormap)
+        [C_off_1, Ex_off_1, Ey_off_1, figu] = out
         Ex_off_1, Ey_off_1 = meshgrid(Ex_off_1, Ey_off_1)
         colorbar()
         ax4.set_title('OFF time Cu-Azu %smV' %input_potential)
@@ -412,7 +355,11 @@ def hist2D_on_off(foldername=foldername, input_potential=[100],
         ax4.set_ylabel(r'$\tau_{off}+1/s$')
 
         ax5 = fig.add_subplot(2,3,5)
-        C_off_x,Ex_off_x,Ey_off_x, figu = hist2d(t_off_shifted_x[x_shift:], t_offs[x_shift:], range=[range_off, range_off],bins=bins_off, norm=mpl.colors.LogNorm(), cmap=colormap) #, norm=mpl.colors.LogNorm()
+        out = hist2d(t_off_shifted_x[x_shift:], t_offs[x_shift:],
+                    range=[range_off, range_off],
+                    bins=bins_off,
+                    norm=mpl.colors.LogNorm(), cmap=colormap)
+        [C_off_x,Ex_off_x,Ey_off_x, figu] = out
         Ex_off_x,Ey_off_x = meshgrid(Ex_off_x,Ey_off_x)
         colorbar()
         ax5.set_title('OFF time Cu-Azu %smV' %input_potential)
@@ -422,7 +369,9 @@ def hist2D_on_off(foldername=foldername, input_potential=[100],
         ax6 = fig.add_subplot(2,3,6)
         C_off_diff=C_off_1-C_off_x
         pcm=ax6.pcolormesh(Ex_off_x, Ey_off_x, C_off_diff,
-                           norm = mpl.colors.SymLogNorm(linthresh=0.1,linscale=0.1,vmin=C_off_diff.min(), vmax=C_off_diff.max()), cmap=colormap)
+                           norm = mpl.colors.SymLogNorm(linthresh=0.1,
+                           linscale=0.1,vmin=C_off_diff.min(),
+                           vmax=C_off_diff.max()), cmap=colormap)
         fig.colorbar(pcm, ax=ax6, extend='max')
         plt.tight_layout()
     return(t_ons, t_offs)
@@ -430,13 +379,16 @@ def hist2D_on_off(foldername=foldername, input_potential=[100],
 potential = 35
 pointnumbers = range(100)
 potentialist = range(-100, 200, 1)
-def cp_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist=potentialist):
-    df_datn_emplot = dir_mV_molNo(foldername=folderpath)
-    df_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(pointnumbers)]
+def cp_outputs_folderwise(folderpath = foldername,
+                          pointnumbers=[1],
+                          potentialist=potentialist):
+    df_pt3hdf5list = ListsPt3Hdf5(foldername=folderpath)
+    df_specific = df_pt3hdf5list[df_pt3hdf5list['PointNumber'].isin(
+                                pointnumbers)]
     df_specific = df_specific[df_specific['Potential'].isin(potentialist)]
     out_total = pd.DataFrame()  # initiating empty output matrix
     for input_number in pointnumbers:
-        df_specific_i = df_specific[df_specific['Point number']
+        df_specific_i = df_specific[df_specific['PointNumber']
                                     == input_number]
         df_specific_i = df_specific_i.sort_values(
             by=['Potential'], ascending=True)
@@ -466,9 +418,8 @@ def cp_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist=
             ratio = []
             ratioerr = []  # Empty forms for timetrace output
             for i in range(length):
-                # potential = out_point[Point_number]['Potential'][i]
                 potential = df_specific_i['Potential'][i]
-                file_path_hdf5 = df_specific_i['filepath[.hdf5]'][i]
+                file_path_hdf5 = df_specific_i['FilePathHdf5'][i]
                 # read and analyze change point
                 out = changepoint_photonhdf5(file_path_hdf5, time_sect=100,
                                              pars=(1, 0.01, 0.99, 2),
@@ -499,14 +450,16 @@ def cp_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist=
             out_total = pd.concat([out_total, out_point], axis=1)
     return out_total
 
-def fcs_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist=potentialist):
-    df_datn_emplot = dir_mV_molNo(foldername=folderpath)
-    df_specific = df_datn_emplot[df_datn_emplot['Point number'].isin(
-        pointnumbers)]
+def fcs_outputs_folderwise(folderpath = foldername,
+                            pointnumbers=[1],
+                            potentialist=potentialist):
+    df_pt3hdf5list = ListsPt3Hdf5(foldername=folderpath)
+    df_specific = df_pt3hdf5list[df_pt3hdf5list['PointNumber'].isin(
+                                pointnumbers)]
     df_specific = df_specific[df_specific['Potential'].isin(potentialist)]
     out_total = pd.DataFrame()  # initiating empty output matrix
     for input_number in pointnumbers:
-        df_specific_i = df_specific[df_specific['Point number']
+        df_specific_i = df_specific[df_specific['PointNumber']
                                     == input_number]
         df_specific_i = df_specific_i.sort_values(
             by=['Potential'], ascending=True)
@@ -536,9 +489,8 @@ def fcs_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist
             ratio = []
             ratioerr = []  # Empty forms for timetrace output
             for i in range(length):
-                # potential = out_point[Point_number]['Potential'][i]
                 potential = df_specific_i['Potential'][i]
-                file_path_hdf5 = df_specific_i['filepath[.hdf5]'][i]
+                file_path_hdf5 = df_specific_i['FilePathHdf5'][i]
                 # read and analyze change point
 
                 # read fcs and fit fcs
@@ -549,7 +501,7 @@ def fcs_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist
                 lag_time = fcs_out['lag_time']
                 Gn = fcs_out['G(t)-1']
                 try:
-                    fcs_fit_result = t_on_off_fromFCS(lag_time, Gn, 
+                    fcs_fit_result = t_on_off_fromFCS(lag_time, Gn,
                                                       tmin=1e-5, tmax=1.0e3,
                                                       bg_corr=False)
                     ton = float(fcs_fit_result['ton1'])
@@ -574,8 +526,7 @@ def fcs_outputs_folderwise(folderpath=foldername, pointnumbers=[1], potentialist
                     df_create = pd.DataFrame(df_create.T, columns=subgroup)
                     out_point[Point_number] = df_create
                 except:
-                    print('fcs fitting of %s with potential %s didnot succeed' % (
-                        Point_number, potential))
+                    print('fcs fitting of %s with potential %s didnot succeed' % (Point_number, potential))
             out_total = pd.concat([out_total, out_point], axis=1)
     return out_total
 
@@ -621,11 +572,14 @@ def Mid_potentials_slopem_lmfit(folderpath=foldername, pointnumbers=range(5),
         N=len(out.columns.levels[0])
     for i in range(len(out.columns.levels[0])):
         point = out.columns.levels[0][i]
+        PointNumber = point[6:]
         point_output_tot = out[point].dropna()
-        point_output = point_output_tot[point_output_tot['Potential'] >= min_pot] #select a potential threshold
-        point_output = point_output_tot[point_output_tot['Potential'] <= max_pot] #select a potential threshold
+        point_output = point_output_tot[point_output_tot[
+                                        'Potential'] >= min_pot] #select a potential threshold
+        point_output = point_output_tot[point_output_tot[
+                                        'Potential'] <= max_pot] #select a potential threshold
         point_output.reset_index(drop=True, inplace=True)
-        if len(point_output)>min_pot_num:
+        if len(point_output) > min_pot_num:
             potential = point_output['Potential']
             t_onav = point_output['t_onav']
             t_onaverr = point_output['t_onaverr']
@@ -640,7 +594,8 @@ def Mid_potentials_slopem_lmfit(folderpath=foldername, pointnumbers=range(5),
             E0 = res_nernst.best_values['a']
             E0_err = float(out_params.split('+/- ')[1].split(', bounds')[0])
             #---------append to list---------
-            E0_list_temp = pd.DataFrame([[point, E0, E0_err]], columns=columns_E0)
+            E0_list_temp = pd.DataFrame([[PointNumber, E0, E0_err]],
+                                        columns=columns_E0)
             E0_list=E0_list.append(E0_list_temp, ignore_index=True)
             #--------fitting nernst_slopem------
             res_nernst_slop = nernst_slopem_mod.fit(t_ratio, params_ner_slop, x=E)
@@ -650,22 +605,32 @@ def Mid_potentials_slopem_lmfit(folderpath=foldername, pointnumbers=range(5),
             slope_m = res_nernst_slop.best_values['m']
             out_params_m = str((res_nernst_slop.params['m'],'value'))
             slope_m_err = float(out_params_m.split('+/- ')[1].split(', bounds')[0])
-            E0_m_list_temp = pd.DataFrame([[point, E0_m, E0_m_err, slope_m, slope_m_err]], columns=columns_E0_m)
+            E0_m_list_temp = pd.DataFrame([[
+                PointNumber, E0_m, E0_m_err, slope_m, slope_m_err]],
+                                columns=columns_E0_m)
             E0_m_list = E0_m_list.append(E0_m_list_temp, ignore_index=True)
             #-----plot------
             if plotting == True:
                 color = cmap(float(i)/N)
                 # ax00.errorbar(point_output_tot['Potential'], point_output_tot['t_ratio'],
                 #          yerr=point_output_tot['t_ratioerr'], fmt='o', color=color, label=point)#plot raw outputs
-                ax00.plot(point_output_tot['Potential'], point_output_tot['t_ratio'],
-                         'o', color=color, label=point)#plot raw outputs                
-                ax00.plot(linspace(min(potential)-10, max(potential)+10), nernst(0.001*linspace(min(potential)-10, max(potential)+10), E0), color=color, linewidth=2.0)#color
+                ax00.plot(point_output_tot['Potential'],
+                          point_output_tot['t_ratio'], 'o',
+                          color=color, label=point)#plot raw outputs                
+                ax00.plot(linspace(min(potential)-10, max(potential)+10),
+                          nernst(0.001*linspace(min(potential)-10,
+                          max(potential)+10), E0), color=color, linewidth=2.0)#color
                 #plot(E*1000, nernst(E, *E0_fit), color=color, linewidth=2.0)
 
                 
-                ax01.errorbar(point_output_tot['Potential'], point_output_tot['t_ratio'],
-                         yerr=point_output_tot['t_ratioerr'], fmt='o', color=color, label=point)#plot raw outputs
-                ax01.plot(linspace(min(potential)-10, max(potential)+10), nernst_slopem(0.001*linspace(min(potential)-10, max(potential)+10), E0_m, slope_m), color=color, linewidth=2.0)
+                ax01.errorbar(point_output_tot['Potential'],
+                              point_output_tot['t_ratio'],
+                              yerr = point_output_tot['t_ratioerr'],
+                              fmt='o', color=color, label=point)#plot raw outputs
+                ax01.plot(linspace(min(potential)-10, max(potential)+10),
+                          nernst_slopem(0.001*linspace(min(potential)-10,
+                          max(potential)+10), E0_m, slope_m),
+                          color=color, linewidth=2.0)
                 ax00.set_yscale('log')
                 ax00.set_xlim(min_pot-10, None)
                 ax00.set_xlabel('$Potential [V]$', fontsize=20)
@@ -679,3 +644,37 @@ def Mid_potentials_slopem_lmfit(folderpath=foldername, pointnumbers=range(5),
                 ax01.set_title(r'$E=E_0 + m.log(\frac{t_{off}}{t_{on}})$')
                 tight_layout()
     return(E0_list, E0_m_list)
+
+# =========== FOLDERWISE ==============
+
+def fcs_folderwise(folderpath, t_fcsrange=[1e-6, 1], nbins=100,
+                   overwrite=False):
+    start_time = time.time()
+    pt3hdf5_extension = [".pt3.hdf5", ".t3r.hdf5"]
+    for dirpath, dirname, filenames in os.walk(folderpath):
+        for filename in [f for f in filenames if 
+                        f.endswith(tuple(pt3hdf5_extension))]:
+            FilePathHdf5 = os.path.join(dirpath, filename)
+            FilePathYaml = FilePathHdf5[:-4] + 'yaml'
+            with open(FilePathYaml) as f:
+                dfyaml = yaml.load(f)
+            tmin = dfyaml['TimeLimit']['MinTime']
+            tmax = dfyaml['TimeLimit']['MaxTime']
+
+            start_time_i = time.time()
+            print("---%.1f : fcs calculation started for %s\n" %
+                  (start_time_i, FilePathHdf5))
+            try:
+                out = fcs_photonhdf5(FilePathHdf5, tmin=tmin, tmax=tmax,
+                                        t_fcsrange=t_fcsrange, nbins=nbins,
+                                        overwrite=overwrite)
+            except:
+                out = fcs_photonhdf5(FilePathHdf5, tmin=None, tmax=None,
+                                        t_fcsrange=t_fcsrange, nbins=nbins,
+                                        overwrite=overwrite)
+            processtime = time.time() - start_time_i
+            print("---TOTAL time took for the file: %s IS: %s seconds ---\n" %
+                    (FilePathHdf5, processtime))
+    print("---TOTAL time took for the folder: %s seconds ---\n" %
+          (time.time() - start_time))
+    return

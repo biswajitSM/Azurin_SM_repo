@@ -28,7 +28,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -41,18 +41,18 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="1056"
+     inkscape:window-width="1600"
+     inkscape:window-height="899"
      id="namedview464"
      showgrid="false"
      units="cm"
-     inkscape:zoom="2.5047222"
+     inkscape:zoom="1.9720278"
      inkscape:cx="283.46457"
      inkscape:cy="124.01575"
      inkscape:window-x="0"
-     inkscape:window-y="24"
+     inkscape:window-y="31"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg2" />
+     inkscape:current-layer="figure_1" />
   <defs
      id="defs4"
      style="stroke-linecap:butt;stroke-linejoin:round">
@@ -704,7 +704,8 @@
       </g>
       <g
          id="text_21"
-         style="stroke-linecap:butt;stroke-linejoin:round">
+         style="stroke-linecap:butt;stroke-linejoin:round"
+         transform="translate(-0.68694096,38.468698)">
         <text
            style="font-style:normal;font-weight:normal;font-size:12px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round"
            x="260.18182"
@@ -1324,22 +1325,13 @@
            inkscape:connector-curvature="0" />
       </g>
       <g
-         id="text_59"
-         transform="translate(0,8.5183099)"
-         style="stroke-linecap:butt;stroke-linejoin:round">
-        <text
-           style="font-style:normal;font-weight:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:start;stroke-linecap:butt;stroke-linejoin:round"
-           x="511.28183"
-           y="88.750015"
-           id="text451">No. of points for averaging:10</text>
-      </g>
-      <g
          id="text_60"
-         style="stroke-linecap:butt;stroke-linejoin:round">
+         style="stroke-linecap:butt;stroke-linejoin:round"
+         transform="translate(3.4347048,30.225405)">
         <text
            style="font-style:normal;font-weight:normal;font-size:12px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round"
            x="625.41815"
-           y="37.200001"
+           y="45.328007"
            id="text454">Simulated: No heterogeneity</text>
       </g>
     </g>

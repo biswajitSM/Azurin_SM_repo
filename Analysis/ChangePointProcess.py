@@ -12,7 +12,7 @@ import lmfit
 from lmfit import Parameters, report_fit, Model
 
 # give path for change point program (executable)
-changepoint_exe = "changepoint_program/changepoint.exe"
+changepoint_exe = "/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/Azurin_SM_repo/Analysis/changepoint_program/changepoint.exe"
 changepoint_exe = os.path.abspath(changepoint_exe)
 
 def changepoint_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
@@ -50,7 +50,8 @@ def changepoint_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
         del h5_analysis[data_cpars]
     if not data_cpars in h5_analysis.keys() or overwrite:
         changepoint_output = changepoint_exec(
-            timestamps, file_path_hdf5, time_sect=time_sect, pars=pars)  # function
+                                    timestamps, file_path_hdf5,
+                                    time_sect=time_sect, pars=pars)  # function
         h5_analysis[data_cpars] = changepoint_output
         h5_analysis[data_cpars].attrs['parameters'] = pars
         h5_analysis[data_cpars].attrs['tmin'] = tmin
@@ -62,7 +63,7 @@ def changepoint_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
     h5_analysis.close()
     h5_saved = h5py.File(file_path_hdf5analysis, 'r')
     cp_out = pd.DataFrame(h5_saved[data_cpars][:],
-                            columns = ['cp_index', 'cp_ts', 'cp_state', 'cp_countrate'])
+                columns = ['cp_index', 'cp_ts', 'cp_state', 'cp_countrate'])
     h5_saved.close()
     return file_path_hdf5analysis, timestamps, cp_out
 
@@ -287,9 +288,9 @@ def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
         df_dig['countrate'] = df_dig['countrate'].replace(dig_bin_uniq, count)
     if duration_cp:
         df_dig['duration_cp'] = dig_cp
-        t_left = df_dig.groupby('cp_no').timestamps.min();
-        t_right = df_dig.groupby('cp_no').timestamps.max();
-        duration = (t_right-t_left).values;
+        t_left = df_dig.groupby('cp_no').timestamps.min()
+        t_right = df_dig.groupby('cp_no').timestamps.max()
+        duration = (t_right-t_left).values
         df_dig['duration_cp'] = df_dig['duration_cp'].replace(dig_uniq, duration)                
     if int_photon:
         interphoton = np.diff(timestamps)
@@ -563,20 +564,19 @@ def changepoint_folderwise(folderpath, pars=(1, 0.1, 0.9, 2),
     # os.path.dirname(folderpath)+'.csv'
     report_ar = np.empty((0,4))
     for dirpath, dirname, filenames in os.walk(folderpath):
-        for filename in [f for f in filenames if f.endswith(tuple(pt3hdf5_extension))]:
-            # file_path_pt3 = os.path.join(dirpath, filename)
+        for filename in [f for f in filenames if
+                         f.endswith(tuple(pt3hdf5_extension))]:
             FilePathHdf5 = os.path.join(dirpath, filename)
-            # file_path_hdf5 = file_path_pt3[:-3] + 'hdf5'
             FilePathYaml = FilePathHdf5[:-4] + 'yaml'
-            
-            start_time_i = time.time()
-            date = datetime.datetime.today().strftime('%Y%m%d_%H%M')
-            print("---%s : Changepoint execution started for %s\n" %
-                  (date, FilePathHdf5))
             with open(FilePathYaml) as f:
                 dfyaml = yaml.load(f)
             tmin = dfyaml['TimeLimit']['MinTime']
             tmax = dfyaml['TimeLimit']['MaxTime']
+
+            start_time_i = time.time()
+            date = datetime.datetime.today().strftime('%Y%m%d_%H%M')
+            print("---%s : Changepoint execution started for %s\n" %
+                  (date, FilePathHdf5))
             try:
                 changepoint_photonhdf5(FilePathHdf5, tmin=tmin,
                                        tmax=tmax, pars=pars, time_sect=time_sect,

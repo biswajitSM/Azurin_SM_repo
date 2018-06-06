@@ -328,7 +328,7 @@ def fcs_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
     '''
     '''
     file_path_hdf5 = os.path.abspath(file_path_hdf5)
-    file_path_hdf5analysis = file_path_hdf5[:-5] + '_analysis.hdf5'
+    file_path_hdf5analysis = file_path_hdf5[:-5] + '.analysis.hdf5'
     # check if output hdf5 file exist, else create one
     if not os.path.isfile(file_path_hdf5analysis):
         h5_analysis = h5py.File(file_path_hdf5analysis, 'w')
@@ -374,35 +374,3 @@ def fcs_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
                             columns = ['lag_time', 'G(t)-1'])
     h5_saved.close()
     return file_path_hdf5analysis, fcs_out
-# =========== FOLDERWISE ==============
-def fcs_folderwise(folderpath, t_fcsrange=[1e-6, 1], nbins=100, overwrite=False):
-    start_time = time.time()
-    pt3_extension = [".pt3", ".t3r"]
-    for dirpath, dirname, filenames in os.walk(folderpath):
-        for filename in [f for f in filenames if f.endswith(tuple(pt3_extension))]:
-            file_path_pt3 = os.path.join(dirpath, filename)
-            file_path_hdf5 = file_path_pt3[:-3] + 'hdf5'
-            file_path_datn = file_path_hdf5[:-4] + 'pt3.datn'
-            if os.path.isfile(file_path_datn):
-                start_time_i = time.time()
-                print("---%.1f : fcs calculation started for %s\n" %
-                      (start_time_i, file_path_hdf5))
-                try:
-                    df_datn = pd.read_csv(file_path_datn, header=None)
-                    tmin = min(df_datn[0])
-                    tmax = max(df_datn[0])
-                    out = fcs_photonhdf5(file_path_hdf5, tmin=tmin, tmax=tmax,
-                                   t_fcsrange=t_fcsrange, nbins=nbins,
-                                   overwrite=overwrite)
-                except:
-                    out = fcs_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
-                                   t_fcsrange=t_fcsrange, nbins=nbins,
-                                   overwrite=overwrite)
-                processtime = time.time() - start_time_i
-                print("---TOTAL time took for the file: %s IS: %s seconds ---\n" %
-                      (file_path_hdf5, processtime))
-            else:
-                print(file_path_datn + ' : doesnot exist\n')
-    print("---TOTAL time took for the folder: %s seconds ---\n" %
-          (time.time() - start_time))
-    return

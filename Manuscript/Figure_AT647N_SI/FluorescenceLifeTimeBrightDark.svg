@@ -46,7 +46,7 @@
      id="namedview316"
      showgrid="false"
      units="cm"
-     inkscape:zoom="2.5916667"
+     inkscape:zoom="2.6083334"
      inkscape:cx="270"
      inkscape:cy="180"
      inkscape:window-x="0"
@@ -118,13 +118,7 @@
           </g>
           <g
              id="text_1"
-             style="stroke-linecap:butt;stroke-linejoin:round">
-            <text
-               style="font-style:normal;font-weight:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round"
-               x="54"
-               y="266.59845"
-               id="text27">0.0</text>
-          </g>
+             style="stroke-linecap:butt;stroke-linejoin:round" />
         </g>
         <g
            id="xtick_2"
@@ -152,7 +146,7 @@
                style="font-style:normal;font-weight:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round"
                x="95.849998"
                y="266.59845"
-               id="text36">2.5</text>
+               id="text36">0</text>
           </g>
         </g>
         <g
@@ -181,7 +175,7 @@
                style="font-style:normal;font-weight:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round"
                x="137.7"
                y="266.59845"
-               id="text45">5.0</text>
+               id="text45">2.5</text>
           </g>
         </g>
         <g
@@ -210,7 +204,7 @@
                style="font-style:normal;font-weight:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round"
                x="179.55"
                y="266.59845"
-               id="text54">7.5</text>
+               id="text54">5</text>
           </g>
         </g>
         <g
@@ -239,7 +233,7 @@
                style="font-style:normal;font-weight:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round"
                x="221.39999"
                y="266.59845"
-               id="text63">10.0</text>
+               id="text63">7.5</text>
           </g>
         </g>
         <g
@@ -268,7 +262,7 @@
                style="font-style:normal;font-weight:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round"
                x="263.25"
                y="266.59845"
-               id="text72">12.5</text>
+               id="text72">10</text>
           </g>
         </g>
         <g
@@ -297,7 +291,7 @@
                style="font-style:normal;font-weight:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round"
                x="305.10001"
                y="266.59845"
-               id="text81">15.0</text>
+               id="text81">12.5</text>
           </g>
         </g>
         <g
@@ -326,7 +320,7 @@
                style="font-style:normal;font-weight:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round"
                x="346.95001"
                y="266.59845"
-               id="text90">17.5</text>
+               id="text90">15</text>
           </g>
         </g>
         <g
@@ -355,7 +349,7 @@
                style="font-style:normal;font-weight:normal;font-size:10px;font-family:'DejaVu Sans';text-anchor:middle;stroke-linecap:butt;stroke-linejoin:round"
                x="388.79999"
                y="266.59845"
-               id="text99">20.0</text>
+               id="text99">17.5</text>
           </g>
         </g>
         <g
