@@ -211,22 +211,36 @@ def changepoint_output_corr(changepoint_output):
     cp_out_cor['cp_countrate'] = cp_countrate
     return cp_out_cor
 
-def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
-                          time_lim=(None, None), bintime=5e-3, int_photon=False,
+
+def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2),
+                          time_sect=100, Simulated=False,
+                          time_lim=(None, None), bintime=5e-3,
+                          cp_no=False, int_photon=False,
                           nanotimes_bool=False, real_countrate=False,
                           duration_cp=False, countrate_cp_bool=False,
                           dig_bin_bool=False):
     """bin=1 in millisecond
-    foldername should be given as r'D:\Research\...'
     """
-    out = changepoint_photonhdf5(file_path_hdf5, time_sect=time_sect, pars=pars)
+    FilePathHdf5CpOut = os.path.join(os.getcwd(), 'ChangePointOutput.hdf5')
+    if os.path.isfile(FilePathHdf5CpOut):
+        os.remove(FilePathHdf5CpOut)
+    h5Digitized = h5py.File(FilePathHdf5CpOut, 'w')
+    GrpCpOut = h5Digitized.create_group('CpOut')
+    if Simulated:
+        out = changepoint_simulatedata(
+            file_path_hdf5, time_sect=time_sect, pars=pars)
+    else:
+        out = changepoint_photonhdf5(
+            file_path_hdf5, time_sect=time_sect, pars=pars)
     [hdf5_anal, timestamps, cp_out] = out
+    del out, hdf5_anal
     # removing consecutive repeatition in countrate
     cp_out_cor = changepoint_output_corr(cp_out)
     state_diff = cp_out_cor['cp_state'].diff().values
     # replace 1st nan by '0'
     state_diff = np.append([1], state_diff[1:], axis=0)
     df = cp_out_cor[state_diff != 0].reset_index(drop=True)
+    del cp_out, cp_out_cor, state_diff
     if time_lim[0] is None:
         tmin = min(timestamps)
         tmax = max(timestamps)
@@ -237,139 +251,99 @@ def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
     time_cp = df['cp_ts'].values
     state_cp = df['cp_state'].values
     countrate_cp = df['cp_countrate'].values
-    # extract from hdf5 file
-    h5 = h5py.File(file_path_hdf5)
-    unit = h5['photon_data']['timestamps_specs']['timestamps_unit'][...]
-    tcspc_unit = h5['photon_data']['nanotimes_specs']['tcspc_unit'][...]
-    #replaces the old time stamps
-    timestamps = unit * h5['photon_data']['timestamps'][...]
-    nanotimes = 1e9 * tcspc_unit * h5['photon_data']['nanotimes'][...]
-    mask = np.logical_and(timestamps >= tmin, timestamps <= tmax)
-    timestamps = timestamps[mask]
-    nanotimes = nanotimes[mask]
-    h5.close()
+    del df
+    nanotimes = []
+    if not Simulated:
+        # extract from hdf5 file
+        h5 = h5py.File(file_path_hdf5)
+        unit = h5['photon_data']['timestamps_specs']['timestamps_unit'][...]
+        tcspc_unit = h5['photon_data']['nanotimes_specs']['tcspc_unit'][...]
+        #replaces the old time stamps
+        timestamps = unit * h5['photon_data']['timestamps'][...]
+        nanotimes = 1e9 * tcspc_unit * h5['photon_data']['nanotimes'][...]
+        mask = np.logical_and(timestamps >= tmin, timestamps <= tmax)
+        timestamps = timestamps[mask]
+        nanotimes = nanotimes[mask]
+        del mask
+        h5.close()
     # closest_limit =
     idx_closest = find_closest(timestamps, time_cp)
     timestamps_closest = timestamps[idx_closest]
     # photonwise tag initiation
     dig_cp = np.digitize(timestamps, timestamps_closest)
     dig_uniq = np.unique(dig_cp)
+    del idx_closest, timestamps_closest
     bins = int((max(timestamps) - min(timestamps)) / bintime)
     cr, t = np.histogram(timestamps, bins=bins)  # cr for real countrate
     dig_bin = np.digitize(timestamps, t[:-1])
+    del cr, t
     # put them in dataframe IMP keep the sequence as it is
     df_dig = pd.DataFrame()
-    df_dig['timestamps'] = timestamps
+    GrpCpOut['timestamps'] = timestamps
+    h5Digitized.flush()
     df_dig['cp_no'] = dig_cp
+    if cp_no:
+        GrpCpOut['cp_no'] = dig_cp
+        h5Digitized.flush()
     df_dig['state'] = dig_cp  # initiating array for state assigment
     if len(dig_uniq) == len(state_cp):
         df_dig['state'] = df_dig['state'].replace(dig_uniq, state_cp)
     elif len(dig_uniq) != len(countrate_cp):
         df_dig['state'] = df_dig['state'].replace(dig_uniq[1:], state_cp)
+    df_dig['state'] = df_dig['state'].values.astype('int8')
+    GrpCpOut['state'] = df_dig['state']
+    h5Digitized.flush()
     if nanotimes_bool:
-        df_dig['nanotimes'] = nanotimes    
+        GrpCpOut['nanotimes'] = nanotimes
+        h5Digitized.flush()
     if dig_bin_bool:
-            df_dig['dig_bin'] = dig_bin
-            df_dig['dig_bin'] = (bintime * (df_dig['dig_bin'] - 1) + tmin)
+        GrpCpOut['dig_bin'] = (bintime * (dig_bin - 1) + tmin)
+        h5Digitized.flush()
     if countrate_cp_bool:
         df_dig['countrate_cp'] = dig_cp
         if len(dig_uniq) == len(countrate_cp):
-            df_dig['countrate_cp'] = df_dig['countrate_cp'].replace(dig_uniq, countrate_cp)
+            df_dig['countrate_cp'] = df_dig['countrate_cp'].replace(
+                dig_uniq, countrate_cp)
         elif len(dig_uniq) != len(countrate_cp):
-            df_dig['countrate_cp'] = df_dig['countrate_cp'].replace(dig_uniq[1:], countrate_cp)     
-    # avg_countrate = np.average(countrate_cp)  # from change point_list
-    # # avg_countrate = 500
-    # df_dig['state'][df_dig['countrate_cp'] < avg_countrate] = 1
-    # df_dig['state'][df_dig['countrate_cp'] > avg_countrate] = 2
+            df_dig['countrate_cp'] = df_dig['countrate_cp'].replace(
+                dig_uniq[1:], countrate_cp)
+        GrpCpOut['countrate_cp'] = df_dig['countrate_cp']
+        h5Digitized.flush()
+        del df_dig['countrate_cp']
     if real_countrate:
+        df_dig['timestamps'] = timestamps
         df_dig['countrate'] = dig_bin  # initiating array for real countrate
         count = (1 / bintime) * df_dig.groupby('countrate').timestamps.count()
         dig_bin_uniq = np.unique(dig_bin)
         df_dig['countrate'] = df_dig['countrate'].replace(dig_bin_uniq, count)
+        GrpCpOut['countrate'] = df_dig['countrate']
+        h5Digitized.flush()
+        del df_dig['countrate'], df_dig['timestamps'], count, dig_bin_uniq
     if duration_cp:
+        df_dig['timestamps'] = timestamps
         df_dig['duration_cp'] = dig_cp
         t_left = df_dig.groupby('cp_no').timestamps.min()
         t_right = df_dig.groupby('cp_no').timestamps.max()
-        duration = (t_right-t_left).values
-        df_dig['duration_cp'] = df_dig['duration_cp'].replace(dig_uniq, duration)                
+        duration = (t_right - t_left).values
+        df_dig['duration_cp'] = df_dig['duration_cp'].replace(
+            dig_uniq, duration)
+        GrpCpOut['duration_cp'] = df_dig['duration_cp']
+        h5Digitized.flush()
+        del df_dig['duration_cp'], df_dig['timestamps'], t_left, t_right, duration
     if int_photon:
         interphoton = np.diff(timestamps)
-        df_dig = df_dig[1:]
-        df_dig['int_photon'] = interphoton
-
-    return df_dig
-
-def digitize_simulatedphoton(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
-                          time_lim=(None, None),bintime=53-3, int_photon=False,
-                          nanotimes_bool=False, duration_cp=False,
-                          countrate_cp_bool=False, dig_bin_bool=False):
-    out = changepoint_simulatedata(simulatedhdf5, time_sect=time_sect, pars=pars)
-    [hdf5_anal, timestamps, cp_out] = out
-    # removing consecutive repeatition in countrate
-    cp_out_cor = changepoint_output_corr(cp_out)
-    state_diff = cp_out_cor['cp_state'].diff().values
-    # replace 1st nan by '0'
-    state_diff = np.append([1], state_diff[1:], axis=0)
-    df = cp_out_cor[state_diff != 0].reset_index(drop=True)
-    if time_lim[0] is None:
-        tmin = min(timestamps)
-        tmax = max(timestamps)
-    else:
-        tmin = time_lim[0]
-        tmax = time_lim[1]
-    df = df[(df['cp_ts'] > tmin) & (df['cp_ts'] < tmax)].reset_index(drop=True)
-    time_cp = df['cp_ts'].values
-    state_cp = df['cp_state'].values
-    countrate_cp = df['cp_countrate'].values
-    # extract from hdf5 file
-    h5 = h5py.File(simulatedhdf5)
-    #replaces the old time stamps
-    timestamps = h5['onexp_offexp']['timestamps'][...]
-    nanotimes = h5['onexp_offexp']['nanotimes'][...]
-    h5.close()
-
-    mask = np.logical_and(timestamps >= tmin, timestamps <= tmax)
-    timestamps = timestamps[mask]
-    nanotimes = 1e9*nanotimes[mask]
-    idx_closest = find_closest(timestamps, time_cp)
-    timestamps_closest = timestamps[idx_closest]
-    # photonwise tag initiation
-    dig_cp = np.digitize(timestamps, timestamps_closest)
-    dig_uniq = np.unique(dig_cp)
-    bins = int((max(timestamps) - min(timestamps)) / bintime)
-    cr, t = np.histogram(timestamps, bins=bins)  # cr for real countrate
-    dig_bin = np.digitize(timestamps, t[:-1])
-    # put them in dataframe IMP keep the sequence as it is
+        interphoton = np.append([interphoton[0]], interphoton)
+        GrpCpOut['int_photon'] = interphoton
+        h5Digitized.flush()
+        del interphoton
+    # delete variables to freeup space
+    del timestamps, nanotimes, time_cp, state_cp, countrate_cp
     df_dig = pd.DataFrame()
-    df_dig['timestamps'] = timestamps
-    df_dig['cp_no'] = dig_cp
-    df_dig['state'] = dig_cp  # initiating array for state assigment
-    if len(dig_uniq) == len(state_cp):
-        df_dig['state'] = df_dig['state'].replace(dig_uniq, state_cp)
-    elif len(dig_uniq) != len(countrate_cp):
-        df_dig['state'] = df_dig['state'].replace(dig_uniq[1:], state_cp)
-    if nanotimes_bool:
-        df_dig['nanotimes'] = nanotimes
-    if dig_bin_bool:
-            df_dig['dig_bin'] = dig_bin
-            df_dig['dig_bin'] = (bintime * (df_dig['dig_bin'] - 1) + tmin)
-    if countrate_cp_bool:
-        df_dig['countrate_cp'] = dig_cp
-        if len(dig_uniq) == len(countrate_cp):
-            df_dig['countrate_cp'] = df_dig['countrate_cp'].replace(dig_uniq, countrate_cp)
-        elif len(dig_uniq) != len(countrate_cp):
-            df_dig['countrate_cp'] = df_dig['countrate_cp'].replace(dig_uniq[1:], countrate_cp)         
-    if duration_cp:
-        df_dig['duration_cp'] = dig_cp
-        t_left = df_dig.groupby('cp_no').timestamps.min();
-        t_right = df_dig.groupby('cp_no').timestamps.max();
-        duration = (t_right-t_left).values;
-        df_dig['duration_cp'] = df_dig['duration_cp'].replace(dig_uniq, duration)                
-    if int_photon:
-        interphoton = np.diff(timestamps)
-        df_dig = df_dig[1:]
-        df_dig['int_photon'] = interphoton    
+    for key in h5Digitized['/CpOut'].keys():
+        df_dig[key] = h5Digitized['/CpOut'][key]
+    h5Digitized.close()
     return df_dig
+
 
 def plot_changepoint_trace(ax, timestamps, changepoint_output, bintime,
                            x_lim_min=0, y_lim_min=0, x_lim_max=5, y_lim_max=6,
@@ -419,28 +393,28 @@ def onoff_fromCP(cp_out, timestamps, sect=100):
     df_on = df_dig[df_dig['state']==2]#.reset_index(drop=True)
     df_off = df_dig[df_dig['state']==1]#.reset_index(drop=True)
     # ontime calc
-    time_left = df_on.groupby('cp_no').timestamps.min();
-    time_right = df_on.groupby('cp_no').timestamps.max();
-    abs_ontime = df_on.groupby('cp_no').timestamps.mean();
+    time_left = df_on.groupby('cp_no').timestamps.min()
+    time_right = df_on.groupby('cp_no').timestamps.max()
+    abs_ontime = df_on.groupby('cp_no').timestamps.mean()
     ontimes = time_right - time_left
     # offtime calc
-    time_left = df_off.groupby('cp_no').timestamps.min();
-    time_right = df_off.groupby('cp_no').timestamps.max();
-    abs_offtime = df_off.groupby('cp_no').timestamps.mean();
+    time_left = df_off.groupby('cp_no').timestamps.min()
+    time_right = df_off.groupby('cp_no').timestamps.max()
+    abs_offtime = df_off.groupby('cp_no').timestamps.mean()
     offtimes = time_right - time_left
     # average ontime calc
     tonav = np.average(ontimes)
-    lambda_ton = 1/tonav;
+    lambda_ton = 1/tonav
     lambda_ton_low = lambda_ton * (1-(1.96/np.sqrt(len(ontimes))))
     lambda_ton_upp = lambda_ton * (1+(1.96/np.sqrt(len(ontimes))))
-    tonav_err = (1/lambda_ton_low) - (1/lambda_ton_upp);
+    tonav_err = (1/lambda_ton_low) - (1/lambda_ton_upp)
     tonav_err = np.round(tonav_err, 4)
     # average offtime calc
-    toffav = np.average(offtimes);# also converts to millisecond
-    lambda_toff = 1/toffav;
+    toffav = np.average(offtimes) # also converts to millisecond
+    lambda_toff = 1/toffav
     lambda_toff_low = lambda_toff * (1-(1.96/np.sqrt(len(offtimes))))
     lambda_toff_upp = lambda_toff * (1+(1.96/np.sqrt(len(offtimes))))
-    toffav_err = (1/lambda_toff_low) - (1/lambda_toff_upp);
+    toffav_err = (1/lambda_toff_low) - (1/lambda_toff_upp)
     toffav_err = np.round(toffav_err, 4)
     # rather have standard deviation and remove it if you want to calculate the above way
     # tonav_err = np.std(ontimes)
@@ -471,7 +445,7 @@ def sim_vs_changept(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
     h5.close()
     plt.close('all')
     fig = plt.figure(figsize=(10, 6))
-    nrows=2;ncols=2;
+    nrows=2;ncols=2
     ax00 = plt.subplot2grid((nrows, ncols),(0,0), colspan=2)
     ax10 = plt.subplot2grid((nrows, ncols),(1,0))
     ax11 = plt.subplot2grid((nrows, ncols),(1,1))
@@ -479,7 +453,7 @@ def sim_vs_changept(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
     plot_changepoint_trace(ax00, timestamps, changepoint_output=cp_out,
                    bintime=5e-3,
                    x_lim_min=0, y_lim_min=0, x_lim_max=10, y_lim_max=countrate_max,
-                   show_changepoint=True);
+                   show_changepoint=True)
     ax00.set_title(simulatedhdf5 +'\n'+str(pars))
     # on/off from changepoint ananlysis
     out = changepoint_simulatedata(simulatedhdf5, time_sect=time_sect, pars=pars,
@@ -520,15 +494,15 @@ def sim_vs_changept(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
         df_on = df_dig[df_dig['state']==2]#.reset_index(drop=True)
         df_off = df_dig[df_dig['state']==1]#.reset_index(drop=True)
         # ontime calc
-        time_left = df_on.groupby('cp_no').timestamps.min();
-        time_right = df_on.groupby('cp_no').timestamps.max();
-        abs_ontime = df_on.groupby('cp_no').timestamps.mean();
+        time_left = df_on.groupby('cp_no').timestamps.min()
+        time_right = df_on.groupby('cp_no').timestamps.max()
+        abs_ontime = df_on.groupby('cp_no').timestamps.mean()
         ontimes_i = time_right - time_left
         ontimes.append(ontimes_i.values)
         # offtime calc
-        time_left = df_off.groupby('cp_no').timestamps.min();
-        time_right = df_off.groupby('cp_no').timestamps.max();
-        abs_offtime = df_off.groupby('cp_no').timestamps.mean();
+        time_left = df_off.groupby('cp_no').timestamps.min()
+        time_right = df_off.groupby('cp_no').timestamps.max()
+        abs_offtime = df_off.groupby('cp_no').timestamps.mean()
         offtimes_i = time_right - time_left
         offtimes.append(offtimes_i.values)
     # on histogram

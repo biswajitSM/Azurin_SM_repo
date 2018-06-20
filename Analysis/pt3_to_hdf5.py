@@ -75,10 +75,10 @@ def t3r_to_hdf5(filename):
     Nothing. It creates a file with the same name but with hdf5 extension
     """
     file_path = os.path.abspath(filename)
-    if not file_path.is_file():
+    if not os.path.isfile(file_path):
         print('t3r file not found')
-    file_path_hdf5 = Path(filename+'.hdf5')
-    if file_path_hdf5.is_file():
+    file_path_hdf5 = file_path + '.hdf5'
+    if os.path.isfile(file_path_hdf5):
         print(filename[:-3]+'hdf5 already exists')
         #break
     else:
