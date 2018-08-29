@@ -1,0 +1,2 @@
+[MASTER]
+init-hook='import sys; sys.path.append("/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/Azurin_SM_repo")'

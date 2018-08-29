@@ -21,12 +21,12 @@ def pt3_to_hdf5(filename, print_exist=True):
         x=0;
     else:
         d, meta = phc.loader.nsalex_pt3(filename,
-                                        donor = 1,
-                                        acceptor = 0,
-                                        alex_period_donor = (4000, 5000),
-                                        alex_period_acceptor = (0, 3000),
-                                        excitation_wavelengths = (470e-9, 635e-9),
-                                        detection_wavelengths = (525e-9, 690e-9),
+                                        donor=1,
+                                        acceptor=0,
+                                        alex_period_donor=(4000, 5000),
+                                        alex_period_acceptor=(0, 3000),
+                                        excitation_wavelengths=(470e-9, 635e-9),
+                                        detection_wavelengths=(525e-9, 690e-9),
                                         )
         #Removing the outflow counts
         nanotimes = d['photon_data']['nanotimes']
@@ -139,5 +139,9 @@ def pt3t3r_to_hdf5_folder(folderpath, to_hdf5=True):
         for filename in [f for f in filenames if f.endswith(tuple(t3r_extension))]:
             file_path = os.path.join(dirpath, filename)
             if to_hdf5:
-                t3r_to_hdf5(filename=file_path)
+                try:
+                    t3r_to_hdf5(filename=file_path)
+                except:
+                    print(file_path + '   : is corrupted')
+                    pass
     return

@@ -24,3 +24,4 @@ tempfiles/
 *temp*
 *changepoint_program/
 *azurin.code-workspace
+*ChangePointOutput.hdf5

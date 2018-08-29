@@ -5,9 +5,11 @@ or on point-processes (e.g. timestamps).
 import os
 import time
 import numpy as np
+import scipy as sp
 import numba
 import pandas as pd
 import h5py
+import lmfit
 from scipy.optimize import curve_fit
 
 @numba.jit(nopython=True)
@@ -153,6 +155,7 @@ def make_loglags(exp_min, exp_max, points_per_base, base=10):
     num_points = points_per_base * (exp_max - exp_min) + 1
     bins = np.logspace(exp_min, exp_max, num_points, base=base)
     return bins
+
 def normalize_G(t, u, bins):
     """Normalize ACF and CCF.
     """
@@ -160,167 +163,11 @@ def normalize_G(t, u, bins):
     duration = max((t.max(), u.max())) - min((t.min(), u.min()))
     Gn = G.copy()
     for i, tau in enumerate(bins[1:]):
-        Gn[i] *= ((duration - tau) 
-                  / (float((t >= tau).sum()) * 
+        Gn[i] *= ((duration - tau)
+                  / (float((t >= tau).sum()) *
                      float((u <= (u.max() - tau)).sum())))
     return Gn
-# ============ fitting ========
-def t_on_off_fromFCS(lag_time, Gn, tmin=1e-5, tmax=1.0e0,
-                     signal=3.0e3, bg=2.0e2, bg_corr=False,
-                     fitype='mono_exp', plotting=False, ax=None):
-    '''
-    Argument:
-    fitype: 'mono_exp' or 'bi_exp'
-    '''
-    xdata = lag_time
-    mask = np.logical_and(xdata >= tmin, xdata <= tmax)
-    xdata = xdata[mask]
-    ydata = Gn[mask]
-    correction_BG = ((signal + bg) / signal)**2
-    if bg_corr:
-        ydata = ((ydata) * correction_BG)
-    def mono_exp(x, A1, t_ac1):
-        return (A1*np.exp(-x/t_ac1))
-    def bi_exp(x, A1, t1, A2, t2):
-        return (A1*np.exp(-x/t1) + A2*np.exp(-x/t2))
-    if fitype=='mono_exp':
-        monofit, pcov = curve_fit(mono_exp, xdata, ydata, p0 = [1, 1], bounds=(0, np.inf))
-        perr = np.sqrt(np.diag(pcov))
-        A1=monofit[0]; A1_err = perr[0]
-        t_ac1 = monofit[1]; t_ac1_err = perr[1]
-        toff1 = t_ac1*(1+A1); ton1 = t_ac1*(1+(1/A1));
-        toff1_err = t_ac1_err*(1+A1); ton1_err = t_ac1_err*(1+(1/A1));
-        #rounding figures
-        Mylist = [ton1, ton1_err, toff1, toff1_err]
-        roundMylist = ['%.4f' % elem for elem in Mylist]
-        # roundMylist = [ np.round(elem, 3) for elem in Mylist ]
-        [ton1, ton1_err, toff1, toff1_err] = roundMylist
-        fcs_fit_result = {
-                        'A1': A1,
-                        'A1_err': A1_err,
-                        't_ac1': t_ac1,
-                        't_ac1_err': t_ac1_err,
-                        'ton1': ton1,
-                        'ton1_err': ton1_err,
-                        'toff1': toff1,
-                        'toff1_err': toff1_err
-                          }        
-    if fitype=='bi_exp':
-        bifit, pcov = curve_fit(bi_exp, xdata, ydata, p0 = [1, 1, 1, 1], bounds=(0, np.inf))
-        perr = np.sqrt(np.diag(pcov))
-        if bifit[1]>bifit[3]:
-            A1=bifit[0]; t_ac1 = bifit[1]; t_ac1_err = perr[1]
-            A2=bifit[2]; t_ac2 = bifit[3]; t_ac2_err = perr[3]
-        else:
-            A1=bifit[2]; t_ac1 = bifit[3]; t_ac1_err = perr[3]
-            A2=bifit[0]; t_ac2 = bifit[1]; t_ac2_err = perr[1]
-        toff1 = t_ac1*(1+A1); ton1 = t_ac1*(1+(1/A1));
-        toff1_err = t_ac1_err*(1+A1); ton1_err = t_ac1_err*(1+(1/A1));
-        toff2 = t_ac2*(1+A2); ton2 = t_ac2*(1+(1/A2));
-        toff2_err = t_ac2_err*(1+A2); ton2_err = t_ac2_err*(1+(1/A2));        
-        #rounding figures
-        Mylist = [ton1, ton1_err, toff1, toff1_err,
-                 ton2, ton2_err, toff2, toff2_err]
-        roundMylist = [ '%.4f' % elem for elem in Mylist ]
-        # roundMylist = [ np.round(elem, 3) for elem in Mylist ]
-        [ton1, ton1_err, toff1, toff1_err,
-         ton2, ton2_err, toff2, toff2_err] = roundMylist
-        fcs_fit_result = {'ton1': ton1,
-                          'ton1_err': ton1_err,
-                          'toff1': toff1,
-                          'toff1_err': toff1_err,
-                          'ton2': ton2,
-                          'ton2_err': ton2_err,
-                          'toff2': toff2,
-                          'toff2_err': toff2_err}       
-    if plotting and ax:
-        ax.plot(xdata, ydata, label='data')
-        if fitype=='mono_exp':
-            ax.plot(xdata, mono_exp(xdata, *monofit), color = 'r', linewidth=2.0)
-        if fitype=='bi_exp':
-            ax.plot(xdata, bi_exp(xdata, *bifit), color = 'r', linewidth=2.0)
-        ax.set_xscale('log')
-        ax.grid(True); ax.grid(True, which='minor', lw=0.3)
-        ax.set_xlim(tmin, tmax)
-        ax.set_ylim(0, None)
-        ax.legend()
-        # ax.set_title(fcs_fit_result)
-    return fcs_fit_result
 
-def t_on_off_fromFCS_2(lag_time, Gn, tmin=1e-5, tmax=1.0e0,
-                     signal=3.0e3, bg=2.0e2, bg_corr=True,
-                     fitype='mono_exp', plotting=False, ax=None):
-    '''
-    Argument:
-    fitype: 'mono_exp' or 'bi_exp'
-    '''
-    xdata = lag_time
-    mask = np.logical_and(xdata >= tmin, xdata <= tmax)
-    xdata = xdata[mask]
-    ydata = Gn[mask]
-    correction_BG = ((signal + bg) / signal)**2
-    if bg_corr:
-        ydata = ((ydata) * correction_BG)
-
-    def mono_exp(x, ton1, toff1):
-        #A*np.exp(-x/t_ac)
-        return (toff1 / ton1) * np.exp(-x * (ton1 + toff1) / (ton1 * toff1))
-    def bi_exp(x, ton1, toff1, ton2, toff2):
-        g1 = (toff1 / ton1) * np.exp(-x * (ton1 + toff1) / (ton1 * toff1))
-        g2 = (toff2 / ton2) * np.exp(-x * (ton2 + toff2) / (ton2 * toff2))
-        return g1 * g2
-    from lmfit import Model
-    if fitype == 'mono_exp':
-        gmodel = Model(mono_exp)
-        gmodel.set_param_hint('ton1', value=0.01)  # , value=1, min=0.05, max=100
-        gmodel.set_param_hint('toff1', value=0.05)  # , value=0.005, min=1, max=100
-        pars = gmodel.make_params()
-        result = gmodel.fit(ydata, pars, x=xdata)  # , A=1, B=1, t_ac=1
-        params = result.params
-        ton1 = params['ton1'].value
-        ton1_err = float(str(params['ton1']).split('+/-')[1].split(',')[0])
-        toff1 = params['toff1'].value
-        toff1_err = float(str(params['toff1']).split('+/-')[1].split(',')[0])
-        #rounding figures
-        Mylist = [ton1, ton1_err, toff1, toff1_err]
-        roundMylist = [ np.round(elem, 3) for elem in Mylist ]
-        [ton1, ton1_err, toff1, toff1_err] = roundMylist
-        fcs_fit_result = {'ton1': ton1,
-                          'ton1_err': ton1_err,
-                          'toff1': toff1,
-                          'toff1_err': toff1_err}
-    if fitype == 'bi_exp':
-        gmodel = Model(bi_exp)
-        gmodel.set_param_hint('ton1', value=0.1)  # , value=1, min=0.05, max=100
-        gmodel.set_param_hint('toff1', value=0.2)  # , value=0.005, min=1, max=100
-        gmodel.set_param_hint('ton2', value=0.2)  # , value=1, min=0.05, max=100
-        gmodel.set_param_hint('toff2', value=0.3)  # , value=0.005, min=1, max=100        
-        pars = gmodel.make_params()
-        result = gmodel.fit(ydata, pars, x=xdata)  # , A=1, B=1, t_ac=1
-        params = result.params
-        ton1 = params['ton1'].value
-        ton1_err = float(str(params['ton1']).split('+/-')[1].split(',')[0])
-        toff1 = params['toff1'].value
-        toff1_err = float(str(params['toff1']).split('+/-')[1].split(',')[0])
-        #rounding figures
-        Mylist = [ton1, ton1_err, toff1, toff1_err]
-        roundMylist = [ np.round(elem, 3) for elem in Mylist ]
-        [ton1, ton1_err, toff1, toff1_err] = roundMylist
-        fcs_fit_result = {'ton1': ton1,
-                          'ton1_err': ton1_err,
-                          'toff1': toff1,
-                          'toff1_err': toff1_err}        
-    if plotting and ax:
-        print('plot')
-        ax.plot(xdata, ydata, 'b.', label='data')
-        ax.plot(xdata, result.best_fit, 'r--', label='fit')
-        ax.set_xscale('log')
-        ax.grid(True); ax.grid(True, which='minor', lw=0.3)
-        ax.set_xlim(tmin, tmax)
-        ax.set_ylim(0, None)
-        ax.legend()
-        ax.set_title(fcs_fit_result)
-    return fcs_fit_result, result  # , t_on_err, t_off_err
 # ========== fcs of photonhdf5 format  ==========
 def fcs_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
                    t_fcsrange=[1e-6, 1], nbins=100,
@@ -371,6 +218,236 @@ def fcs_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
     h5_analysis.close()
     h5_saved = h5py.File(file_path_hdf5analysis, 'r')
     fcs_out = pd.DataFrame(h5_saved['fcs/fcs_nbins100'][:],
-                            columns = ['lag_time', 'G(t)-1'])
+                            columns=['lag_time', 'G(t)-1'])
     h5_saved.close()
     return file_path_hdf5analysis, fcs_out
+
+# ============ fitting ========
+'''Different equation for fitting
+http://www.fcsxpert.com/classroom/theory/autocorrelation-function-list.html
+'''
+
+def t_on_off_fromFCS(lag_time, Gn, tmin=1e-5, tmax=1.0e0,
+                     signal=3.0e3, bg=2.0e2, bg_corr=False,
+                     fitype='mono_exp', plotting=False, ax=None):
+    '''
+    Argument:
+    fitype: 'mono_exp' or 'bi_exp'
+    '''
+    xdata = lag_time
+    mask = np.logical_and(xdata >= tmin, xdata <= tmax)
+    xdata = xdata[mask]
+    ydata = Gn[mask]
+    correction_BG = ((signal + bg) / signal)**2
+    if bg_corr:
+        ydata = ((ydata) * correction_BG)
+    def mono_exp(x, A1, t_ac1):
+        return A1*np.exp(-x/t_ac1)
+    def bi_exp(x, A1, t1, A2, t2):
+        return A1*np.exp(-x/t1) + A2*np.exp(-x/t2)
+    if fitype == 'mono_exp':
+        monofit, pcov = curve_fit(mono_exp, xdata, ydata,
+                                  p0=[1, 1], bounds=(0, np.inf))
+        perr = np.sqrt(np.diag(pcov))
+        A1 = monofit[0]; A1_err = perr[0]
+        t_ac1 = monofit[1]; t_ac1_err = perr[1]
+        toff1 = A1*t_ac1*(1+A1); ton1 = t_ac1*(1+(1/A1))# check the formula
+        toff1_err = t_ac1_err*(1+A1); ton1_err = t_ac1_err*(1+(1/A1))
+        #rounding figures
+        Mylist = [ton1, ton1_err, toff1, toff1_err]
+        roundMylist = ['%.2f' % elem for elem in Mylist]
+        # roundMylist = [ np.round(elem, 3) for elem in Mylist ]
+        [ton1, ton1_err, toff1, toff1_err] = roundMylist
+        fcs_fit_result = {'A1': A1,
+                          'A1_err': A1_err,
+                          't_ac1': t_ac1,
+                          't_ac1_err': t_ac1_err,
+                          'ton1': ton1,
+                          'ton1_err': ton1_err,
+                          'toff1': toff1,
+                          'toff1_err': toff1_err
+                         }
+    if fitype == 'bi_exp':
+        bifit, pcov = curve_fit(bi_exp, xdata, ydata,
+                                p0=[1, 1, 1, 1], bounds=(0, np.inf))
+        perr = np.sqrt(np.diag(pcov))
+        if bifit[1] > bifit[3]:
+            A1 = bifit[0]; t_ac1 = bifit[1]; t_ac1_err = perr[1]
+            A2 = bifit[2]; t_ac2 = bifit[3]; t_ac2_err = perr[3]
+        else:
+            A1 = bifit[2]; t_ac1 = bifit[3]; t_ac1_err = perr[3]
+            A2 = bifit[0]; t_ac2 = bifit[1]; t_ac2_err = perr[1]
+        toff1 = t_ac1*(1+A1); ton1 = t_ac1*(1+(1/A1))
+        toff1_err = t_ac1_err*(1+A1); ton1_err = t_ac1_err*(1+(1/A1))
+        toff2 = t_ac2*(1+A2); ton2 = t_ac2*(1+(1/A2))
+        toff2_err = t_ac2_err*(1+A2); ton2_err = t_ac2_err*(1+(1/A2))
+        #rounding figures
+        Mylist = [ton1, ton1_err, toff1, toff1_err,
+                  ton2, ton2_err, toff2, toff2_err]
+        roundMylist = ['%.4f' % elem for elem in Mylist]
+        # roundMylist = [np.round(elem, 3) for elem in Mylist]
+        [ton1, ton1_err, toff1, toff1_err,
+         ton2, ton2_err, toff2, toff2_err] = roundMylist
+        fcs_fit_result = {'ton1': ton1,
+                          'ton1_err': ton1_err,
+                          'toff1': toff1,
+                          'toff1_err': toff1_err,
+                          'ton2': ton2,
+                          'ton2_err': ton2_err,
+                          'toff2': toff2,
+                          'toff2_err': toff2_err
+                         }
+    if plotting and ax:
+        ax.plot(xdata, ydata, label='data')
+        if fitype == 'mono_exp':
+            ax.plot(xdata, mono_exp(xdata, *monofit),
+                    color='r', linewidth=2.0)
+        if fitype == 'bi_exp':
+            ax.plot(xdata, bi_exp(xdata, *bifit),
+                    color='r', linewidth=2.0)
+        ax.set_xscale('log')
+        ax.grid(True); ax.grid(True, which='minor', lw=0.3)
+        ax.set_xlim(tmin, tmax)
+        ax.set_ylim(0, None)
+        ax.legend()
+        # ax.set_title(fcs_fit_result)
+    return fcs_fit_result
+
+def t_on_off_fromFCS_2(lag_time, Gn, tmin=1e-5, tmax=1.0e0,
+                       signal=3.0e3, bg=2.0e2, bg_corr=True,
+                       fitype='mono_exp', plotting=False, ax=None):
+    '''
+    Argument:
+    fitype: 'mono_exp' or 'bi_exp'
+    '''
+    xdata = lag_time
+    mask = np.logical_and(xdata >= tmin, xdata <= tmax)
+    xdata = xdata[mask]
+    ydata = Gn[mask]
+    correction_BG = ((signal + bg) / signal)**2
+    if bg_corr:
+        ydata = ((ydata) * correction_BG)
+
+    def mono_exp(x, ton1, toff1):
+        #A*np.exp(-x/t_ac)
+        return (toff1 / ton1) * np.exp(-x * (ton1 + toff1) / (ton1 * toff1))
+    def bi_exp(x, ton1, toff1, ton2, toff2):
+        g1 = (toff1 / ton1) * np.exp(-x * (ton1 + toff1) / (ton1 * toff1))
+        g2 = (toff2 / ton2) * np.exp(-x * (ton2 + toff2) / (ton2 * toff2))
+        return g1 * g2
+    from lmfit import Model
+    if fitype == 'mono_exp':
+        gmodel = Model(mono_exp)
+        gmodel.set_param_hint('ton1', value=0.01)  # , value=1, min=0.05, max=100
+        gmodel.set_param_hint('toff1', value=0.05)  # , value=0.005, min=1, max=100
+        pars = gmodel.make_params()
+        result = gmodel.fit(ydata, pars, x=xdata)  # , A=1, B=1, t_ac=1
+        params = result.params
+        ton1 = params['ton1'].value
+        ton1_err = float(str(params['ton1']).split('+/-')[1].split(',')[0])
+        toff1 = params['toff1'].value
+        toff1_err = float(str(params['toff1']).split('+/-')[1].split(',')[0])
+        #rounding figures
+        Mylist = [ton1, ton1_err, toff1, toff1_err]
+        roundMylist = [np.round(elem, 3) for elem in Mylist]
+        [ton1, ton1_err, toff1, toff1_err] = roundMylist
+        fcs_fit_result = {'ton1': ton1,
+                          'ton1_err': ton1_err,
+                          'toff1': toff1,
+                          'toff1_err': toff1_err}
+    if fitype == 'bi_exp':
+        gmodel = Model(bi_exp)
+        gmodel.set_param_hint('ton1', value=0.1)  # , value=1, min=0.05, max=100
+        gmodel.set_param_hint('toff1', value=0.2)  # , value=0.005, min=1, max=100
+        gmodel.set_param_hint('ton2', value=0.2)  # , value=1, min=0.05, max=100
+        gmodel.set_param_hint('toff2', value=0.3)  # , value=0.005, min=1, max=100
+        pars = gmodel.make_params()
+        result = gmodel.fit(ydata, pars, x=xdata)  # , A=1, B=1, t_ac=1
+        params = result.params
+        ton1 = params['ton1'].value
+        ton1_err = float(str(params['ton1']).split('+/-')[1].split(',')[0])
+        toff1 = params['toff1'].value
+        toff1_err = float(str(params['toff1']).split('+/-')[1].split(',')[0])
+        #rounding figures
+        Mylist = [ton1, ton1_err, toff1, toff1_err]
+        roundMylist = [np.round(elem, 3) for elem in Mylist]
+        [ton1, ton1_err, toff1, toff1_err] = roundMylist
+        fcs_fit_result = {'ton1': ton1,
+                          'ton1_err': ton1_err,
+                          'toff1': toff1,
+                          'toff1_err': toff1_err}
+    if plotting and ax:
+        print('plot')
+        ax.plot(xdata, ydata, 'b.', label='data')
+        ax.plot(xdata, result.best_fit, 'r--', label='fit')
+        ax.set_xscale('log')
+        ax.grid(True); ax.grid(True, which='minor', lw=0.3)
+        ax.set_xlim(tmin, tmax)
+        ax.set_ylim(0, None)
+        ax.legend()
+        ax.set_title(fcs_fit_result)
+    return fcs_fit_result, result  # , t_on_err, t_off_err
+
+
+class fcsFitClass(object):
+    """docstring for fcsFit"""
+    parameters = {"TimeLimit": [None, None],
+                  "BackgroundCorrection":False,
+                  "Signal": 1e4,
+                  "Background":2e2,
+                  "widthXY": 0.237*1e-6,
+                  "widthXZ": 0.65*1e-6,
+                 }
+    def __init__(self, lagTime, G, parameters=parameters):
+        for key in parameters:
+            setattr(self, key, parameters[key])
+        self.lagTime = lagTime
+        self.G = G
+        # update min and max time limit
+        if self.TimeLimit[0] is None:
+            self.TimeLimit[0] = min(self.lagTime)
+        if self.TimeLimit[1] is None:
+            self.TimeLimit[1] = max(self.lagTime)
+        mask = np.logical_and(self.lagTime > self.TimeLimit[0],
+                              self.lagTime < self.TimeLimit[1])
+        self.lagTime = self.lagTime[mask]
+        self.G = self.G[mask]
+
+    def CorrectForBackground(self):
+        correctionFactor = ((self.Signal + self.Background) / self.Signal)**2
+        self.G = ((self.G) * correctionFactor)
+    def fitDiffusion3D(self, C_init=10e-9, tD_init=1e-4):
+        self.ModelForFit = lmfit.Model(diffusion3D)
+        self.params = lmfit.Parameters()
+        self.params.add('widthXY', self.widthXY, vary=True, min=1e-7)
+        self.params.add('widthXZ', self.widthXZ, vary=True, min=1e-7)
+        self.params.add('C', C_init, min=0)
+        self.params.add('tD', tD_init, min=0)
+        self.fitResult = self.ModelForFit.fit(self.G, self.params,
+                                              x=self.lagTime)
+    def fitMonoExp(self, A1_init=1, t_ac1_init=0.1):
+        self.ModelForFit = lmfit.Model(monoExp)
+        self.params = lmfit.Parameters()
+        self.params.add('A1', A1_init, min=0)
+        self.params.add('t_ac1', t_ac1_init, min=0)
+        self.fitResult = self.ModelForFit.fit(self.G, self.params,
+                                              x=self.lagTime)
+    def fitBiExp(self, A1_init=1, t1_init=0.1,
+                 A2_init=0.5, t2_init=0.01):
+        self.ModelForFit = lmfit.Model(biExp)
+        self.params = lmfit.Parameters()
+        self.params.add('A1', A1_init, min=0)
+        self.params.add('t1', t1_init, min=0)
+        self.params.add('A2', A2_init, min=0)
+        self.params.add('t2', t2_init, min=0)
+        self.fitResult = self.ModelForFit.fit(self.G, self.params,
+                                              x=self.lagTime)        
+
+def diffusion3D(x, widthXY, widthXZ, C, tD):
+    K = widthXZ / widthXY
+    Veff = (np.pi**(3/2)) * (widthXY**2) * widthXZ * 1e3 # convert to liter
+    return (1/(Veff*C*6.022140857e+23)) * (1+x/tD)**-1 * (1+x/(tD*(K**2)))**-1
+def monoExp(x, A1, t_ac1):
+    return (A1*np.exp(-x/t_ac1))
+def biExp(x, A1, t1, A2, t2):
+    return A1*np.exp(-x/t1) + A2*np.exp(-x/t2)

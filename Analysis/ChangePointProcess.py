@@ -7,6 +7,7 @@ import pandas as pd
 import h5py
 import yaml
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid.inset_locator import inset_axes
 import scipy
 import lmfit
 from lmfit import Parameters, report_fit, Model
@@ -234,6 +235,14 @@ def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2),
             file_path_hdf5, time_sect=time_sect, pars=pars)
     [hdf5_anal, timestamps, cp_out] = out
     del out, hdf5_anal
+    if time_lim[0] is None:
+        tmin = min(timestamps)
+        tmax = max(timestamps)
+    else:
+        tmin = time_lim[0]
+        tmax = time_lim[1]
+    mask = np.logical_and(timestamps >= tmin, timestamps <= tmax)
+    timestamps = timestamps[mask]    
     # removing consecutive repeatition in countrate
     cp_out_cor = changepoint_output_corr(cp_out)
     state_diff = cp_out_cor['cp_state'].diff().values
@@ -241,12 +250,7 @@ def digitize_photonstamps(file_path_hdf5, pars=(1, 0.1, 0.9, 2),
     state_diff = np.append([1], state_diff[1:], axis=0)
     df = cp_out_cor[state_diff != 0].reset_index(drop=True)
     del cp_out, cp_out_cor, state_diff
-    if time_lim[0] is None:
-        tmin = min(timestamps)
-        tmax = max(timestamps)
-    else:
-        tmin = time_lim[0]
-        tmax = time_lim[1]
+
     df = df[(df['cp_ts'] > tmin) & (df['cp_ts'] < tmax)].reset_index(drop=True)
     time_cp = df['cp_ts'].values
     state_cp = df['cp_state'].values
@@ -366,15 +370,21 @@ def plot_changepoint_trace(ax, timestamps, changepoint_output, bintime,
     ax.set_ylabel('Counts/kcps')
     return
 
-def onoff_fromCP(cp_out, timestamps, sect=100):
+def onoff_fromCP(cp_out, timestamps, tmin = None, tmax = None):
     cp_out_cor = changepoint_output_corr(cp_out)
     state_diff = cp_out_cor['cp_state'].diff().values
     # replace 1st nan by '0'
     state_diff = np.append([1], state_diff[1:], axis=0)
     df = cp_out_cor[state_diff != 0].reset_index(drop=True)
 
-    tmin = min(timestamps)
-    tmax = max(timestamps)
+    if tmin is None:
+        tmin = min(timestamps)
+    if tmax is None:
+        tmax = max(timestamps)
+    df = df[(df['cp_ts'] > tmin) & (df['cp_ts'] < tmax)].reset_index(drop=True)
+    mask = np.logical_and(timestamps >= tmin, timestamps <= tmax)
+    timestamps = timestamps[mask]
+                
     time_cp = df['cp_ts'].values
     state_cp = df['cp_state'].values
     countrate_cp = df['cp_countrate'].values
@@ -430,102 +440,102 @@ def onoff_fromCP(cp_out, timestamps, sect=100):
                  'toffav_err': toffav_err}
     return onoff_out
 
-def sim_vs_changept(simulatedhdf5, pars=(1, 0.1, 0.9, 2), time_sect=100,
-                    range_on=(0, 0.1), bins_on=100,
-                    range_off=(0, 0.5), bins_off=100,
-                   countrate_max=5):
-    h5 = h5py.File(simulatedhdf5, 'r')
-    grp_exp = 'exp_changepoint'
-    grp_cpars = '/'+ grp_exp + '/cp_'+str(pars[1])+'_'+str(pars[2])+'_'+str(time_sect)+'s'
-    cp_out = pd.DataFrame(h5[grp_cpars][:],
-                          columns = ['cp_index', 'cp_ts', 'cp_state', 'cp_countrate'])
-    timestamps = h5['onexp_offexp']['timestamps'][...]
-    t_on_sim = h5['onexp_offexp']['ontimes_exp'][...]
-    t_off_sim = h5['onexp_offexp']['offtimes_exp'][...]
+def SimulationVsChangepoint(SimulatedHDF5, pars = [1, 0.1, 0.9, 2],
+                            time_lim = [0, 20],
+                            range_on = (0, 0.1), bins_on = 50,
+                            range_off = (0, 0.5), bins_off = 50,
+                            countrate_max = 5):  
+    h5 = h5py.File(SimulatedHDF5, 'r')
+    ontimes = h5['onexp_offexp']['ontimes_exp'][...]
+    offtimes = h5['onexp_offexp']['offtimes_exp'][...]
     h5.close()
-    plt.close('all')
-    fig = plt.figure(figsize=(10, 6))
-    nrows=2;ncols=2
-    ax00 = plt.subplot2grid((nrows, ncols),(0,0), colspan=2)
-    ax10 = plt.subplot2grid((nrows, ncols),(1,0))
-    ax11 = plt.subplot2grid((nrows, ncols),(1,1))
-    # time trace plot
-    plot_changepoint_trace(ax00, timestamps, changepoint_output=cp_out,
-                   bintime=5e-3,
-                   x_lim_min=0, y_lim_min=0, x_lim_max=10, y_lim_max=countrate_max,
-                   show_changepoint=True)
-    ax00.set_title(simulatedhdf5 +'\n'+str(pars))
-    # on/off from changepoint ananlysis
-    out = changepoint_simulatedata(simulatedhdf5, time_sect=time_sect, pars=pars,
+    # chanepoint output
+    result = changepoint_simulatedata(SimulatedHDF5, time_sect=100, pars = pars,
                                  exp=True, rise=False, overwrite=False)
-    [simulatedhdf5, timestamps, cp_out] = out   
-    cp_out_cor = changepoint_output_corr(cp_out)
-    state_diff = cp_out_cor['cp_state'].diff().values
-    # replace 1st nan by '0'
-    state_diff = np.append([1], state_diff[1:], axis=0)
-    df = cp_out_cor[state_diff != 0].reset_index(drop=True)
-    
-    no_div = int((timestamps[-1]-timestamps[0])/100)#100 can bereplaced by any number
+    [simulatedhdf5, timestamps, cp_out] = result
+
+    time_sect = 500
+    no_div = int((timestamps[-1]-timestamps[0])/time_sect)
     if no_div<1:
         no_div=1
     time_div = np.linspace(min(timestamps), max(timestamps), no_div+1)
-    ontimes = []; offtimes=[];
+    ontimes_cp = np.array([])
+    offtimes_cp = np.array([])
+    len_timestamps = 0
     for i in range(no_div):
         t_left = time_div[i]
         t_right = time_div[i+1]
-        mask = np.logical_and(timestamps>=t_left, timestamps<=t_right)
-        timestamps_i = timestamps[mask]
-        df_i = df[(df['cp_ts'] > t_left) & (df['cp_ts'] < t_right)].reset_index(drop=True)
-        time_cp = df_i['cp_ts'].values
-        state_cp = df_i['cp_state'].values
-        countrate_cp = df_i['cp_countrate'].values
-        idx_closest = find_closest(timestamps_i, time_cp)
-        timestamps_closest = timestamps_i[idx_closest]    
-        dig_cp = np.digitize(timestamps_i, timestamps_closest)
-        dig_uniq = np.unique(dig_cp)
-        df_dig = pd.DataFrame()
-        df_dig['timestamps'] = timestamps_i    
-        df_dig['cp_no'] = dig_cp
-        df_dig['state'] = dig_cp  # initiating array for state assigment
-        if len(dig_uniq) == len(state_cp):
-            df_dig['state'] = df_dig['state'].replace(dig_uniq, state_cp)
-        elif len(dig_uniq) != len(countrate_cp):
-            df_dig['state'] = df_dig['state'].replace(dig_uniq[1:], state_cp)
-        df_on = df_dig[df_dig['state']==2]#.reset_index(drop=True)
-        df_off = df_dig[df_dig['state']==1]#.reset_index(drop=True)
-        # ontime calc
-        time_left = df_on.groupby('cp_no').timestamps.min()
-        time_right = df_on.groupby('cp_no').timestamps.max()
-        abs_ontime = df_on.groupby('cp_no').timestamps.mean()
-        ontimes_i = time_right - time_left
-        ontimes.append(ontimes_i.values)
-        # offtime calc
-        time_left = df_off.groupby('cp_no').timestamps.min()
-        time_right = df_off.groupby('cp_no').timestamps.max()
-        abs_offtime = df_off.groupby('cp_no').timestamps.mean()
-        offtimes_i = time_right - time_left
-        offtimes.append(offtimes_i.values)
-    # on histogram
-    t_on_cps = [item for sublist in ontimes for item in sublist]#changepoint output
-    n, t = np.histogram(t_on_cps, bins=bins_on, range=range_on, density=True)
-    ax10.plot(t[:-1], n, label='Bright times\nChange Point')
-    n, t = np.histogram(t_on_sim, bins=bins_on, range=range_on, density=True)
-    ax10.plot(t[:-1], n, '.', label='Bright times\nSimulated')
-    ax10.set_xlim(range_on)
-    ax10.set_xlabel('duration/s')
-    ax10.set_ylabel('#')
-    ax10.legend()
-    # off histogram
-    t_off_cps = [item for sublist in offtimes for item in sublist]
-    n, t = np.histogram(t_off_cps, bins=bins_off, range=range_off, density=True)
-    ax11.plot(t[:-1], n, label='Dark times\nChange Point')
-    n, t = np.histogram(t_off_sim, bins=bins_off, range=range_off, density=True)
-    ax11.plot(t[:-1], n, '.', label='Dark times\nSimulated')
-    ax11.set_xlim(range_off)
-    ax11.set_xlabel('duration/s')
-    ax11.set_ylabel('#')
-    ax11.legend()
-    fig.tight_layout()
+        onoff_out = onoff_fromCP(cp_out, timestamps, tmin=t_left, tmax=t_right)
+        ontimes_cp = np.append(ontimes_cp, onoff_out['ontimes'].values)
+        offtimes_cp = np.append(offtimes_cp, onoff_out['offtimes'].values)
+    # PLOTTING
+    fig = plt.figure(figsize=(10, 10))
+    nrows=3;ncols=2
+    ax00 = plt.subplot2grid((nrows, ncols),(0,0), colspan=2)
+    ax10 = plt.subplot2grid((nrows, ncols),(1,0), colspan=2)
+    ax20 = plt.subplot2grid((nrows, ncols),(2,0))
+    ax21 = plt.subplot2grid((nrows, ncols),(2,1))
+    # photon stamps
+    arrivalTimes = timestamps[:50]
+    ax00.plot(arrivalTimes, np.ones_like(arrivalTimes), '.', ms=1)
+    for i in arrivalTimes:
+        ax00.axvline(i, lw=0.5)
+    ax00.set_yticklabels([])
+    ax00.set_xlabel('time/s')
+    # time trace
+    mask = np.logical_and(timestamps >= time_lim[0], timestamps <= time_lim[1])
+    timestamps_select = timestamps[mask]
+    bintime = 10e-3;
+    bins = np.int((max(timestamps_select) - min(timestamps_select))/bintime)
+    hist, trace = np.histogram(timestamps_select, bins=bins)
+    ax10.plot(trace[:-1], hist*1e-3/bintime)
+    ax10.set_xlim(0, max(timestamps_select))
+    ax10.set_ylim(0,)
+    ax10.set_xlabel('time/s')
+    ax10.set_ylabel('counts/kcps')
+    # changepoint vs simulated
+    # Bright times
+    onHist = np.histogram(ontimes, bins = 30, range = range_on, density = True)
+    onHist_cp = np.histogram(ontimes_cp, bins = 50, range = range_on, density = True)
+    ax20.plot(onHist[1][:-1], onHist[0], 'b', label = 'Simulated')
+    ax20.plot(onHist_cp[1][:-1], onHist_cp[0], 'ob', label = 'Change Point')
+    axis_in = inset_axes(ax20, height="50%", width="50%")    
+    rangeInset = [0, 0.1]
+    onHist = np.histogram(ontimes, bins = 20, range = rangeInset, density = True)
+    onHist_cp = np.histogram(ontimes_cp, bins = 20, range = rangeInset, density = True)
+    axis_in.plot(onHist[1][:-1], onHist[0], 'b', label = 'Simulated')
+    axis_in.plot(onHist_cp[1][:-1], onHist_cp[0], 'ob', label = 'Change Point')
+    axis_in.set_yticklabels([])
+    ax20.set_yscale('log')
+    ax20.set_xlim(0,);
+    ax20.set_xlabel('time/s')
+    ax20.set_ylabel('PDF')
+    ax20.legend(frameon=False);
+    ax20.set_title('Bright times')
+
+    # Dark times
+    offHist = np.histogram(offtimes, bins = 30,
+                        range = range_off, density = True)
+    offHist_cp = np.histogram(offtimes_cp, bins = 50,
+                              range = range_off, density = True)
+    ax21.plot(offHist[1][:-1], offHist[0], 'r', label = 'Simulated')
+    ax21.plot(offHist_cp[1][:-1], offHist_cp[0], 'or', label = 'Change Point')
+
+    axis_in = inset_axes(ax21, height="50%", width="50%")
+    rangeInset = [0, 0.1]
+    offHist = np.histogram(offtimes, bins = 20,
+                           range = rangeInset, density = True)
+    offHist_cp = np.histogram(offtimes_cp, bins = 20,
+                              range = rangeInset, density = True)
+    axis_in.plot(offHist[1][:-1], offHist[0], 'r', label = 'Simulated')
+    axis_in.plot(offHist_cp[1][:-1], offHist_cp[0], 'or', label = 'Change Point')
+    axis_in.set_yticklabels([])
+    ax21.set_yscale('log')
+    ax21.set_xlim(0,);
+    ax21.set_xlabel('time/s')
+    ax21.set_ylabel('PDF')
+    ax21.legend(frameon=False);
+    ax21.set_title('Dark times');
     return fig
 
     # =========== FOLDERWISE ==============

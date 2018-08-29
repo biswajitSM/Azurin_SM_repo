@@ -18,7 +18,7 @@ mpl.rcParams["font.family"] = "sans-serif"
 mpl.rcParams["font.size"] = "12"
 # =========Get the pointnumber, datn, emplot, FCS files with their filepath in a "GIVEN FOLDER"=====
 foldername = r'/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data/201702_S101toS104/S101d14Feb17_60.5_635_A2_CuAzu655'
-   
+
 def MetaFromPt3Hdf5(FilePathHdf5):
     FileNameHdf5 = os.path.basename(FilePathHdf5)
     string_pt3 = '.pt3'
@@ -58,7 +58,7 @@ def MetaFromPt3Hdf5(FilePathHdf5):
         potentail_val = pos_pot_val_4 +pos_pot_val_3 + pos_pot_val_2 + pos_pot_val_1
     potentail_val = int(potentail_val)
     MetaData = {'PointNumber': point_number,
-               'Potential': potentail_val}
+                'Potential': potentail_val}
     return MetaData
 
 def ListsPt3Hdf5(foldername):
@@ -67,21 +67,21 @@ def ListsPt3Hdf5(foldername):
     columns = ['PointNumber', 'Potential', 'FileName', 'FilePathHdf5']
     pt3hdf5list = pd.DataFrame(index=None, columns=columns)
     for dirpath, dirnames, filenames in os.walk(foldername):
-        for filename in [f for f in 
-            filenames if f.endswith(tuple(extensions_pt3))]:
+        for filename in [f for f in
+                         filenames if f.endswith(tuple(extensions_pt3))]:
             MetaData = MetaFromPt3Hdf5(filename)
-            FilePathHdf5 = os.path.join(dirpath, filename)  
+            FilePathHdf5 = os.path.join(dirpath, filename)
             templist = pd.DataFrame([[MetaData['PointNumber'],
                                       MetaData['Potential'],
                                       filename, FilePathHdf5]],
-                                      columns=columns)
+                                    columns=columns)
             pt3hdf5list = pt3hdf5list.append(templist, ignore_index=True)
     return pt3hdf5list
 
 def CreateYamlForPt3Hdf5(FilePathHdf5, Rewrite=False):
     os.path.isfile(FilePathHdf5)
     FilePathYaml = os.path.splitext(FilePathHdf5)[0] + '.yaml'
-    # Load yaml file or Create if doesn't exist 
+    # Load yaml file or Create if doesn't exist
     if os.path.isfile(FilePathYaml):
         # print('exists')
         with open(FilePathYaml) as f:
@@ -89,7 +89,7 @@ def CreateYamlForPt3Hdf5(FilePathHdf5, Rewrite=False):
     else:
         with open(FilePathYaml, 'w') as f:
             dfyaml = {'FileName': os.path.basename(FilePathHdf5),
-                     'FilePath': FilePathHdf5}
+                      'FilePath': FilePathHdf5}
             yaml.dump(dfyaml, f, default_flow_style=False)
         with open(FilePathYaml) as f:
             dfyaml = yaml.load(f)
@@ -108,8 +108,8 @@ def CreateYamlFromPt3Hdf5Folderwise(folderpath):
     '''
     extensions_pt3 = [".pt3.hdf5"] #file extensions we are interested in
     for dirpath, dirnames, filenames in os.walk(folderpath):
-        for filename in [f for f in filenames if 
-                        f.endswith(tuple(extensions_pt3))]:
+        for filename in [f for f in filenames if
+                         f.endswith(tuple(extensions_pt3))]:
             FilePathHdf5 = os.path.join(dirpath, filename)
             dfyaml, FilePathYaml = CreateYamlForPt3Hdf5(FilePathHdf5)
             MetaData = MetaFromPt3Hdf5(FilePathHdf5)
@@ -117,7 +117,7 @@ def CreateYamlFromPt3Hdf5Folderwise(folderpath):
             dfyaml['PointNumber'] = MetaData['PointNumber']
             dfyaml['Potential'] = MetaData['Potential']
             dfyaml['Potential'] = {'Value': MetaData['Potential'],
-                                  'Unit': 'mV'}            
+                                   'Unit': 'mV'}
             # Get time limit from .pt3.datn
             FilePathDatn = os.path.splitext(FilePathHdf5)[0] + '.datn'
             if os.path.isfile(FilePathDatn):
@@ -130,7 +130,7 @@ def CreateYamlFromPt3Hdf5Folderwise(folderpath):
             else:
                 h5 = h5py.File(FilePathHdf5, 'r')
                 unit = h5['photon_data']['timestamps_specs'][
-                        'timestamps_unit'][...]
+                    'timestamps_unit'][...]
                 timestamps = unit * h5['photon_data']['timestamps'][...]
                 MinTime = min(timestamps)
                 MaxTime = max(timestamps)
@@ -139,12 +139,12 @@ def CreateYamlFromPt3Hdf5Folderwise(folderpath):
                                    'MaxTime':MaxTime}
             # Write and dump again
             with open(FilePathYaml, 'w') as f:
-                yaml.dump(dfyaml, f, default_flow_style=False)            
+                yaml.dump(dfyaml, f, default_flow_style=False)
     return
 
-def GetSpecificPoints(foldername = foldername,
-                    input_potential = [0, 25, 50, 100],
-                    pointnumbers=[1]):
+def GetSpecificPoints(foldername=foldername,
+                      input_potential=[0, 25, 50, 100],
+                      pointnumbers=[1]):
     """bin=1 in millisecond
     foldername should be a path to the folder
     """
@@ -158,10 +158,10 @@ def GetSpecificPoints(foldername = foldername,
     return df_specific
 #=========== TIME_TRACE_PLOT and FCS_PLOT: given folder name, point number and list of potential, plot time traces at diff potentialof same molecule ======
 def timetraceplot_potentials(foldername=foldername,
-                            input_potential=[0, 25, 50, 100],
-                            pointnumbers=[2], x_lim_min=0, x_lim_max=5,
-                            y_lim_min=0, y_lim_max=3, bintime=5e-3,
-                            show_changepoint=True, figsize=(10, 8)):
+                             input_potential=[0, 25, 50, 100],
+                             pointnumbers=[2], x_lim_min=0, x_lim_max=5,
+                             y_lim_min=0, y_lim_max=3, bintime=5e-3,
+                             show_changepoint=True, figsize=(10, 8)):
     """bin=1 in millisecond
     foldername should be a path to the folder
     """
@@ -183,7 +183,7 @@ def timetraceplot_potentials(foldername=foldername,
                                y_lim_min=0, y_lim_max=6,
                                show_changepoint=True)
         ax.legend([str(given_potential) + " mV"],
-                    fontsize=16, frameon=False)
+                  fontsize=16, frameon=False)
         xlim(x_lim_min, x_lim_max)
         ylim(0, y_lim_max)  # 1.5*max(df[1]/1000)
 
@@ -197,9 +197,9 @@ def timetraceplot_potentials(foldername=foldername,
     return fig
 
 def fcsplot_potentials(foldername=foldername,
-                        input_potential=[0, 25, 50, 100],
-                        pointnumbers=[2], tmin=1e-5, tmax=1.0e0,
-                        V_th = 60, figsize=(5, 10), same_axis=True):
+                       input_potential=[0, 25, 50, 100],
+                       pointnumbers=[2], tmin=1e-5, tmax=1.0e0,
+                       V_th=60, figsize=(5, 10), same_axis=True):
     '''
     Arguments:
     V_th: Potential above which monoexponential fit will be used
@@ -216,22 +216,22 @@ def fcsplot_potentials(foldername=foldername,
         file_path_hdf5 = df_specific['FilePathHdf5'][i]
         out = fcs_photonhdf5(file_path_hdf5, tmin=None, tmax=None,
                              t_fcsrange=[1e-6, 10], nbins=100)
-        [file_path_hdf5analysis, fcs_out] = out       
+        [file_path_hdf5analysis, fcs_out] = out
         lag_time = fcs_out['lag_time']
         Gn = fcs_out['G(t)-1']
         if not same_axis:
             ax = subplot(len(df_specific), 1, i + 1)
         if potential > V_th:
             out = t_on_off_fromFCS(lag_time, Gn, tmin=tmin, tmax=tmax,
-                                     fitype='mono_exp', bg_corr=False,
-                                     plotting=True, ax=ax)
+                                   fitype='mono_exp', bg_corr=False,
+                                   plotting=True, ax=ax)
             ax.set_title([str(potential)])
             pot_leg.append(str(potential))
             pot_leg.append('fit')
         if potential < V_th:
             out = t_on_off_fromFCS(lag_time, Gn, tmin=tmin, tmax=tmax,
-                                     fitype='bi_exp', bg_corr=False,
-                                     plotting=True, ax=ax)
+                                   fitype='bi_exp', bg_corr=False,
+                                   plotting=True, ax=ax)
             ax.set_title([str(potential)])
             pot_leg.append(str(potential))
             pot_leg.append('fit')
@@ -281,9 +281,9 @@ def hist2D_on_off(foldername=foldername, input_potential=[100],
                   pointnumbers=[24], bins_on=40, range_on=[0, 0.01],
                   bins_off=50, range_off=[0, 1], x_shift=10,
                   plots=True, figsize=(16, 8)):
-    t_ons = []; t_offs=[]
+    t_ons = []; t_offs = []
     for i in pointnumbers:
-        out = histogram_on_off_1mol(foldername= foldername,
+        out = histogram_on_off_1mol(foldername=foldername,
                                     input_potential=input_potential,
                                     pointnumbers=[i], bins_on=bins_on,
                                     range_on=range_on, bins_off=bins_off,
@@ -292,7 +292,7 @@ def hist2D_on_off(foldername=foldername, input_potential=[100],
         t_ons = np.concatenate((t_ons, t_on_temp), axis=0)
         t_offs = np.concatenate((t_offs, t_off_temp), axis=0)
 
-    t_ons=pd.Series(t_ons);t_offs=pd.Series(t_offs)
+    t_ons = pd.Series(t_ons); t_offs = pd.Series(t_offs)
     t_on_shifted_1 = t_ons.shift(+1) ## shift up
     t_on_delay_1 = pd.DataFrame([t_on_shifted_1, t_ons])
     t_on_delay_1 = t_on_delay_1.T
@@ -305,48 +305,48 @@ def hist2D_on_off(foldername=foldername, input_potential=[100],
     print('Number of off events: %d' %len(t_offs))
     if plots == True:
         import matplotlib as mpl
-        colormap=mpl.cm.jet
+        colormap = mpl.cm.jet
         fig = plt.figure(figsize=figsize)
 
-        ax1 = fig.add_subplot(2,3,1)#2,2,1
+        ax1 = fig.add_subplot(2, 3, 1)#2,2,1
         out = hist2d(t_on_shifted_1[1:], t_ons[1:],
-                    range=[range_on, range_on], 
-                    bins=bins_on,
-                    norm=mpl.colors.LogNorm(), cmap=colormap)
+                     range=[range_on, range_on],
+                     bins=bins_on,
+                     norm=mpl.colors.LogNorm(), cmap=colormap)
         [C_on_1, Ex_on_1, Ey_on_1, fig] = out
-        Ex_on_1,Ey_on_1 = meshgrid(Ex_on_1,Ey_on_1)
+        Ex_on_1, Ey_on_1 = meshgrid(Ex_on_1, Ey_on_1)
         # ax1.pcolormesh(Ex_on_1, Ey_on_1, C_on_1, cmap=colormap)#,norm=mpl.colors.LogNorm()
         colorbar()
         ax1.set_title('ON time Cu-Azu %smV' %input_potential)
         ax1.set_xlabel(r'$\tau_{on}/s$')
         ax1.set_ylabel(r'$\tau_{on}+1/s$')
 
-        ax2 = fig.add_subplot(2,3,2)#2,2,1
+        ax2 = fig.add_subplot(2, 3, 2)#2,2,1
         out = hist2d(t_on_shifted_x[x_shift:], t_ons[x_shift:],
-                    range=[range_on, range_on],
-                    bins=bins_on,
-                    norm=mpl.colors.LogNorm(), cmap=colormap)
-        [C_on_x,Ex_on_x,Ey_on_x, fig] = out
-        Ex_on_x,Ey_on_x = meshgrid(Ex_on_x,Ey_on_x)
+                     range=[range_on, range_on],
+                     bins=bins_on,
+                     norm=mpl.colors.LogNorm(), cmap=colormap)
+        [C_on_x, Ex_on_x, Ey_on_x, fig] = out
+        Ex_on_x, Ey_on_x = meshgrid(Ex_on_x, Ey_on_x)
         # ax2.pcolormesh(Ex_on_x, Ey_on_x, C_on_x, cmap=colormap)#,norm=mpl.colors.LogNorm()
         colorbar()
         ax2.set_title('ON time Cu-Azu %smV' %input_potential)
         ax2.set_xlabel(r'$\tau_{on}/s$')
         ax2.set_ylabel(r'$\tau_{on}+%s/s$'%x_shift)
 
-        ax3 = fig.add_subplot(2,3,3)
+        ax3 = fig.add_subplot(2, 3, 3)
         C_on_diff = C_on_1-C_on_x
-        pcm=ax3.pcolormesh(Ex_on_x, Ey_on_x, C_on_diff,
-                       norm=mpl.colors.SymLogNorm(linthresh=2, 
-                       linscale=2,vmin=C_on_diff.min(), vmax=C_on_diff.max()),
-                       cmap=colormap)
+        pcm = ax3.pcolormesh(Ex_on_x, Ey_on_x, C_on_diff,
+                             norm=mpl.colors.SymLogNorm(linthresh=2,
+                             linscale=2, vmin=C_on_diff.min(), vmax=C_on_diff.max()),
+                             cmap=colormap)
         fig.colorbar(pcm, ax=ax3, extend='max')
 
-        ax4 = fig.add_subplot(2,3,4)
+        ax4 = fig.add_subplot(2, 3, 4)
         out = hist2d(t_off_shifted_1[1:], t_offs[1:],
-                    range=[range_off, range_off],
-                    bins=bins_off,
-                    norm=mpl.colors.LogNorm(), cmap=colormap)
+                     range=[range_off, range_off],
+                     bins=bins_off,
+                     norm=mpl.colors.LogNorm(), cmap=colormap)
         [C_off_1, Ex_off_1, Ey_off_1, figu] = out
         Ex_off_1, Ey_off_1 = meshgrid(Ex_off_1, Ey_off_1)
         colorbar()
@@ -354,24 +354,26 @@ def hist2D_on_off(foldername=foldername, input_potential=[100],
         ax4.set_xlabel(r'$\tau_{off}/s$')
         ax4.set_ylabel(r'$\tau_{off}+1/s$')
 
-        ax5 = fig.add_subplot(2,3,5)
+        ax5 = fig.add_subplot(2, 3, 5)
         out = hist2d(t_off_shifted_x[x_shift:], t_offs[x_shift:],
-                    range=[range_off, range_off],
-                    bins=bins_off,
-                    norm=mpl.colors.LogNorm(), cmap=colormap)
-        [C_off_x,Ex_off_x,Ey_off_x, figu] = out
-        Ex_off_x,Ey_off_x = meshgrid(Ex_off_x,Ey_off_x)
+                     range=[range_off, range_off],
+                     bins=bins_off,
+                     norm=mpl.colors.LogNorm(), cmap=colormap)
+        [C_off_x, Ex_off_x, Ey_off_x, figu] = out
+        Ex_off_x, Ey_off_x = meshgrid(Ex_off_x, Ey_off_x)
         colorbar()
         ax5.set_title('OFF time Cu-Azu %smV' %input_potential)
         ax5.set_xlabel(r'$\tau_{off}/s$')
         ax5.set_ylabel(r'$\tau_{off}+%s/s$'%x_shift)
 
-        ax6 = fig.add_subplot(2,3,6)
-        C_off_diff=C_off_1-C_off_x
-        pcm=ax6.pcolormesh(Ex_off_x, Ey_off_x, C_off_diff,
-                           norm = mpl.colors.SymLogNorm(linthresh=0.1,
-                           linscale=0.1,vmin=C_off_diff.min(),
-                           vmax=C_off_diff.max()), cmap=colormap)
+        ax6 = fig.add_subplot(2, 3, 6)
+        C_off_diff = C_off_1-C_off_x
+        pcm = ax6.pcolormesh(Ex_off_x, Ey_off_x, C_off_diff,
+                             norm=mpl.colors.SymLogNorm(linthresh=0.1,
+                                                        linscale=0.1,
+                                                        vmin=C_off_diff.min(),
+                                                        vmax=C_off_diff.max()),
+                             cmap=colormap)
         fig.colorbar(pcm, ax=ax6, extend='max')
         plt.tight_layout()
     return(t_ons, t_offs)
@@ -381,7 +383,8 @@ pointnumbers = range(100)
 potentialist = range(-100, 200, 1)
 def cp_outputs_folderwise(folderpath = foldername,
                           pointnumbers=[1],
-                          potentialist=potentialist):
+                          potentialist=potentialist,
+                          pars=(1, 0.01, 0.99, 2)):
     df_pt3hdf5list = ListsPt3Hdf5(foldername=folderpath)
     df_specific = df_pt3hdf5list[df_pt3hdf5list['PointNumber'].isin(
                                 pointnumbers)]
@@ -422,7 +425,7 @@ def cp_outputs_folderwise(folderpath = foldername,
                 file_path_hdf5 = df_specific_i['FilePathHdf5'][i]
                 # read and analyze change point
                 out = changepoint_photonhdf5(file_path_hdf5, time_sect=100,
-                                             pars=(1, 0.01, 0.99, 2),
+                                             pars=pars,
                                              overwrite=False)
                 [hdf5_anal, timestamps, cp_out] = out
                 onoff_out = onoff_fromCP(cp_out, timestamps)
@@ -450,9 +453,9 @@ def cp_outputs_folderwise(folderpath = foldername,
             out_total = pd.concat([out_total, out_point], axis=1)
     return out_total
 
-def fcs_outputs_folderwise(folderpath = foldername,
-                            pointnumbers=[1],
-                            potentialist=potentialist):
+def fcs_outputs_folderwise(folderpath=foldername,
+                           pointnumbers=[1],
+                           potentialist=potentialist):
     df_pt3hdf5list = ListsPt3Hdf5(foldername=folderpath)
     df_specific = df_pt3hdf5list[df_pt3hdf5list['PointNumber'].isin(
                                 pointnumbers)]
@@ -565,19 +568,19 @@ def Mid_potentials_slopem_lmfit(folderpath=foldername, pointnumbers=range(5),
     #--figure initiation----
     if plotting == True:
         fig = plt.figure(figsize=(10,4))
-        nrows=1; ncols=2
-        ax00 = plt.subplot2grid((nrows, ncols), (0,0))
-        ax01 = plt.subplot2grid((nrows, ncols), (0,1))
+        nrows = 1; ncols = 2
+        ax00 = plt.subplot2grid((nrows, ncols), (0, 0))
+        ax01 = plt.subplot2grid((nrows, ncols), (0, 1))
         cmap = plt.get_cmap('jet')#jet_r
-        N=len(out.columns.levels[0])
+        N = len(out.columns.levels[0])
     for i in range(len(out.columns.levels[0])):
         point = out.columns.levels[0][i]
         PointNumber = point[6:]
         point_output_tot = out[point].dropna()
         point_output = point_output_tot[point_output_tot[
-                                        'Potential'] >= min_pot] #select a potential threshold
+                       'Potential'] >= min_pot] #select a potential threshold
         point_output = point_output_tot[point_output_tot[
-                                        'Potential'] <= max_pot] #select a potential threshold
+                       'Potential'] <= max_pot] #select a potential threshold
         point_output.reset_index(drop=True, inplace=True)
         if len(point_output) > min_pot_num:
             potential = point_output['Potential']
@@ -590,39 +593,36 @@ def Mid_potentials_slopem_lmfit(folderpath=foldername, pointnumbers=range(5),
             E = potential*0.001 #converting to mV
             #--------fitting nernst----------------
             res_nernst = nernst_mod.fit(t_ratio, params_nernst, x=E)
-            out_params = str((res_nernst.params['a'],'value'))
+            out_params = str((res_nernst.params['a'], 'value'))
             E0 = res_nernst.best_values['a']
             E0_err = float(out_params.split('+/- ')[1].split(', bounds')[0])
             #---------append to list---------
             E0_list_temp = pd.DataFrame([[PointNumber, E0, E0_err]],
                                         columns=columns_E0)
-            E0_list=E0_list.append(E0_list_temp, ignore_index=True)
+            E0_list = E0_list.append(E0_list_temp, ignore_index=True)
             #--------fitting nernst_slopem------
             res_nernst_slop = nernst_slopem_mod.fit(t_ratio, params_ner_slop, x=E)
             E0_m = res_nernst_slop.best_values['a']
-            out_params = str((res_nernst_slop.params['a'],'value'))
+            out_params = str((res_nernst_slop.params['a'], 'value'))
             E0_m_err = float(out_params.split('+/- ')[1].split(', bounds')[0])
             slope_m = res_nernst_slop.best_values['m']
-            out_params_m = str((res_nernst_slop.params['m'],'value'))
+            out_params_m = str((res_nernst_slop.params['m'], 'value'))
             slope_m_err = float(out_params_m.split('+/- ')[1].split(', bounds')[0])
-            E0_m_list_temp = pd.DataFrame([[
-                PointNumber, E0_m, E0_m_err, slope_m, slope_m_err]],
-                                columns=columns_E0_m)
+            E0_m_list_temp = pd.DataFrame([[PointNumber, E0_m, E0_m_err, slope_m, slope_m_err]],
+                                          columns=columns_E0_m)
             E0_m_list = E0_m_list.append(E0_m_list_temp, ignore_index=True)
             #-----plot------
             if plotting == True:
                 color = cmap(float(i)/N)
                 # ax00.errorbar(point_output_tot['Potential'], point_output_tot['t_ratio'],
-                #          yerr=point_output_tot['t_ratioerr'], fmt='o', color=color, label=point)#plot raw outputs
+                # yerr=point_output_tot['t_ratioerr'], fmt='o', color=color, label=point)#plot raw outputs
                 ax00.plot(point_output_tot['Potential'],
                           point_output_tot['t_ratio'], 'o',
-                          color=color, label=point)#plot raw outputs                
+                          color=color, label=point)#plot raw outputs
                 ax00.plot(linspace(min(potential)-10, max(potential)+10),
                           nernst(0.001*linspace(min(potential)-10,
                           max(potential)+10), E0), color=color, linewidth=2.0)#color
                 #plot(E*1000, nernst(E, *E0_fit), color=color, linewidth=2.0)
-
-                
                 ax01.errorbar(point_output_tot['Potential'],
                               point_output_tot['t_ratio'],
                               yerr = point_output_tot['t_ratioerr'],
@@ -653,7 +653,7 @@ def fcs_folderwise(folderpath, t_fcsrange=[1e-6, 1], nbins=100,
     pt3hdf5_extension = [".pt3.hdf5", ".t3r.hdf5"]
     for dirpath, dirname, filenames in os.walk(folderpath):
         for filename in [f for f in filenames if 
-                        f.endswith(tuple(pt3hdf5_extension))]:
+                         f.endswith(tuple(pt3hdf5_extension))]:
             FilePathHdf5 = os.path.join(dirpath, filename)
             FilePathYaml = FilePathHdf5[:-4] + 'yaml'
             with open(FilePathYaml) as f:
@@ -666,15 +666,15 @@ def fcs_folderwise(folderpath, t_fcsrange=[1e-6, 1], nbins=100,
                   (start_time_i, FilePathHdf5))
             try:
                 out = fcs_photonhdf5(FilePathHdf5, tmin=tmin, tmax=tmax,
-                                        t_fcsrange=t_fcsrange, nbins=nbins,
-                                        overwrite=overwrite)
+                                     t_fcsrange=t_fcsrange, nbins=nbins,
+                                     overwrite=overwrite)
             except:
                 out = fcs_photonhdf5(FilePathHdf5, tmin=None, tmax=None,
-                                        t_fcsrange=t_fcsrange, nbins=nbins,
-                                        overwrite=overwrite)
+                                     t_fcsrange=t_fcsrange, nbins=nbins,
+                                     overwrite=overwrite)
             processtime = time.time() - start_time_i
             print("---TOTAL time took for the file: %s IS: %s seconds ---\n" %
-                    (FilePathHdf5, processtime))
+                  (FilePathHdf5, processtime))
     print("---TOTAL time took for the folder: %s seconds ---\n" %
           (time.time() - start_time))
     return
