@@ -13,7 +13,7 @@ from ChangePointProcess import digitize_photonstamps
 from autocorrelate import autocorrelate
 from pycorrelate import make_loglags, normalize_G, t_on_off_fromFCS
 from LifeTimeFluorescence import LifeTimeFitTail, BiExpLifetime
-from simulation import simulate_on_off_times
+from simulation import simulate_on_off_times, save_simtrace_longtrace
 
 
 class LongTraceClass(object):
@@ -29,11 +29,11 @@ class LongTraceClass(object):
                   "InsetRangeDarkHist": [0, 0.1],
                   "AveragingType": 'mean',  # 'rolling' or 'mean' or 'noAveraging'
                   "NumPointsForAveraging": 10,
-                  "SimulationTimeLength": 2500,  # in seconds
+                  "SimulationTimeLength": 100000,  # in seconds
                   "BinsForAvgBrightHist": 50,
                   "BinsForAvgDarkHist": 50,
                   "Range2DHistBright": [0, 1],
-                  "Range2DHistDark": [0, 1],
+                  "Range2DHistDark": [0, 5],
                   "RangeForMidPotentialHist": [0, 125],
                   "BinsForMidPotentialHist": 50,
                   "LagTimeLimitCorrelation": [10, 1000],
@@ -46,7 +46,7 @@ class LongTraceClass(object):
                   "BinsLifetime": 50,
                   "RangeLifetime": [0, 8],
                   "FigureTightLayout": False
-                  }
+                 }
 
     def __init__(self, file_path_hdf5, SimulatedHDF5,
                  Simulation=False, parameters=parameters):
@@ -54,7 +54,17 @@ class LongTraceClass(object):
         print('Input file is {}'.format(os.path.basename(file_path_hdf5)))
         self.Simulation = Simulation
         self.file_path_hdf5 = file_path_hdf5
-        self.SimulatedHDF5 = SimulatedHDF5
+        # self.SimulatedHDF5 = SimulatedHDF5
+        if self.Simulation:
+            self.file_path_hdf5 = SimulatedHDF5
+            self.SimulatedHDF5 = SimulatedHDF5
+        else:
+            self.SimulatedHDF5 = save_simtrace_longtrace(
+                                        FilePathHdf5=file_path_hdf5,
+                                        i_on_mu=3000, i_off_mu=200,
+                                        lifetime_on=3.8e-9,
+                                        lifetime_off=0.6e-9,
+                                        rewrite=False)            
         for key in parameters:
             setattr(self, key, parameters[key])
         self.FilePathYaml = self.file_path_hdf5[:-5] + '.yaml'
@@ -84,349 +94,7 @@ class LongTraceClass(object):
         # update min and max time limit
         self.TimeLimit[0] = min(self.timestamps)
         self.TimeLimit[1] = max(self.timestamps)
-    def DigitizePhotons(self, int_photon=False,
-                        nanotimes_bool=False,
-                        duration_cp=False):
-        if self.Simulation:
-            df_dig = digitize_photonstamps(file_path_hdf5=self.file_path_hdf5,
-                                           pars=self.ChangePointParams,
-                                           time_sect=100,
-                                           Simulated=True,
-                                           time_lim=self.TimeLimit,
-                                           bintime=self.BintimeForIntTrace,
-                                           cp_no=True,
-                                           int_photon=int_photon,
-                                           nanotimes_bool=nanotimes_bool,
-                                           duration_cp=duration_cp)
-        else:
-            df_dig = digitize_photonstamps(file_path_hdf5=self.file_path_hdf5,
-                                           pars=self.ChangePointParams,
-                                           time_sect=100,
-                                           time_lim=self.TimeLimit,
-                                           bintime=self.BintimeForIntTrace,
-                                           cp_no=True,
-                                           int_photon=int_photon,
-                                           nanotimes_bool=nanotimes_bool,
-                                           duration_cp=duration_cp)
-        return df_dig
 
-    def onoff_values(self):
-        df_dig = self.DigitizePhotons()
-        df_on = df_dig[df_dig['state'] == 2].reset_index(drop=True)
-        df_off = df_dig[df_dig['state'] == 1].reset_index(drop=True)
-        time_left = df_on.groupby('cp_no').timestamps.min()
-        time_right = df_on.groupby('cp_no').timestamps.max()
-        abstime_on = df_on.groupby('cp_no').timestamps.mean()
-        ontimes = time_right - time_left
-
-        time_left = df_off.groupby('cp_no').timestamps.min()
-        time_right = df_off.groupby('cp_no').timestamps.max()
-        abstime_off = df_off.groupby('cp_no').timestamps.mean()
-        offtimes = time_right - time_left
-        l = len(abstime_on) - 2
-        abstime_on = abstime_on.values[:l]
-        ontimes = ontimes.values[:l]
-        abstime_off = abstime_off.values[:l]
-        offtimes = offtimes.values[:l]
-        self.df_durations = pd.DataFrame()
-        self.df_durations['abstime_on'] = abstime_on
-        self.df_durations['ontimes'] = ontimes
-        self.df_durations['abstime_off'] = abstime_off
-        self.df_durations['offtimes'] = offtimes
-        # for simulated file
-        out = simulate_on_off_times(ton1=np.average(ontimes), ton2=0.002,
-                                    toff1=np.average(offtimes), toff2=0.005,
-                                    time_len=self.SimulationTimeLength,
-                                    plotting=False)
-        [ontimes_exp_1, ontimes_exp_rise, offtimes_exp_1, offtimes_exp_rise] = out
-        abstime = np.cumsum(ontimes_exp_1) + np.cumsum(offtimes_exp_1)
-        self.dfDurationSimulated = pd.DataFrame({'abstime_on': abstime,
-                                                 'ontimes': ontimes_exp_1,
-                                                 'abstime_off': abstime,
-                                                 'offtimes': offtimes_exp_1,
-                                                 })
-        return
-
-    def PlotDurationsVsTime(self):
-        # Define axis positions and numbers
-        self.FigureDuration = plt.figure(figsize=self.FigureSize)
-        nrows = 4
-        ncols = 4
-        self.axis00 = plt.subplot2grid((nrows, ncols), (0, 0), colspan=3)
-        self.axis03 = plt.subplot2grid((nrows, ncols), (0, 3))
-        self.axis10 = plt.subplot2grid((nrows, ncols), (1, 0), colspan=3)
-        self.axis13 = plt.subplot2grid((nrows, ncols), (1, 3))
-        self.axis20 = plt.subplot2grid((nrows, ncols), (2, 0), colspan=3)
-        self.axis23 = plt.subplot2grid((nrows, ncols), (2, 3))
-        self.axis30 = plt.subplot2grid((nrows, ncols), (3, 0))
-        self.axis31 = plt.subplot2grid((nrows, ncols), (3, 1))
-        self.axis32 = plt.subplot2grid((nrows, ncols), (3, 2))
-        self.axis33 = plt.subplot2grid((nrows, ncols), (3, 3))
-        # get Bright and Dark times
-        df_durations = self.df_durations
-        dfDurationSimulated = self.dfDurationSimulated
-        if self.AveragingType == 'noAveraging':
-            dfAverage = self.df_durations
-            dfAverageSimulated = dfDurationSimulated
-        elif self.AveragingType == 'mean':
-            dfAverage = df_durations.groupby(np.arange(len(df_durations)) //
-                                             self.NumPointsForAveraging).mean().dropna().reset_index(drop=True)
-            dfAverageSimulated = dfDurationSimulated.groupby(np.arange(len(dfDurationSimulated)) //
-                                                             self.NumPointsForAveraging).mean().dropna().reset_index(drop=True)
-        elif self.AveragingType == 'rolling':
-            dfAverage = df_durations.rolling(
-                self.NumPointsForAveraging).mean().dropna().reset_index(drop=True)
-            dfAverageSimulated = dfDurationSimulated.rolling(
-                self.NumPointsForAveraging).mean().dropna().reset_index(drop=True)
-        # MidPotential calculation
-        TimeRatio = dfAverage['offtimes'] / dfAverage['ontimes']
-        dfE0Average = pd.DataFrame()
-        dfE0Average['E0'] = self.AppliedPotential - 59 * np.log10(TimeRatio)
-        dfE0Average['abstime'] = dfAverage['abstime_on']
-        TimeRatio = dfAverageSimulated['offtimes'] / \
-            dfAverageSimulated['ontimes']
-        dfE0AverageSimulated = pd.DataFrame()
-        dfE0AverageSimulated['E0'] = self.AppliedPotential - \
-            59 * np.log10(TimeRatio)
-        dfE0AverageSimulated['abstime'] = dfAverageSimulated['abstime_on']
-        # PLOTTING STARTS HERE
-        self.axis00.plot(dfAverage['abstime_on'], dfAverage['ontimes'],
-                         'b', label='Average Bright times')
-        mask = np.logical_and(dfAverageSimulated['abstime_on'] > self.TimeLimit[0],
-                              dfAverageSimulated['abstime_on'] < self.TimeLimit[1])
-        self.axis00.plot(dfAverageSimulated['abstime_on'].values[mask],
-                         dfAverageSimulated['ontimes'].values[mask],
-                         'b', alpha=0.4, label='Average Bright times')
-        self.axis00.set_xlim(self.TimeLimit)
-        self.axis00.set_ylabel(r'$Avg \tau_b/s$')
-        self.axis00.set_xticklabels([])
-        self.axis00.legend()
-        ylimAxis00 = self.axis00.get_ylim()
-        brightHist = np.histogram(dfAverage['ontimes'].values,
-                                  bins=50,
-                                  range=self.axis00.get_ylim(),
-                                  density=True)
-        self.axis03.plot(brightHist[0], brightHist[1][:-1], 'b')
-        # plot simulated for comparision
-        brightHistSim = np.histogram(dfAverageSimulated['ontimes'].values,
-                                     bins=50,
-                                     range=self.axis00.get_ylim(),
-                                     density=True)
-        self.axis03.plot(brightHistSim[0], brightHistSim[1][:-1], '--b')
-        self.axis03.set_yticklabels([])
-        self.axis03.set_xticklabels([])
-        self.axis03.set_xlabel('PDF')
-
-        self.axis10.plot(dfAverage['abstime_off'], dfAverage['offtimes'],
-                         'r', label='Average Dark times')
-        mask = np.logical_and(dfAverageSimulated['abstime_off'] > self.TimeLimit[0],
-                              dfAverageSimulated['abstime_off'] < self.TimeLimit[1])
-        self.axis10.plot(dfAverageSimulated['abstime_off'].values[mask],
-                         dfAverageSimulated['offtimes'].values[mask],
-                         'r', alpha=0.4, label='Average Dark times')
-        self.axis10.set_xlim(self.TimeLimit)
-        self.axis10.set_ylabel(r'$Avg \tau_d/s$')
-        self.axis10.set_xticklabels([])
-        self.axis10.legend()
-        ylimAxis = self.axis10.get_ylim()
-        darkHist = np.histogram(dfAverage['offtimes'].values,
-                                bins=50,
-                                range=self.axis10.get_ylim(),
-                                density=True)
-        self.axis13.plot(darkHist[0], darkHist[1][:-1], 'r')
-        darkHistSim = np.histogram(dfAverageSimulated['offtimes'].values,
-                                   bins=50,
-                                   range=self.axis10.get_ylim(),
-                                   density=True)
-        self.axis13.plot(darkHistSim[0], darkHistSim[1][:-1], '--r')
-        self.axis13.set_yticklabels([])
-        self.axis13.set_xticklabels([])
-        self.axis13.set_xlabel('PDF')
-
-        self.axis20.plot(dfE0Average['abstime'], dfE0Average['E0'],
-                         'm', label=r'$E_0/mV$')
-        mask = np.logical_and(dfE0AverageSimulated['abstime'] > self.TimeLimit[0],
-                              dfE0AverageSimulated['abstime'] < self.TimeLimit[1])
-        self.axis20.plot(dfE0AverageSimulated['abstime'].values[mask],
-                         dfE0AverageSimulated['E0'].values[mask],
-                         'm', alpha=0.2, label='Simulated')
-        self.axis20.set_ylabel(r'$E_0/mV$')
-        self.axis20.set_xlim(self.TimeLimit)
-
-        E0lim = self.axis20.get_ylim()
-        E0Hist = np.histogram(dfE0Average['E0'].values,
-                              bins=50,
-                              range=self.axis20.get_ylim(),
-                              density=True)
-        self.axis23.plot(E0Hist[0], E0Hist[1][:-1], 'm')
-
-        E0Hist = np.histogram(dfE0AverageSimulated['E0'].values,
-                              bins=50,
-                              range=self.axis20.get_ylim(),
-                              density=True)
-        self.axis23.plot(E0Hist[0], E0Hist[1][:-1], '--m')
-
-        self.axis23.set_yticklabels([])
-        self.axis23.set_xticklabels([])
-        self.axis23.set_xlabel('#')
-        self.axis23.set_ylabel('')
-
-        HistBrightRaw = waitime_hist_inset(waitimes=df_durations['ontimes'],
-                                           axis=self.axis30,
-                                           bins=self.BinsForBrightHist,
-                                           binrange=self.RangeForBrightHist,
-                                           insetrange=self.InsetRangeBrightHist,
-                                           fit_func=streched_exp,
-                                           PlotInset=self.PlotInsetForDurationHist,
-                                           color='b'
-                                           )
-        self.axis30.legend(['Bright time', 'Dark times',
-                            'Dark times', 'fit'])
-        self.axis30.set_xlabel('time/s', color='b')
-        self.axis30.tick_params('x', direction='in', colors='b')
-
-        axis30_up = plt.twiny(ax=self.axis30)
-        HistDarkRaw = waitime_hist_inset(waitimes=df_durations['offtimes'],
-                                         axis=axis30_up,
-                                         bins=self.BinsForDarkHist,
-                                         binrange=self.RangeForDarkHist,
-                                         insetrange=self.InsetRangeDarkHist,
-                                         fit_func=streched_exp,
-                                         PlotInset=self.PlotInsetForDurationHist,
-                                         color='r'
-                                         )
-        # self.axis31.set_xlim(0, 10)
-        axis30_up.set_xlabel('')
-        axis30_up.tick_params('x', direction='in', colors='r')
-        self.axis30.set_yticklabels([])
-        self.axis30.set_ylabel('log(PDF)')
-
-        Plot2Ddurations(self.axis31, dfAverage,
-                        shift_range=range(1, 10, 1),
-                        ontimes=True,
-                        bins=40, rangehist=self.Range2DHistBright)
-        self.axis31.text(0.2 * self.Range2DHistBright[0],
-                         0.75 * self.Range2DHistBright[1], 'Bright times')
-        Plot2Ddurations(self.axis32, dfAverageSimulated,
-                        shift_range=range(1, 10, 1),
-                        ontimes=True,
-                        bins=40, rangehist=self.Range2DHistBright)
-        self.axis32.text(0.2 * self.Range2DHistBright[0],
-                         0.75 * self.Range2DHistBright[1],
-                         'Simulated Bright times')
-        out = PlotCorrelationBrightDark(self.axis33,
-                                        df_durations["ontimes"],
-                                        df_durations["offtimes"],
-                                        lagtime_lim=self.LagTimeLimitCorrelation,
-                                        G_lim=self.ContrastLimitCorrelation,
-                                        bintime=self.BintimeForCorrelation)
-        self.axis33.legend(['', ''])
-        [self.CorrBright, self.CorrDark] = out
-        out = PlotCorrelationBrightDark(self.axis33,
-                                        dfDurationSimulated["ontimes"],
-                                        dfDurationSimulated["offtimes"],
-                                        lagtime_lim=self.LagTimeLimitCorrelation,
-                                        G_lim=self.ContrastLimitCorrelation,
-                                        bintime=self.BintimeForCorrelation)
-        # # plot FCS
-        # # update timestamps and nanotimes
-        # mask = np.logical_and(self.timestamps >= self.TimeLimit[0],
-        #                       self.timestamps <= self.TimeLimit[1])
-        # timestamps = self.timestamps[mask]
-        # # result = PlotFCS(self.axis33, timestamps,
-        # #                  self.RangeFCS, self.BinsFCS)
-        # # [self.bin_lags, self.G] = result
-        if self.FigureTightLayout:
-            self.FigureDuration.tight_layout()
-        return
-
-    def Plot2Ddurations(self, RollMean=False,
-                        range_on=[0, 1],
-                        range_off=[0, 1],
-                        NumPointsForAveraging=10,
-                        shift_range=range(1, 10, 1)):
-        range_on = self.Range2DHistBright
-        range_off = self.Range2DHistDark
-        NumPointsForAveraging = self.NumPointsForAveraging
-        df_durations = self.df_durations
-        if RollMean:
-            df_roll_mean = df_durations.rolling(
-                NumPointsForAveraging).mean().dropna().reset_index(drop=True)
-            dfAverage = df_roll_mean
-        else:
-            df_mean = df_durations.groupby(np.arange(len(df_durations)) //
-                                           NumPointsForAveraging
-                                           ).mean().dropna().reset_index(drop=True)
-            dfAverage = df_mean
-        # set figure paramters
-        self.Figure2Ddurations = plt.figure(figsize=(12, 5))
-        nrows = 1
-        ncols = 2
-        self.axis00 = plt.subplot2grid((nrows, ncols), (0, 0), colspan=1)
-        self.axis01 = plt.subplot2grid((nrows, ncols), (0, 1), colspan=1)
-        T = np.array([])
-        T_shift = np.array([])
-        for i in shift_range:
-            shift = i
-            T = np.append(T, dfAverage['ontimes'][shift:].values)
-            T_shift = np.append(T_shift, dfAverage['ontimes'][:-shift].values)
-
-        self.axis00.hist2d(T, T_shift,
-                           bins=40, range=([range_on, range_on]),
-                           norm=mpl.colors.LogNorm())
-        self.axis00.set_xlabel('t(n)')
-        self.axis00.set_ylabel('t(n+{})'.format(i))
-        self.axis00.text(0.1, 0.6, 'No. of points for averaging:{}'.format(
-            NumPointsForAveraging))
-        self.axis00.set_title('Bright times')
-
-        for i in shift_range:
-            shift = i
-            T = np.append(T, dfAverage['offtimes'][shift:].values)
-            T_shift = np.append(T_shift, dfAverage['offtimes'][:-shift].values)
-        self.axis01.hist2d(T, T_shift,
-                           bins=40, range=([range_off, range_off]),
-                           norm=mpl.colors.LogNorm())
-        self.axis01.set_xlabel('t(n)')
-        self.axis01.set_ylabel('t(n+{})'.format(i))
-        self.axis01.text(0.1, 0.6, 'No. of points for averaging:{}'.format(
-            NumPointsForAveraging))
-        self.axis01.set_title('Dark times')
-        if self.FigureTightLayout:
-            self.Figure2Ddurations.tight_layout()
-        return
-
-    def PlotTimeTrace(self, figsize=(10, 4)):
-        # Define axis positions and numbers
-        self.FigureTimetrace = plt.figure(figsize=figsize)
-        nrows = 1
-        ncols = 1
-        self.axis00 = plt.subplot2grid((nrows, ncols), (0, 0), colspan=1)
-        plot_timetrace(self.axis00, self.timestamps,
-                       self.BintimeForIntTrace, color='b')
-        self.axis00.set_xlim(self.TimeLimit)
-        if self.FigureTightLayout:
-            self.FigureTimetrace.tight_layout()
-
-    def PlotCorrelation(self):
-        # Define axis positions and numbers
-        self.FigureCorrelation = plt.figure(figsize=(6, 3))
-        nrows = 1
-        ncols = 1
-        self.axis00 = plt.subplot2grid((nrows, ncols), (0, 0), colspan=1)
-
-        df_durations = self.df_durations
-        df_mean = df_durations.groupby(np.arange(len(df_durations)) //
-                                       self.NumPointsForAveraging).mean().dropna().reset_index(drop=True)
-        df_roll_mean = df_durations.rolling(
-            self.NumPointsForAveraging).mean().dropna().reset_index(drop=True)
-        dfAverage = df_durations
-        self.CorrBright, self.CorrDark = CorrelationBrightDark(self.axis00,
-                                                               dfAverage["ontimes"], dfAverage["offtimes"],
-                                                               tlag_lim=self.LagTimeLimitCorrelation,
-                                                               G_lim=self.ContrastLimitCorrelation)
-        if self.FigureTightLayout:
-            self.FigureCorrelation.tight_layout()
 
     def PlotFCS(self):
         # update timestamps and nanotimes
@@ -684,6 +352,367 @@ class LongTraceClass(object):
         self.df_lt_fit = df_lt_fit
         return
 
+    def DigitizePhotons(self, int_photon=False,
+                        nanotimes_bool=False,
+                        duration_cp=False):
+        if self.Simulation:
+            df_dig = digitize_photonstamps(file_path_hdf5=self.file_path_hdf5,
+                                           pars=self.ChangePointParams,
+                                           time_sect=100,
+                                           Simulated=True,
+                                           time_lim=self.TimeLimit,
+                                           bintime=self.BintimeForIntTrace,
+                                           cp_no=True,
+                                           int_photon=int_photon,
+                                           nanotimes_bool=nanotimes_bool,
+                                           duration_cp=duration_cp)
+        else:
+            df_dig = digitize_photonstamps(file_path_hdf5=self.file_path_hdf5,
+                                           pars=self.ChangePointParams,
+                                           time_sect=100,
+                                           time_lim=self.TimeLimit,
+                                           bintime=self.BintimeForIntTrace,
+                                           cp_no=True,
+                                           int_photon=int_photon,
+                                           nanotimes_bool=nanotimes_bool,
+                                           duration_cp=duration_cp)
+        return df_dig
+
+    def onoff_values(self):
+        df_dig = self.DigitizePhotons()
+        df_on = df_dig[df_dig['state'] == 2].reset_index(drop=True)
+        df_off = df_dig[df_dig['state'] == 1].reset_index(drop=True)
+        time_left = df_on.groupby('cp_no').timestamps.min()
+        time_right = df_on.groupby('cp_no').timestamps.max()
+        abstime_on = df_on.groupby('cp_no').timestamps.mean()
+        ontimes = time_right - time_left
+
+        time_left = df_off.groupby('cp_no').timestamps.min()
+        time_right = df_off.groupby('cp_no').timestamps.max()
+        abstime_off = df_off.groupby('cp_no').timestamps.mean()
+        offtimes = time_right - time_left
+        l = len(abstime_on) - 2
+        abstime_on = abstime_on.values[:l]
+        ontimes = ontimes.values[:l]
+        abstime_off = abstime_off.values[:l]
+        offtimes = offtimes.values[:l]
+        self.df_durations = pd.DataFrame()
+        self.df_durations['abstime_on'] = abstime_on
+        self.df_durations['ontimes'] = ontimes
+        self.df_durations['abstime_off'] = abstime_off
+        self.df_durations['offtimes'] = offtimes
+        # for simulated file
+        out = simulate_on_off_times(ton1=np.average(ontimes), ton2=0.002,
+                                    toff1=np.average(offtimes), toff2=0.005,
+                                    time_len=self.SimulationTimeLength,
+                                    plotting=False)
+        [ontimes_exp_1, ontimes_exp_rise, offtimes_exp_1, offtimes_exp_rise] = out
+        abstime = np.cumsum(ontimes_exp_1) + np.cumsum(offtimes_exp_1)
+        self.dfDurationSimulated = pd.DataFrame({'abstime_on': abstime,
+                                                 'ontimes': ontimes_exp_1,
+                                                 'abstime_off': abstime,
+                                                 'offtimes': offtimes_exp_1,
+                                                 })
+        return
+
+    def PlotDurationsVsTime(self):
+        # Define axis positions and numbers
+        self.FigureDuration = plt.figure(figsize=self.FigureSize)
+        nrows = 4
+        ncols = 4
+        self.axis00 = plt.subplot2grid((nrows, ncols), (0, 0), colspan=3)
+        self.axis03 = plt.subplot2grid((nrows, ncols), (0, 3))
+        self.axis10 = plt.subplot2grid((nrows, ncols), (1, 0), colspan=3)
+        self.axis13 = plt.subplot2grid((nrows, ncols), (1, 3))
+        self.axis20 = plt.subplot2grid((nrows, ncols), (2, 0), colspan=3)
+        self.axis23 = plt.subplot2grid((nrows, ncols), (2, 3))
+        self.axis30 = plt.subplot2grid((nrows, ncols), (3, 0))
+        self.axis31 = plt.subplot2grid((nrows, ncols), (3, 1))
+        self.axis32 = plt.subplot2grid((nrows, ncols), (3, 2))
+        self.axis33 = plt.subplot2grid((nrows, ncols), (3, 3))
+        # get Bright and Dark times
+        df_durations = self.df_durations
+        dfDurationSimulated = self.dfDurationSimulated
+        if self.AveragingType == 'noAveraging':
+            dfAverage = self.df_durations
+            dfAverageSimulated = dfDurationSimulated
+        elif self.AveragingType == 'mean':
+            dfAverage = df_durations.groupby(np.arange(len(df_durations)) //
+                                             self.NumPointsForAveraging).mean().dropna().reset_index(drop=True)
+            dfAverageSimulated = dfDurationSimulated.groupby(np.arange(len(dfDurationSimulated)) //
+                                                             self.NumPointsForAveraging).mean().dropna().reset_index(drop=True)
+        elif self.AveragingType == 'rolling':
+            dfAverage = df_durations.rolling(
+                self.NumPointsForAveraging).mean().dropna().reset_index(drop=True)
+            dfAverageSimulated = dfDurationSimulated.rolling(
+                self.NumPointsForAveraging).mean().dropna().reset_index(drop=True)
+        # MidPotential calculation
+        TimeRatio = dfAverage['offtimes'] / dfAverage['ontimes']
+        dfE0Average = pd.DataFrame()
+        dfE0Average['E0'] = self.AppliedPotential - 59 * np.log10(TimeRatio)
+        dfE0Average['abstime'] = dfAverage['abstime_on']
+        TimeRatioSimulated = dfAverageSimulated['offtimes'] / \
+            dfAverageSimulated['ontimes']
+        dfE0AverageSimulated = pd.DataFrame()
+        dfE0AverageSimulated['E0'] = self.AppliedPotential - \
+            59 * np.log10(TimeRatioSimulated)
+        dfE0AverageSimulated['abstime'] = dfAverageSimulated['abstime_on']
+        # PLOTTING STARTS HERE
+        self.axis00.plot(dfAverage['abstime_on'], dfAverage['ontimes'],
+                         'b', label='Average Bright times')
+        mask = np.logical_and(dfAverageSimulated['abstime_on'] > self.TimeLimit[0],
+                              dfAverageSimulated['abstime_on'] < self.TimeLimit[1])
+        self.axis00.plot(dfAverageSimulated['abstime_on'].values[mask],
+                         dfAverageSimulated['ontimes'].values[mask],
+                         'b', alpha=0.4, label='Average Bright times')
+        self.axis00.set_xlim(self.TimeLimit)
+        self.axis00.set_ylabel(r'$Avg \tau_b/s$')
+        self.axis00.set_xticklabels([])
+        self.axis00.legend()
+        ylimAxis00 = self.axis00.get_ylim()
+        brightHist = np.histogram(dfAverage['ontimes'].values,
+                                  bins=50,
+                                  range=self.axis00.get_ylim(),
+                                  density=True)
+        self.axis03.plot(brightHist[0], brightHist[1][:-1], 'b')
+        # plot simulated for comparision
+        brightHistSim = np.histogram(dfAverageSimulated['ontimes'].values,
+                                     bins=50,
+                                     range=self.axis00.get_ylim(),
+                                     density=True)
+        self.axis03.plot(brightHistSim[0], brightHistSim[1][:-1], '--b')
+        self.axis03.set_yticklabels([])
+        self.axis03.set_xticklabels([])
+        self.axis03.set_xlabel('PDF')
+
+        self.axis10.plot(dfAverage['abstime_off'], dfAverage['offtimes'],
+                         'r', label='Average Dark times')
+        mask = np.logical_and(dfAverageSimulated['abstime_off'] > self.TimeLimit[0],
+                              dfAverageSimulated['abstime_off'] < self.TimeLimit[1])
+        self.axis10.plot(dfAverageSimulated['abstime_off'].values[mask],
+                         dfAverageSimulated['offtimes'].values[mask],
+                         'r', alpha=0.4, label='Average Dark times')
+        self.axis10.set_xlim(self.TimeLimit)
+        self.axis10.set_ylabel(r'$Avg \tau_d/s$')
+        self.axis10.set_xticklabels([])
+        self.axis10.legend()
+        ylimAxis = self.axis10.get_ylim()
+        darkHist = np.histogram(dfAverage['offtimes'].values,
+                                bins=50,
+                                range=self.axis10.get_ylim(),
+                                density=True)
+        self.axis13.plot(darkHist[0], darkHist[1][:-1], 'r')
+        darkHistSim = np.histogram(dfAverageSimulated['offtimes'].values,
+                                   bins=50,
+                                   range=self.axis10.get_ylim(),
+                                   density=True)
+        self.axis13.plot(darkHistSim[0], darkHistSim[1][:-1], '--r')
+        self.axis13.set_yticklabels([])
+        self.axis13.set_xticklabels([])
+        self.axis13.set_xlabel('PDF')
+
+        self.axis20.plot(dfE0Average['abstime'], dfE0Average['E0'],
+                         'm', label=r'$E_0/mV$')
+        mask = np.logical_and(dfE0AverageSimulated['abstime'] > self.TimeLimit[0],
+                              dfE0AverageSimulated['abstime'] < self.TimeLimit[1])
+        self.axis20.plot(dfE0AverageSimulated['abstime'].values[mask],
+                         dfE0AverageSimulated['E0'].values[mask],
+                         'm', alpha=0.2, label='Simulated')
+        self.axis20.set_ylabel(r'$E_0/mV$')
+        self.axis20.set_xlim(self.TimeLimit)
+
+        E0lim = self.axis20.get_ylim()
+        E0Hist = np.histogram(dfE0Average['E0'].values,
+                              bins=50,
+                              range=self.axis20.get_ylim(),
+                              density=True)
+        self.axis23.plot(E0Hist[0], E0Hist[1][:-1], 'm')
+
+        E0Hist = np.histogram(dfE0AverageSimulated['E0'].values,
+                              bins=50,
+                              range=self.axis20.get_ylim(),
+                              density=True)
+        self.axis23.plot(E0Hist[0], E0Hist[1][:-1], '--m')
+
+        self.axis23.set_yticklabels([])
+        self.axis23.set_xticklabels([])
+        self.axis23.set_xlabel('#')
+        self.axis23.set_ylabel('')
+
+        HistBrightRaw = waitime_hist_inset(waitimes=df_durations['ontimes'],
+                                           axis=self.axis30,
+                                           bins=self.BinsForBrightHist,
+                                           binrange=self.RangeForBrightHist,
+                                           insetrange=self.InsetRangeBrightHist,
+                                           fit_func=streched_exp,
+                                           PlotInset=self.PlotInsetForDurationHist,
+                                           color='b'
+                                           )
+        self.axis30.legend(['Bright times', 'Dark times',
+                            'Dark times', 'fit'])
+        self.axis30.set_xlabel('time/s', color='b')
+        self.axis30.tick_params('x', direction='in', colors='b')
+
+        axis30_up = plt.twiny(ax=self.axis30)
+        HistDarkRaw = waitime_hist_inset(waitimes=df_durations['offtimes'],
+                                         axis=axis30_up,
+                                         bins=self.BinsForDarkHist,
+                                         binrange=self.RangeForDarkHist,
+                                         insetrange=self.InsetRangeDarkHist,
+                                         fit_func=streched_exp,
+                                         PlotInset=self.PlotInsetForDurationHist,
+                                         color='r'
+                                        )
+        # self.axis31.set_xlim(0, 10)
+        axis30_up.set_xlabel('')
+        axis30_up.tick_params('x', direction='in', colors='r')
+        self.axis30.set_yticklabels([])
+        self.axis30.set_ylabel('log(PDF)')
+
+        Plot2Ddurations(self.axis31, dfAverage,
+                        shift_range=range(1, 10, 1),
+                        ontimes=True,
+                        bins=40, rangehist=self.Range2DHistBright)
+        self.axis31.text(0.2 * self.Range2DHistBright[0],
+                         0.75 * self.Range2DHistBright[1], 'Bright times')
+        q05 = dfAverageSimulated.quantile(q=0.05)
+        q95 = dfAverageSimulated.quantile(q=0.95)
+        cent = 0.5 * (q05['ontimes'] + q95['ontimes'])
+        rad = 0.5 * (q95['ontimes'] - q05['ontimes'])
+        circle1 = plt.Circle((cent, cent), rad, fill=False,
+                             linestyle='--', edgecolor='k', linewidth=2)
+        self.axis31.add_artist(circle1)
+
+        Plot2Ddurations(self.axis32, dfAverage,
+                        shift_range=range(1, 10, 1),
+                        ontimes=False,
+                        bins=40, rangehist=self.Range2DHistDark)
+        self.axis32.text(0.2 * self.Range2DHistDark[0],
+                         0.75 * self.Range2DHistDark[1],
+                         'Dark times')
+        q05 = dfAverageSimulated.quantile(q=0.05)
+        q95 = dfAverageSimulated.quantile(q=0.95)
+        cent = 0.5 * (q05['offtimes'] + q95['offtimes'])
+        rad = 0.5 * (q95['offtimes'] - q05['offtimes'])
+        circle1 = plt.Circle((cent, cent), rad, fill=False,
+                             linestyle='--', edgecolor='k', linewidth=2)
+        self.axis32.add_artist(circle1)
+
+        out = PlotCorrelationBrightDark(self.axis33,
+                                        df_durations["ontimes"],
+                                        df_durations["offtimes"],
+                                        lagtime_lim=self.LagTimeLimitCorrelation,
+                                        G_lim=self.ContrastLimitCorrelation,
+                                        bintime=self.BintimeForCorrelation)
+        [self.CorrBright, self.CorrDark] = out
+        out = PlotCorrelationBrightDark(self.axis33,
+                                        dfDurationSimulated["ontimes"][:2000],
+                                        dfDurationSimulated["offtimes"][:2000],
+                                        lagtime_lim=self.LagTimeLimitCorrelation,
+                                        G_lim=self.ContrastLimitCorrelation,
+                                        bintime=self.BintimeForCorrelation,
+                                        colorBright='k', colorDark='k')
+        self.axis33.legend(['Bright', 'Dark', 'Simulated', ''])
+        # # plot FCS
+        # # update timestamps and nanotimes
+        # mask = np.logical_and(self.timestamps >= self.TimeLimit[0],
+        #                       self.timestamps <= self.TimeLimit[1])
+        # timestamps = self.timestamps[mask]
+        # # result = PlotFCS(self.axis33, timestamps,
+        # #                  self.RangeFCS, self.BinsFCS)
+        # # [self.bin_lags, self.G] = result
+        if self.FigureTightLayout:
+            self.FigureDuration.tight_layout()
+        return
+
+    def Plot2Ddurations(self, RollMean=False,
+                        range_on=[0, 1],
+                        range_off=[0, 1],
+                        NumPointsForAveraging=10,
+                        shift_range=range(1, 10, 1)):
+        range_on = self.Range2DHistBright
+        range_off = self.Range2DHistDark
+        NumPointsForAveraging = self.NumPointsForAveraging
+        df_durations = self.df_durations
+        if RollMean:
+            df_roll_mean = df_durations.rolling(
+                NumPointsForAveraging).mean().dropna().reset_index(drop=True)
+            dfAverage = df_roll_mean
+        else:
+            df_mean = df_durations.groupby(np.arange(len(df_durations)) //
+                                           NumPointsForAveraging
+                                           ).mean().dropna().reset_index(drop=True)
+            dfAverage = df_mean
+        # set figure paramters
+        self.Figure2Ddurations = plt.figure(figsize=(12, 5))
+        nrows = 1
+        ncols = 2
+        self.axis00 = plt.subplot2grid((nrows, ncols), (0, 0), colspan=1)
+        self.axis01 = plt.subplot2grid((nrows, ncols), (0, 1), colspan=1)
+        T = np.array([])
+        T_shift = np.array([])
+        for i in shift_range:
+            shift = i
+            T = np.append(T, dfAverage['ontimes'][shift:].values)
+            T_shift = np.append(T_shift, dfAverage['ontimes'][:-shift].values)
+
+        self.axis00.hist2d(T, T_shift,
+                           bins=40, range=([range_on, range_on]),
+                           norm=mpl.colors.LogNorm())
+        self.axis00.set_xlabel('t(n)')
+        self.axis00.set_ylabel('t(n+{})'.format(i))
+        self.axis00.text(0.1, 0.6, 'No. of points for averaging:{}'.format(
+            NumPointsForAveraging))
+        self.axis00.set_title('Bright times')
+
+        for i in shift_range:
+            shift = i
+            T = np.append(T, dfAverage['offtimes'][shift:].values)
+            T_shift = np.append(T_shift, dfAverage['offtimes'][:-shift].values)
+        self.axis01.hist2d(T, T_shift,
+                           bins=40, range=([range_off, range_off]),
+                           norm=mpl.colors.LogNorm())
+        self.axis01.set_xlabel('t(n)')
+        self.axis01.set_ylabel('t(n+{})'.format(i))
+        self.axis01.text(0.1, 0.6, 'No. of points for averaging:{}'.format(
+            NumPointsForAveraging))
+        self.axis01.set_title('Dark times')
+        if self.FigureTightLayout:
+            self.Figure2Ddurations.tight_layout()
+        return
+
+    def PlotTimeTrace(self, figsize=(10, 4)):
+        # Define axis positions and numbers
+        self.FigureTimetrace = plt.figure(figsize=figsize)
+        nrows = 1
+        ncols = 1
+        self.axis00 = plt.subplot2grid((nrows, ncols), (0, 0), colspan=1)
+        plot_timetrace(self.axis00, self.timestamps,
+                       self.BintimeForIntTrace, color='b')
+        self.axis00.set_xlim(self.TimeLimit)
+        if self.FigureTightLayout:
+            self.FigureTimetrace.tight_layout()
+
+    def PlotCorrelation(self):
+        # Define axis positions and numbers
+        self.FigureCorrelation = plt.figure(figsize=(6, 3))
+        nrows = 1
+        ncols = 1
+        self.axis00 = plt.subplot2grid((nrows, ncols), (0, 0), colspan=1)
+
+        df_durations = self.df_durations
+        df_mean = df_durations.groupby(np.arange(len(df_durations)) //
+                                       self.NumPointsForAveraging).mean().dropna().reset_index(drop=True)
+        df_roll_mean = df_durations.rolling(
+            self.NumPointsForAveraging).mean().dropna().reset_index(drop=True)
+        dfAverage = df_durations
+        self.CorrBright, self.CorrDark = CorrelationBrightDark(self.axis00,
+                                                               dfAverage["ontimes"], dfAverage["offtimes"],
+                                                               tlag_lim=self.LagTimeLimitCorrelation,
+                                                               G_lim=self.ContrastLimitCorrelation)
+        if self.FigureTightLayout:
+            self.FigureCorrelation.tight_layout()
+
 
 def plot_timetrace(axis, timestamps, bintime, color='b'):
     tmin = min(timestamps)
@@ -869,13 +898,16 @@ def correlation_durations(ontimes, offtimes,
 
 
 def PlotCorrelationBrightDark(axis, ontimes, offtimes,
-                              lagtime_lim, G_lim, bintime=1e-2):
+                              lagtime_lim, G_lim, bintime=1e-2,
+                              colorBright='b', colorDark='r'):
     G_on, G_off = correlation_durations(ontimes, offtimes,
                                         bintime=bintime,
                                         lagtime_lim=lagtime_lim)
 
-    axis.plot(G_on[:, 0], G_on[:, 1], 'b', label='On time correlation')
-    axis.plot(G_off[:, 0], G_off[:, 1], 'r', label='Off time correlation')
+    axis.plot(G_on[:, 0], G_on[:, 1], color=colorBright,
+              label='On time correlation')
+    axis.plot(G_off[:, 0], G_off[:, 1], color=colorDark,
+              label='Off time correlation')
     # axis settings
     axis.set_xscale('log')
     axis.set_xlabel('time/s')

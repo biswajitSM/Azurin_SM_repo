@@ -6,6 +6,8 @@ import scipy.stats
 import h5py
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+from ChangePointProcess import digitize_photonstamps
+
 def simulate_on_off_times(ton1=0.01, ton2=0.002,
                           toff1=0.250, toff2=0.005,
                           time_len=60, plotting=False):
@@ -118,9 +120,9 @@ def simulate_nanotimes(lifetime=2e-9, num_samples=1e5, plotting=False):
         plt.yscale('log')
     return nanotimes
 def timestamps_from_onofftrace(ontimes, offtimes,
-                          i_on_mu=2000, i_off_mu=200,
-                          lifetime_on = 3.8e-9, lifetime_off=0.6e-9,
-                          plotting=False):
+                               i_on_mu=2000, i_off_mu=200,
+                               lifetime_on = 3.8e-9, lifetime_off=0.6e-9,
+                               plotting=False):
     '''
     Arguments:
     ontimes, offtimes: array of on and off times in 'seconds' of eqal length
@@ -152,7 +154,7 @@ def timestamps_from_onofftrace(ontimes, offtimes,
     timestamps = []
     timestamps_start = 0
     nanotimes = []
-    timestamps_marker=np.array([], dtype=np.uint8)
+    timestamps_marker = np.array([], dtype=np.uint8)
     for i in range(len(ontimes_counts)):
         on_counts_i = ontimes_counts[i]
         off_counts_i = offtimes_counts[i]
@@ -180,10 +182,10 @@ def timestamps_from_onofftrace(ontimes, offtimes,
     timestamps = np.round(timestamps, 8)
     return timestamps, timestamps_marker, nanotimes
 def save_simulated_trace(ton1=0.016, ton2=0.002, toff1=0.250,
-                    toff2=0.02, time_len=10, 
-                    i_on_mu=3000, i_off_mu=200,
-                    lifetime_on = 3.8e-9, lifetime_off=0.6e-9,                    
-                    allcomb=False):
+                         toff2=0.02, time_len=10, 
+                         i_on_mu=3000, i_off_mu=200,
+                         lifetime_on = 3.8e-9, lifetime_off=0.6e-9,                    
+                         allcomb=False):
     '''
     time traces are simulated with photon arrival times
     all the necessary information are saved in a hdf5 file'''
@@ -237,10 +239,87 @@ def save_simulated_trace(ton1=0.016, ton2=0.002, toff1=0.250,
     # close hdf5 and end of func
     f_saveHDF5.close()
     return hdf5_tosave
+
+
+def save_simtrace_longtrace(FilePathHdf5,
+                            i_on_mu=3000, i_off_mu=200,
+                            lifetime_on=3.8e-9, lifetime_off=0.6e-9,
+                            rewrite=False):
+    '''
+    simulated trace with with similar average durations as the measured trace
+    all the necessary information are saved in a hdf5 file'''
+    #getting name of data folder and creating data folder if does't exist
+
+    #creating hdf5 file name where data will be saved
+    import datetime
+    date = datetime.datetime.today().strftime('%Y%m%d_%H%M')
+    hdf5_tosave = os.path.join(FilePathHdf5[:-8] + 'simulated.hdf5')
+    if not os.path.isfile(hdf5_tosave) or rewrite:
+        df_dig = digitize_photonstamps(file_path_hdf5=FilePathHdf5,
+                                    pars=(1, 0.01, 0.99, 2),
+                                    time_sect=100, cp_no=True)
+        df_on = df_dig[df_dig['state'] == 2].reset_index(drop=True)
+        df_off = df_dig[df_dig['state'] == 1].reset_index(drop=True)
+        time_left = df_on.groupby('cp_no').timestamps.min()
+        time_right = df_on.groupby('cp_no').timestamps.max()
+        abstime_on = df_on.groupby('cp_no').timestamps.mean()
+        ontimes = time_right - time_left
+
+        time_left = df_off.groupby('cp_no').timestamps.min()
+        time_right = df_off.groupby('cp_no').timestamps.max()
+        abstime_off = df_off.groupby('cp_no').timestamps.mean()
+        offtimes = time_right - time_left
+        l = len(abstime_on) - 2
+        abstime_on = abstime_on.values[:l]
+        ontimes = ontimes.values[:l]
+        abstime_off = abstime_off.values[:l]
+        offtimes = offtimes.values[:l]
+
+        # create or open hdf5 file in write mode
+        f_saveHDF5 = h5py.File(hdf5_tosave, "w")
+        #save all the parameters used in the simulation
+        f_saveHDF5['parameters/ton1'] = np.average(ontimes)
+        f_saveHDF5['parameters/ton2'] = 0.002
+        f_saveHDF5['parameters/toff1'] = np.average(offtimes)
+        f_saveHDF5['parameters/toff2'] = 0.02
+        f_saveHDF5['parameters/counts_on'] = i_on_mu
+        f_saveHDF5['parameters/counts_off'] = i_off_mu
+        #Simulate array of on and off times
+        out = simulate_on_off_times(ton1=np.average(ontimes), ton2=0.002,
+                                    toff1=np.average(offtimes), toff2=0.02,
+                                    time_len=max(abstime_on), plotting=False)
+        [ontimes_exp_1, ontimes_exp_rise, offtimes_exp_1, offtimes_exp_rise] = out
+        # # simulate for ontime_exp_rise and offtime_exp_rise;
+        # grp_rise = f_saveHDF5.create_group('onrise_offrise')
+        # grp_rise.create_dataset('ontimes_exp_rise', data=ontimes_exp_rise)
+        # grp_rise.create_dataset('offtimes_exp_rise', data=offtimes_exp_rise)
+        # out_ts = timestamps_from_onofftrace(ontimes_exp_rise, offtimes_exp_rise,
+        #                                     i_on_mu, i_off_mu, lifetime_on, lifetime_off)
+        # [timestamps, timestamps_marker, nanotimes] = out_ts
+        # grp_rise.create_dataset('timestamps', data=timestamps)
+        # grp_rise.create_dataset('nanotimes', data=nanotimes)
+        # grp_rise.create_dataset('timestamps_marker',
+        #                         data=timestamps_marker, dtype='int8')
+        # f_saveHDF5.flush()
+        # simulate for ontime_exp1 and offtime_exp_1
+        grp_exp = f_saveHDF5.create_group('onexp_offexp')
+        grp_exp.create_dataset('ontimes_exp', data=ontimes_exp_1)
+        grp_exp.create_dataset('offtimes_exp', data=offtimes_exp_1)
+        out_ts = timestamps_from_onofftrace(ontimes_exp_1, offtimes_exp_1,
+                                            i_on_mu, i_off_mu, lifetime_on, lifetime_off)
+        [timestamps, timestamps_marker, nanotimes] = out_ts
+        grp_exp.create_dataset('timestamps', data=timestamps)
+        grp_exp.create_dataset('nanotimes', data=nanotimes)
+        grp_exp.create_dataset('timestamps_marker',
+                            data=timestamps_marker, dtype='int8')
+        f_saveHDF5.flush()
+        # close hdf5 and end of func
+        f_saveHDF5.close()
+    return hdf5_tosave
 def timetrace_from_onofftrace(ontimes, offtimes, bintime=1e-3,
-                             i_on_mu=2000, i_on_sig=1000,
-                             i_off_mu=200, i_off_sig=240,
-                             plotting=True):
+                              i_on_mu=2000, i_on_sig=1000,
+                              i_off_mu=200, i_off_sig=240,
+                              plotting=True):
     '''
     !!! Works well high countrate trace e.g ~1e4 kcps
     Arguments:
@@ -258,11 +337,11 @@ def timetrace_from_onofftrace(ontimes, offtimes, bintime=1e-3,
     ontimes = np.round(ontimes/bintime)
     offtimes = np.round(offtimes/bintime)
     intensity = []
-    ontimes_upd=[]; offtimes_upd=[]
+    ontimes_upd = []; offtimes_upd = []
     for i in range(len(ontimes)):
         t_on = ontimes[i]
         t_off = offtimes[i]
-        if t_on!=0 and t_off!=0:
+        if t_on != 0 and t_off != 0:
             #print('remove the on and off time')
             on_int_temp = np.random.normal(counts_on_mu, counts_on_sig, t_on)#generate intensity
             off_int_temp = np.random.normal(counts_off_mu, counts_off_sig, t_off)
@@ -275,27 +354,27 @@ def timetrace_from_onofftrace(ontimes, offtimes, bintime=1e-3,
     if plotting:
         time_bin = bintime * np.linspace(0, len(intensity), len(intensity))
         fig = plt.figure(figsize=(10, 5))
-        nrows=2; ncols=2
-        ax00 = plt.subplot2grid((nrows, ncols), (0,0))
-        ax01 = plt.subplot2grid((nrows, ncols), (0,1))
-        ax10 = plt.subplot2grid((nrows, ncols), (1,0))
-        ax11 = plt.subplot2grid((nrows, ncols), (1,1))
+        nrows = 2; ncols = 2
+        ax00 = plt.subplot2grid((nrows, ncols), (0, 0))
+        ax01 = plt.subplot2grid((nrows, ncols), (0, 1))
+        ax10 = plt.subplot2grid((nrows, ncols), (1, 0))
+        ax11 = plt.subplot2grid((nrows, ncols), (1, 1))
 
         ax00.plot(time_bin, intensity*1e-3/bintime)
         # mask = intensity != 0
         ax01.hist(intensity, bins=100)
         ax01.set_yscale('log')
-        hist,trace = np.histogram(ontimes, bins=20)
+        hist, trace = np.histogram(ontimes, bins=20)
         ax10.plot(trace[:-1], hist, label='ontime hist')
-        hist,trace = np.histogram(ontimes_upd*bintime, bins=20)
+        hist, trace = np.histogram(ontimes_upd*bintime, bins=20)
         ax10.plot(trace[:-1], hist, '.', label='updated ontime hist')
 
-        hist,trace = np.histogram(offtimes, bins=200)
+        hist, trace = np.histogram(offtimes, bins=200)
         ax11.plot(trace[:-1], hist, label='offtime hist')
-        hist,trace = np.histogram(offtimes_upd*bintime, bins=200)
+        hist, trace = np.histogram(offtimes_upd*bintime, bins=200)
         ax11.plot(trace[:-1], hist, '.', label='updated offtime hist')
 
-        ax10.legend();ax11.legend()        
+        ax10.legend(); ax11.legend()        
     return intensity, bintime, ontimes_upd, offtimes_upd
 def intensity_fit(phtoton_arrtimes, bintime):
     '''
