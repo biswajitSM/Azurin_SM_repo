@@ -255,7 +255,7 @@ def t_on_off_fromFCS(lag_time, Gn, tmin=1e-5, tmax=1.0e0,
         toff1_err = t_ac1_err*(1+A1); ton1_err = t_ac1_err*(1+(1/A1))
         #rounding figures
         Mylist = [ton1, ton1_err, toff1, toff1_err]
-        roundMylist = ['%.2f' % elem for elem in Mylist]
+        roundMylist = ['%.4f' % elem for elem in Mylist]
         # roundMylist = [ np.round(elem, 3) for elem in Mylist ]
         [ton1, ton1_err, toff1, toff1_err] = roundMylist
         fcs_fit_result = {'A1': A1,

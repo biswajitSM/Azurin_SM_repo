@@ -28,7 +28,7 @@ def LifeTimeFitTail(time_ns, decay_hist, offset=None, model='biexp'):
         params.add('ampl1', value=5e3, min=0)
         params.add('tau1', value=0.2, min=0)
         params.add('ampl2', value=2e3, min=0)
-        params.add('tau2', value=0.8, min=0)
+        params.add('tau2', value=0.8, min=0) 
         params.add('ampl3', value=3e3, min=0)
         params.add('tau3', value=1.8, min=0)
         params.add('baseline', value=30)

@@ -20,9 +20,9 @@ class LongTraceClass(object):
     """docstring for LongTraceClass"""
     parameters = {"TimeLimit": [None, None],
                   "BintimeForIntTrace": 5e-3,
-                  "BinsForBrightHist": 50,
+                  "BinsForBrightHist": 20,
                   "RangeForBrightHist": [0.01, 2],
-                  "BinsForDarkHist": 50,
+                  "BinsForDarkHist": 20,
                   "RangeForDarkHist": [0.01, 10],
                   "PlotInsetForDurationHist": False,
                   "InsetRangeBrightHist": [0, 0.05],
@@ -61,7 +61,6 @@ class LongTraceClass(object):
         else:
             self.SimulatedHDF5 = save_simtrace_longtrace(
                                         FilePathHdf5=file_path_hdf5,
-                                        i_on_mu=3000, i_off_mu=200,
                                         lifetime_on=3.8e-9,
                                         lifetime_off=0.6e-9,
                                         rewrite=False)            
@@ -94,6 +93,10 @@ class LongTraceClass(object):
         # update min and max time limit
         self.TimeLimit[0] = min(self.timestamps)
         self.TimeLimit[1] = max(self.timestamps)
+        h5 = h5py.File(self.SimulatedHDF5, 'r')
+        self.timestamps_sim = h5['onexp_offexp']['timestamps'][...]
+        self.nanotimes_sim = h5['onexp_offexp']['nanotimes'][...]
+        h5.close()
 
 
     def PlotFCS(self):
@@ -121,123 +124,37 @@ class LongTraceClass(object):
         timestamps and nanotimes should be of equal length and
         both in the units of seconds
         window and period in number of photons
-        by_photon: by defaul it is false and it devides the trace by time. If true, it will devide the trace by the number of photons
+        by_photon: by defaul it is false and it devides the trace by time.
+        If true, it will devide the trace by the number of photons
         '''
         self.TimeWindow = TimeWindow
         self.TimePeriod = TimePeriod
         self.PhotonWindow = PhotonWindow
         self.PhotonPeriod = PhotonPeriod
 
-        # update timestamps and nanotimes
-        mask = np.logical_and(self.timestamps >= self.TimeLimit[0],
-                              self.timestamps <= self.TimeLimit[1])
-        timestamps = self.timestamps[mask]
-        nanotimes = self.nanotimes[mask]
-        df_fcs = pd.DataFrame()
-        df_lt = pd.DataFrame()  # lifetiem
-        df_ip = pd.DataFrame()  # interphoton
-        df_ts = pd.DataFrame()
-        if by_photon:
-            length = len(timestamps)
-            index_left = 0
-            length_update = length - index_left
-
-            while length_update > self.PhotonWindow:
-                tleft = int(index_left)
-                tright = int(index_left + self.PhotonWindow)
-                # change "period" to "window" to avoid rolling
-                index_left = int(index_left + self.PhotonPeriod)
-                length_update = int(length - index_left)
-
-                t_mac_temp = timestamps[tleft:tright]
-                t_mic_temp = 1e9 * nanotimes[tleft:tright]
-
-                df_ts['t'] = t_mac_temp
-                df_ts[str(tleft)] = t_mac_temp
-
-                # interphoton histogram
-                t_diff = np.diff(t_mac_temp)
-                binned_trace = np.histogram(
-                    t_diff, bins=500, range=(1e-5, 1e-1))
-                t = binned_trace[1][:-1]
-                n = binned_trace[0]
-                df_ip['t'] = t
-                df_ip[str(tleft)] = n / max(n)
-                # lifetime histogram
-                binned_trace = np.histogram(t_mic_temp,
-                                            bins=self.BinsLifetime,
-                                            range=self.RangeLifetime)
-                t = binned_trace[1][:-1]
-                n = binned_trace[0]
-                df_lt['t'] = t
-                df_lt[str(tleft)] = n / max(n)
-                # FCS
-                bin_lags = make_loglags(-5, 1, 20)
-                Gn = normalize_G(t_mac_temp, t_mac_temp, bin_lags)
-                Gn = np.hstack((Gn[:1], Gn)) - 1
-                df_fcs['t'] = bin_lags
-                df_fcs[str(tleft)] = Gn
-        else:
-            '''Analyze time trace splitted/parted with with time window'''
-            length = max(timestamps)
-            index_left = min(timestamps)
-            length_update = length - index_left
-            col_names = []
-            tleft = 0
-            t_mac_temp = timestamps
-            while length_update > self.TimeWindow:
-                tleft = int(index_left)
-                tright = int(index_left + self.TimeWindow)
-                # change "period" to "window" to avoid rolling
-                index_left = int(index_left + self.TimePeriod)
-                length_update = int(length - index_left)
-
-                mask = np.logical_and(
-                    timestamps >= tleft, timestamps <= tright)
-                t_mac_temp = timestamps[mask]
-                t_mic_temp = 1e9 * nanotimes[mask]
-                # df_ts['t'] = t_mac_temp
-                # df_ts[str(tleft)] = t_mac_temp
-                df_ts_temp = pd.DataFrame({str(tleft): t_mac_temp})
-                # print(len(df_ts_temp))
-                df_ts = pd.concat([df_ts, df_ts_temp],
-                                  ignore_index=True, axis=1)
-                # interphoton histogram
-                t_diff = np.diff(t_mac_temp)
-                binned_trace = np.histogram(
-                    t_diff, bins=500, range=(1e-5, 1e-1))
-                t = binned_trace[1][:-1]
-                n = binned_trace[0]
-                df_ip['t'] = t
-                df_ip[str(tleft)] = n / max(n)
-                # lifetime histogram
-                binned_trace = np.histogram(t_mic_temp,
-                                            bins=self.BinsLifetime,
-                                            range=self.RangeLifetime)
-                t = binned_trace[1][:-1]
-                n = binned_trace[0]
-                df_lt['t'] = t
-                df_lt[str(tleft)] = n / max(n)
-                # FCS
-                bin_lags = make_loglags(-6, 1, 10)
-                Gn = normalize_G(t_mac_temp, t_mac_temp, bin_lags)
-                Gn = np.hstack((Gn[:1], Gn)) - 1
-                df_fcs['t'] = bin_lags
-                df_fcs[str(tleft)] = Gn
-                col_names.append(str(tleft))
-
-            # df_ts_temp = pd.DataFrame({str(tleft):t_mac_temp})
-            # df_ts = pd.concat([df_ts_temp, df_ts], ignore_index=True, axis=1)
-            # col_names.append(str(tright))
-            # print(col_names)
-            df_ts.columns = col_names
+        out = long_trace_byparts(self.timestamps, self.nanotimes,
+                                 self.TimeLimit,
+                                 self.TimeWindow, self.TimePeriod,
+                                 self.PhotonWindow, self.PhotonPeriod,
+                                 self.BinsLifetime, self.RangeLifetime)
+        [df_ts, df_lt, df_fcs, df_ip] = out
         self.df_ts = df_ts
         self.df_lt = df_lt
         self.df_fcs = df_fcs
         self.df_ip = df_ip
+        out = long_trace_byparts(self.timestamps_sim, self.nanotimes_sim,
+                                 self.TimeLimit,
+                                 self.TimeWindow, self.TimePeriod,
+                                 self.PhotonWindow, self.PhotonPeriod,
+                                 self.BinsLifetime, self.RangeLifetime)
+        [df_ts, df_lt, df_fcs, df_ip] = out
+        self.df_ts_sim = df_ts
+        self.df_lt_sim = df_lt
+        self.df_fcs_sim = df_fcs
+        self.df_ip_sim = df_ip
         return df_ts, df_lt, df_fcs, df_ip
 
-    def PlotLongTraceByParts(self):
+    def StatsLongTraceByParts(self):
         try:
             print('looking for df_ts', len(self.df_ts))
         except:
@@ -246,14 +163,37 @@ class LongTraceClass(object):
         df_lt = self.df_lt
         df_fcs = self.df_fcs
         df_ip = self.df_ip
-        nrows = 3
+        out = stats_long_trace_byparts(self.df_ts, self.df_lt,
+                                       self.df_fcs, self.df_ip)
+        [self.df_fcs_fit, self.df_lt_fit] = out
+        Potential = self.AppliedPotential
+        tons = self.df_fcs_fit['ton1'].values.astype('float')
+        toffs = self.df_fcs_fit['toff1'].values.astype('float')
+        self.df_fcs_fit['E0'] = Potential - 59 * np.log10(toffs / tons)
+        out = stats_long_trace_byparts(self.df_ts_sim, self.df_lt_sim,
+                                       self.df_fcs_sim, self.df_ip_sim)
+        [self.df_fcs_fit_sim, self.df_lt_fit_sim] = out
+        return
+
+    def PlotLongTraceByParts(self, RangeBrightTime, RangeDarkTime):
+        try:
+            print('looking for df_fcs_fit', len(self.df_fcs_fit))
+        except:
+            self.StatsLongTraceByParts()
+        df_ts = self.df_ts
+        df_lt = self.df_lt
+        df_fcs = self.df_fcs
+        df_ip = self.df_ip
+        nrows = 1 + 3
         ncols = 2
-        self.FigureByParts = plt.figure(figsize=(10, 8))
+        self.FigureByParts = plt.figure(figsize=(10, 10))
         self.axis00 = plt.subplot2grid((nrows, ncols), (0, 0), colspan=2)
         self.axis10 = plt.subplot2grid((nrows, ncols), (1, 0))
         self.axis11 = plt.subplot2grid((nrows, ncols), (1, 1))
-        self.axis20 = plt.subplot2grid((nrows, ncols), (2, 0))
+        self.axis20 = plt.subplot2grid((nrows, ncols), (2, 0), rowspan=2)
         self.axis21 = plt.subplot2grid((nrows, ncols), (2, 1))
+        self.axis31 = plt.subplot2grid((nrows, ncols), (3, 1))
+
         cmap = plt.get_cmap('jet')  # jet_r
         N = len(df_ts.columns)
         i = 1
@@ -267,9 +207,9 @@ class LongTraceClass(object):
             plot_timetrace(self.axis00, df_ts[column],
                            bintime=self.BintimeForIntTrace, color=color)
             #plot individual
-            self.axis20.plot(df_fcs.iloc[:, 0], df_fcs[column], color=color)
-            self.axis21.plot(df_lt.iloc[:, 0], df_lt[column], color=color)
-            # self.axis20.plot(df_ip.iloc[:, 0], df_ip[column],color=color)
+            self.axis21.plot(df_fcs.iloc[:, 0], df_fcs[column], color=color)
+            self.axis31.plot(df_lt.iloc[:, 0], df_lt[column], color=color)
+            # self.axis21.plot(df_ip.iloc[:, 0], df_ip[column],color=color)
         # Zoomed in trace-1
         SelectColumn = columns[0]
         SelectColor = colorList[0]
@@ -281,7 +221,6 @@ class LongTraceClass(object):
         self.axis10.set_ylim(0, None)
         self.axis10.set_xlim(min(df_ts[SelectColumn]),
                              max(df_ts[SelectColumn]))
-        self.axis10.legend(['Highlighted part of the trace'])
         # Zoomed in trace-2
         SelectColumn = columns[-1]
         SelectColor = colorList[-1]
@@ -296,61 +235,48 @@ class LongTraceClass(object):
         self.axis11.set_ylim(0, None)
         self.axis11.set_xlim(min(df_ts[SelectColumn]),
                              max(df_ts[SelectColumn]))
-        self.axis11.legend(['Highlighted part of the trace'])
 
-        self.axis21.set_xlim(2, 8)
-        self.axis21.set_ylim(1e-1, None)
-        self.axis21.set_yscale('log')
-        self.axis21.set_xlabel('Lifetime/ns')
-        self.axis21.set_ylabel('#')
-        # self.axis21.text(3, 0.15, 'Life time histogram', style='italic')
-        self.axis20.set_xlim(1e-5, 1)
-        self.axis20.set_ylim(0, 4)
-        self.axis20.set_xscale('log')
-        self.axis20.set_xlabel('lag time/s')
-        self.axis20.set_ylabel('G(t)-1')
-        self.axis20.text(2e-5, 1, 'FCS')
+        self.axis31.set_xlim(2, 8)
+        self.axis31.set_ylim(1e-1, None)
+        self.axis31.set_yscale('log')
+        self.axis31.set_xlabel('Lifetime/ns')
+        self.axis31.set_ylabel('#')
+        # self.axis31.text(3, 0.15, 'Life time histogram', style='italic')
+        self.axis21.set_xlim(1e-5, 1)
+        self.axis21.set_ylim(0, 4)
+        self.axis21.set_xscale('log')
+        self.axis21.set_xlabel('lag time/s')
+        self.axis21.set_ylabel('G(t)-1')
+        self.axis21.text(2e-5, 1, 'FCS')
+        # plot 2D scatter
+        x = self.df_fcs_fit['ton1'].values.astype('float')
+        y = self.df_fcs_fit['toff1'].values.astype('float')
+        x_avg = np.round(np.average(x), 2)
+        x_std = np.round(np.std(x), 2)
+        y_avg = np.round(np.average(y), 2)
+        y_std = np.round(np.std(y), 2)
+        print("Average bright time:{}; std:{}\n Average dark time:{}; std:{}".format(x_avg,x_std, y_avg, y_std))
+        xSim = self.df_fcs_fit_sim['ton1'].values.astype('float')
+        ySim = self.df_fcs_fit_sim['toff1'].values.astype('float')
+        colorscatt = np.array(self.df_fcs_fit.index).astype('int')        
+        colorscattSim = np.array(self.df_fcs_fit.index).astype('int')
+        cmap = 'jet'
+        self.axis20.scatter(x, y, marker='v', s=200, facecolors='none',
+                            c=colorscatt, edgecolor='k', cmap=cmap)
+        cax = self.axis20.scatter(xSim, ySim, marker='o', c='k')
+        self.axis20.set_xlim(RangeBrightTime)
+        self.axis20.set_ylim(RangeDarkTime)
+        self.axis20.set_xlabel('Bright times/s')
+        self.axis20.set_ylabel('Dark times/s')
+
+        # Add Figures (axis) numbers
+        axis_list = self.FigureByParts.axes
+        title_list = ['A', 'B', 'C', 'F', 'D', 'E']
+        for index, axis in enumerate(axis_list):
+            axis.text(.9, .9, title_list[index], horizontalalignment='center',
+                      transform=axis.transAxes)
         if self.FigureTightLayout:
             self.FigureByParts.tight_layout()
-
-    def StatsLongTraceByParts(self):
-        try:
-            print('looking for df_ts', len(self.df_ts))
-        except:
-            self.LongTraceByParts()
-        df_ts = self.df_ts
-        df_lt = self.df_lt
-        df_fcs = self.df_fcs
-        df_ip = self.df_ip
-
-        lag_time = df_fcs.iloc[:, 0]
-        cols_fcs = ['A1', 'A1_err', 't_ac1', 't_ac1_err',
-                    'ton1', 'ton1_err', 'toff1', 'toff1_err']
-        df_fcs_fit = pd.DataFrame(columns=cols_fcs)
-        cols_lt = ['ampl1', 'tau1', 'ampl2', 'tau2', 'baseline']
-        cols_lt = cols_lt + [s + 'err' for s in cols_lt]
-        df_lt_fit = pd.DataFrame(columns=cols_lt)
-        for column in df_ts.columns:
-            # fcs fit
-            G = df_fcs[column]
-            result_fcs = t_on_off_fromFCS(lag_time, G,
-                                          tmin=1e-5, tmax=1.0e0,
-                                          fitype='mono_exp')
-            df_fcs_fit.loc[column] = list(result_fcs.values())
-            # lifetime fit
-            time_ns = df_lt['t'].values
-            decay = df_lt[column].values
-            result_lt = LifeTimeFitTail(time_ns, decay,
-                                        offset=None, model='biexp')
-            [fit_res, time_ns_tail, decay_hist_tail] = result_lt
-            params = fit_res.params
-            fit_values = {k: v.value for k, v in params.items()}
-            fit_errs = {k: v.stderr for k, v in params.items()}
-            df_lt_fit.loc[column] = list(fit_values.values()) +\
-                list(fit_errs.values())  # append to rows
-        self.df_fcs_fit = df_fcs_fit
-        self.df_lt_fit = df_lt_fit
-        return
 
     def DigitizePhotons(self, int_photon=False,
                         nanotimes_bool=False,
@@ -457,18 +383,18 @@ class LongTraceClass(object):
         dfE0AverageSimulated['E0'] = self.AppliedPotential - \
             59 * np.log10(TimeRatioSimulated)
         dfE0AverageSimulated['abstime'] = dfAverageSimulated['abstime_on']
-        # PLOTTING STARTS HERE
-        self.axis00.plot(dfAverage['abstime_on'], dfAverage['ontimes'],
-                         'b', label='Average Bright times')
+        # PLOTTING STARTS HERE #
+        self.axis00.plot(dfAverage['abstime_on'], dfAverage['ontimes'], 'b')
         mask = np.logical_and(dfAverageSimulated['abstime_on'] > self.TimeLimit[0],
                               dfAverageSimulated['abstime_on'] < self.TimeLimit[1])
         self.axis00.plot(dfAverageSimulated['abstime_on'].values[mask],
                          dfAverageSimulated['ontimes'].values[mask],
-                         'b', alpha=0.4, label='Average Bright times')
+                         'b', alpha=0.4)
         self.axis00.set_xlim(self.TimeLimit)
         self.axis00.set_ylabel(r'$Avg \tau_b/s$')
         self.axis00.set_xticklabels([])
-        self.axis00.legend()
+        self.axis00.legend(['Average Bright times', '_'],
+                           frameon=False, loc='upper left')
         ylimAxis00 = self.axis00.get_ylim()
         brightHist = np.histogram(dfAverage['ontimes'].values,
                                   bins=50,
@@ -480,22 +406,24 @@ class LongTraceClass(object):
                                      bins=50,
                                      range=self.axis00.get_ylim(),
                                      density=True)
-        self.axis03.plot(brightHistSim[0], brightHistSim[1][:-1], '--b')
+        # self.axis03.plot(brightHistSim[0], brightHistSim[1][:-1], '--b')
+        self.axis03.fill(brightHistSim[0], brightHistSim[1][:-1],
+                         'b', alpha=0.2)
+        self.axis03.set_xlim(0, )
         self.axis03.set_yticklabels([])
         self.axis03.set_xticklabels([])
-        self.axis03.set_xlabel('PDF')
 
-        self.axis10.plot(dfAverage['abstime_off'], dfAverage['offtimes'],
-                         'r', label='Average Dark times')
+        self.axis10.plot(dfAverage['abstime_off'], dfAverage['offtimes'], 'r')
         mask = np.logical_and(dfAverageSimulated['abstime_off'] > self.TimeLimit[0],
                               dfAverageSimulated['abstime_off'] < self.TimeLimit[1])
         self.axis10.plot(dfAverageSimulated['abstime_off'].values[mask],
                          dfAverageSimulated['offtimes'].values[mask],
-                         'r', alpha=0.4, label='Average Dark times')
+                         'r', alpha=0.4)
         self.axis10.set_xlim(self.TimeLimit)
         self.axis10.set_ylabel(r'$Avg \tau_d/s$')
         self.axis10.set_xticklabels([])
-        self.axis10.legend()
+        self.axis10.legend(['Average Dark times', '_'],
+                           frameon=False, loc='upper left')
         ylimAxis = self.axis10.get_ylim()
         darkHist = np.histogram(dfAverage['offtimes'].values,
                                 bins=50,
@@ -506,10 +434,11 @@ class LongTraceClass(object):
                                    bins=50,
                                    range=self.axis10.get_ylim(),
                                    density=True)
-        self.axis13.plot(darkHistSim[0], darkHistSim[1][:-1], '--r')
+        # self.axis13.plot(darkHistSim[0], darkHistSim[1][:-1], '--r')
+        self.axis13.fill(darkHistSim[0], darkHistSim[1][:-1], 'r', alpha=0.2)
+        self.axis13.set_xlim(0, )
         self.axis13.set_yticklabels([])
         self.axis13.set_xticklabels([])
-        self.axis13.set_xlabel('PDF')
 
         self.axis20.plot(dfE0Average['abstime'], dfE0Average['E0'],
                          'm', label=r'$E_0/mV$')
@@ -518,8 +447,11 @@ class LongTraceClass(object):
         self.axis20.plot(dfE0AverageSimulated['abstime'].values[mask],
                          dfE0AverageSimulated['E0'].values[mask],
                          'm', alpha=0.2, label='Simulated')
+        self.axis20.set_xlabel('time/s')
         self.axis20.set_ylabel(r'$E_0/mV$')
         self.axis20.set_xlim(self.TimeLimit)
+        self.axis20.legend([r'$E_0 / mV$', '_'],
+                           frameon=False, loc='upper left')
 
         E0lim = self.axis20.get_ylim()
         E0Hist = np.histogram(dfE0Average['E0'].values,
@@ -532,38 +464,33 @@ class LongTraceClass(object):
                               bins=50,
                               range=self.axis20.get_ylim(),
                               density=True)
-        self.axis23.plot(E0Hist[0], E0Hist[1][:-1], '--m')
+        # self.axis23.plot(E0Hist[0], E0Hist[1][:-1], '--m')
+        self.axis23.fill(E0Hist[0], E0Hist[1][:-1], '--m', alpha=0.2)
 
+        self.axis23.set_xlim(0, )
         self.axis23.set_yticklabels([])
         self.axis23.set_xticklabels([])
         self.axis23.set_xlabel('#')
         self.axis23.set_ylabel('')
 
-        HistBrightRaw = waitime_hist_inset(waitimes=df_durations['ontimes'],
-                                           axis=self.axis30,
-                                           bins=self.BinsForBrightHist,
-                                           binrange=self.RangeForBrightHist,
-                                           insetrange=self.InsetRangeBrightHist,
-                                           fit_func=streched_exp,
-                                           PlotInset=self.PlotInsetForDurationHist,
-                                           color='b'
-                                           )
-        self.axis30.legend(['Bright times', 'Dark times',
-                            'Dark times', 'fit'])
+        fit_report = strechexp_lmfit(waitimes=df_durations['ontimes'],
+                                     axis=self.axis30,
+                                     bins=self.BinsForBrightHist,
+                                     binrange=self.RangeForBrightHist,
+                                     color='b', minimizer=True, barPlot=False)
+        self.axis30.legend(['Bright times', '_fit'],
+                           loc='upper left', framealpha=0.5)
         self.axis30.set_xlabel('time/s', color='b')
         self.axis30.tick_params('x', direction='in', colors='b')
 
         axis30_up = plt.twiny(ax=self.axis30)
-        HistDarkRaw = waitime_hist_inset(waitimes=df_durations['offtimes'],
-                                         axis=axis30_up,
-                                         bins=self.BinsForDarkHist,
-                                         binrange=self.RangeForDarkHist,
-                                         insetrange=self.InsetRangeDarkHist,
-                                         fit_func=streched_exp,
-                                         PlotInset=self.PlotInsetForDurationHist,
-                                         color='r'
-                                        )
-        # self.axis31.set_xlim(0, 10)
+        fit_report = strechexp_lmfit(waitimes=df_durations['offtimes'],
+                                     axis=axis30_up,
+                                     bins=self.BinsForDarkHist,
+                                     binrange=self.RangeForDarkHist,
+                                     color='r', minimizer=True, barPlot=False)
+        axis30_up.legend(['Dark times', '_fit'],
+                         loc='lower left', framealpha=0.5)
         axis30_up.set_xlabel('')
         axis30_up.tick_params('x', direction='in', colors='r')
         self.axis30.set_yticklabels([])
@@ -573,29 +500,31 @@ class LongTraceClass(object):
                         shift_range=range(1, 10, 1),
                         ontimes=True,
                         bins=40, rangehist=self.Range2DHistBright)
-        self.axis31.text(0.2 * self.Range2DHistBright[0],
-                         0.75 * self.Range2DHistBright[1], 'Bright times')
+        self.axis31.text(0.2 * self.Range2DHistBright[1],
+                         0.8 * self.Range2DHistBright[1], 'Bright times')
         q05 = dfAverageSimulated.quantile(q=0.05)
         q95 = dfAverageSimulated.quantile(q=0.95)
         cent = 0.5 * (q05['ontimes'] + q95['ontimes'])
         rad = 0.5 * (q95['ontimes'] - q05['ontimes'])
+        print("Circle for Bright time; radius={}, centre={}".format(rad, cent))
         circle1 = plt.Circle((cent, cent), rad, fill=False,
-                             linestyle='--', edgecolor='k', linewidth=2)
+                             linestyle='--', edgecolor='yellow', linewidth=2)
         self.axis31.add_artist(circle1)
 
         Plot2Ddurations(self.axis32, dfAverage,
                         shift_range=range(1, 10, 1),
                         ontimes=False,
                         bins=40, rangehist=self.Range2DHistDark)
-        self.axis32.text(0.2 * self.Range2DHistDark[0],
-                         0.75 * self.Range2DHistDark[1],
+        self.axis32.text(0.2 * self.Range2DHistDark[1],
+                         0.8 * self.Range2DHistDark[1],
                          'Dark times')
         q05 = dfAverageSimulated.quantile(q=0.05)
         q95 = dfAverageSimulated.quantile(q=0.95)
         cent = 0.5 * (q05['offtimes'] + q95['offtimes'])
         rad = 0.5 * (q95['offtimes'] - q05['offtimes'])
+        print("Circle for Dark time; radius={}, centre={}".format(rad, cent))        
         circle1 = plt.Circle((cent, cent), rad, fill=False,
-                             linestyle='--', edgecolor='k', linewidth=2)
+                             linestyle='--', edgecolor='yellow', linewidth=2)
         self.axis32.add_artist(circle1)
 
         out = PlotCorrelationBrightDark(self.axis33,
@@ -612,15 +541,16 @@ class LongTraceClass(object):
                                         G_lim=self.ContrastLimitCorrelation,
                                         bintime=self.BintimeForCorrelation,
                                         colorBright='k', colorDark='k')
-        self.axis33.legend(['Bright', 'Dark', 'Simulated', ''])
-        # # plot FCS
-        # # update timestamps and nanotimes
-        # mask = np.logical_and(self.timestamps >= self.TimeLimit[0],
-        #                       self.timestamps <= self.TimeLimit[1])
-        # timestamps = self.timestamps[mask]
-        # # result = PlotFCS(self.axis33, timestamps,
-        # #                  self.RangeFCS, self.BinsFCS)
-        # # [self.bin_lags, self.G] = result
+        self.axis33.legend(
+            ['Bright', 'Dark', 'Simulated', '_'], loc='upper left')
+
+        # Add Figures (axis) numbers
+        axis_list = self.FigureDuration.axes
+        title_list = ['A', 'B', 'C', 'D', 'E', 'F', 'G',
+                      'H', 'I', 'J', 'K', 'L']
+        for index, axis in enumerate(axis_list):
+            axis.text(.9, .9, title_list[index], horizontalalignment='center',
+                      transform=axis.transAxes)
         if self.FigureTightLayout:
             self.FigureDuration.tight_layout()
         return
@@ -792,6 +722,74 @@ def waitime_hist_inset(waitimes, axis, bins, binrange,
     return
 
 
+def strechexp_lmfit(waitimes, axis, bins, binrange,
+                    color='b', minimizer=True, barPlot=False):
+    '''waitimes: list of on-times or off-times
+    '''
+    def log_streched_exp(t, k, b, A):
+        '''P = A*exp(-(kt)^b)
+        log(P) = log(A)-(kt)^b'''
+        return np.log(A) - (k * t)**b
+
+    def streched_exp(t, k, b, A):
+        return A * np.exp(-(k * t)**b)
+
+    def residual_streched_exp(params, t, n, weights):
+        k = params['k']
+        b = params['b']
+        A = params['A']
+        return (n - (A * np.exp(-(k * t)**b))) * weights
+    n, bins_hist = np.histogram(waitimes, bins=bins,
+                                range=(binrange[0], binrange[1]))  # avoiding zero
+    t = bins_hist[:-1]
+    mask = n != 0
+    n = n[mask]
+    t = t[mask]
+    t_fit = np.linspace(binrange[0], binrange[1], 1000)
+    binwidth = np.mean(np.diff(t))
+    # fit
+    strechModel = lmfit.Model(log_streched_exp)
+    params = lmfit.Parameters()
+    params.add('k', 10, min=0)
+    params.add('b', 0.9, min=0, max=1)
+    params.add('A', 1, min=0)
+    result = strechModel.fit(np.log(n), params, t=t)
+    if minimizer:
+        # minimize
+        params = lmfit.Parameters()
+        params.add('k', 10, min=0)
+        params.add('b', 0.9, min=0, max=1)
+        params.add('A', 1, min=0)
+        weights = 1. / np.sqrt(n)
+        result = lmfit.minimize(residual_streched_exp, params,
+                                args=(t, n, weights),
+                                method='leastsq')
+    # extract parameters
+    fit_report = {'k': result.params['k'].value,
+                  'k_err': result.params['k'].stderr,
+                  'b': result.params['b'].value,
+                  'b_err': result.params['b'].stderr,
+                  'A': result.params['A'].value,
+                  'A_err': result.params['A'].stderr
+                 }
+    # print values
+    print(fit_report)
+    #plot as bar
+    if barPlot:
+        axis.bar(t, n, width=binwidth, color='k', alpha=0.5)
+    else:
+        axis.plot(t, n, 'o', color=color)
+        axis.plot(t, n, drawstyle='steps-mid', lw=0.5, color=color)
+    axis.plot(t_fit, streched_exp(t_fit, fit_report['k'],
+                                  fit_report['b'],
+                                  fit_report['A']),
+              color=color, lw=1)  # , label='k1:' + result.values['k']
+    axis.set_xlim(0, None)
+    axis.set_ylim(1e0, None)
+    axis.set_yscale('log')
+    return result
+
+
 def MidPointPotentialTimeTrace(axis, t_av_on, t_av_off,
                                t_abs, AppliedPotential, E0range=[None, None], TimeLimit=[None, None]):
     t_on_ratio = t_av_off / t_av_on
@@ -951,7 +949,7 @@ def Plot2Ddurations(axis, df_durations,
     return axis
 
 
-def FCSCorrTimeAmp2D(ObjLongTraceMeasured, ObjLongTraceSimulated,
+def FCSCorrTimeAmp2D(ObjLongTraceMeasured,
                      RangeCorrTime=[0, .4],
                      RangeCorrAmplitude=[1.5, 3.5]):
     # definitions for the axes
@@ -982,11 +980,11 @@ def FCSCorrTimeAmp2D(ObjLongTraceMeasured, ObjLongTraceSimulated,
     colorData = 'r'
     colorscatt = np.array(ObjLongTraceMeasured.df_fcs_fit.index).astype('int')
 
-    xSim = ObjLongTraceSimulated.df_fcs_fit['t_ac1'].values
-    ySim = ObjLongTraceSimulated.df_fcs_fit['A1'].values
+    xSim = ObjLongTraceMeasured.df_fcs_fit_sim['t_ac1'].values
+    ySim = ObjLongTraceMeasured.df_fcs_fit_sim['A1'].values
     colorSim = 'b'
     colorscattSim = np.array(
-        ObjLongTraceSimulated.df_fcs_fit.index).astype('int')
+        ObjLongTraceMeasured.df_fcs_fit_sim.index).astype('int')
     cmap = 'jet'
     bins = 15
 
@@ -1014,7 +1012,7 @@ def FCSCorrTimeAmp2D(ObjLongTraceMeasured, ObjLongTraceSimulated,
     return fig
 
 
-def FCSBrightDark2D(ObjLongTraceMeasured, ObjLongTraceSimulated,
+def FCSBrightDark2D(ObjLongTraceMeasured,
                     RangeBrightTime=[0, 0.8],
                     RangeDarkTime=[0, 1.5]):
     # definitions for the axes
@@ -1047,11 +1045,11 @@ def FCSBrightDark2D(ObjLongTraceMeasured, ObjLongTraceSimulated,
     colorData = 'r'
     colorscatt = np.array(ObjLongTraceMeasured.df_fcs_fit.index).astype('int')
 
-    xSim = ObjLongTraceSimulated.df_fcs_fit['ton1'].values.astype('float')
-    ySim = ObjLongTraceSimulated.df_fcs_fit['toff1'].values.astype('float')
+    xSim = ObjLongTraceMeasured.df_fcs_fit_sim['ton1'].values.astype('float')
+    ySim = ObjLongTraceMeasured.df_fcs_fit_sim['toff1'].values.astype('float')
     colorSim = 'b'
     colorscattSim = np.array(
-        ObjLongTraceSimulated.df_fcs_fit.index).astype('int')
+        ObjLongTraceMeasured.df_fcs_fit.index).astype('int')
     cmap = 'jet'
     bins = 15
 
@@ -1076,8 +1074,154 @@ def FCSBrightDark2D(ObjLongTraceMeasured, ObjLongTraceSimulated,
     axScatter.set_ylabel('Dark times/s')
     # plt.colorbar(cax)
     return fig
-#===============fitting functions=============
 
+def long_trace_byparts(timestamps, nanotimes, TimeLimit,
+                       TimeWindow=1e2, TimePeriod=1e2,
+                       PhotonWindow=1e4, PhotonPeriod=1e4,
+                       BinsLifetime=50, RangeLifetime=[0, 8],
+                       by_photon=False):
+    '''
+    Arguments:
+    timestamps and nanotimes should be of equal length and
+    both in the units of seconds
+    window and period in number of photons
+    by_photon: by defaul it is false and it devides the trace by time. If true, it will devide the trace by the number of photons
+    '''
+    # update timestamps and nanotimes
+    mask = np.logical_and(timestamps >= TimeLimit[0],
+                            timestamps <= TimeLimit[1])
+    timestamps = timestamps[mask]
+    nanotimes = nanotimes[mask]
+    df_fcs = pd.DataFrame()
+    df_lt = pd.DataFrame()  # lifetiem
+    df_ip = pd.DataFrame()  # interphoton
+    df_ts = pd.DataFrame()
+    if by_photon:
+        length = len(timestamps)
+        index_left = 0
+        length_update = length - index_left
+
+        while length_update > PhotonWindow:
+            tleft = int(index_left)
+            tright = int(index_left + PhotonWindow)
+            # change "period" to "window" to avoid rolling
+            index_left = int(index_left + PhotonPeriod)
+            length_update = int(length - index_left)
+
+            t_mac_temp = timestamps[tleft:tright]
+            t_mic_temp = 1e9 * nanotimes[tleft:tright]
+
+            df_ts['t'] = t_mac_temp
+            df_ts[str(tleft)] = t_mac_temp
+
+            # interphoton histogram
+            t_diff = np.diff(t_mac_temp)
+            binned_trace = np.histogram(
+                t_diff, bins=500, range=(1e-5, 1e-1))
+            t = binned_trace[1][:-1]
+            n = binned_trace[0]
+            df_ip['t'] = t
+            df_ip[str(tleft)] = n / max(n)
+            # lifetime histogram
+            binned_trace = np.histogram(t_mic_temp,
+                                        bins=BinsLifetime,
+                                        range=RangeLifetime)
+            t = binned_trace[1][:-1]
+            n = binned_trace[0]
+            df_lt['t'] = t
+            df_lt[str(tleft)] = n / max(n)
+            # FCS
+            bin_lags = make_loglags(-5, 1, 20)
+            Gn = normalize_G(t_mac_temp, t_mac_temp, bin_lags)
+            Gn = np.hstack((Gn[:1], Gn)) - 1
+            df_fcs['t'] = bin_lags
+            df_fcs[str(tleft)] = Gn
+    else:
+        '''Analyze time trace splitted/parted with with time window'''
+        length = max(timestamps)
+        index_left = min(timestamps)
+        length_update = length - index_left
+        col_names = []
+        tleft = 0
+        t_mac_temp = timestamps
+        while length_update > TimeWindow:
+            tleft = int(index_left)
+            tright = int(index_left + TimeWindow)
+            # change "period" to "window" to avoid rolling
+            index_left = int(index_left + TimePeriod)
+            length_update = int(length - index_left)
+
+            mask = np.logical_and(
+                timestamps >= tleft, timestamps <= tright)
+            t_mac_temp = timestamps[mask]
+            t_mic_temp = 1e9 * nanotimes[mask]
+            # df_ts['t'] = t_mac_temp
+            # df_ts[str(tleft)] = t_mac_temp
+            df_ts_temp = pd.DataFrame({str(tleft): t_mac_temp})
+            # print(len(df_ts_temp))
+            df_ts = pd.concat([df_ts, df_ts_temp],
+                                ignore_index=True, axis=1)
+            # interphoton histogram
+            t_diff = np.diff(t_mac_temp)
+            binned_trace = np.histogram(
+                t_diff, bins=500, range=(1e-5, 1e-1))
+            t = binned_trace[1][:-1]
+            n = binned_trace[0]
+            df_ip['t'] = t
+            df_ip[str(tleft)] = n / max(n)
+            # lifetime histogram
+            binned_trace = np.histogram(t_mic_temp,
+                                        bins=BinsLifetime,
+                                        range=RangeLifetime)
+            t = binned_trace[1][:-1]
+            n = binned_trace[0]
+            df_lt['t'] = t
+            df_lt[str(tleft)] = n / max(n)
+            # FCS
+            bin_lags = make_loglags(-6, 1, 10)
+            Gn = normalize_G(t_mac_temp, t_mac_temp, bin_lags)
+            Gn = np.hstack((Gn[:1], Gn)) - 1
+            df_fcs['t'] = bin_lags
+            df_fcs[str(tleft)] = Gn
+            col_names.append(str(tleft))
+
+        # df_ts_temp = pd.DataFrame({str(tleft):t_mac_temp})
+        # df_ts = pd.concat([df_ts_temp, df_ts], ignore_index=True, axis=1)
+        # col_names.append(str(tright))
+        # print(col_names)
+        df_ts.columns = col_names
+    return df_ts, df_lt, df_fcs, df_ip
+
+
+def stats_long_trace_byparts(df_ts, df_lt, df_fcs, df_ip):
+    lag_time = df_fcs.iloc[:, 0]
+    cols_fcs = ['A1', 'A1_err', 't_ac1', 't_ac1_err',
+                'ton1', 'ton1_err', 'toff1', 'toff1_err']
+    df_fcs_fit = pd.DataFrame(columns=cols_fcs)
+    cols_lt = ['ampl1', 'tau1', 'ampl2', 'tau2', 'baseline']
+    cols_lt = cols_lt + [s + 'err' for s in cols_lt]
+    df_lt_fit = pd.DataFrame(columns=cols_lt)
+    for column in df_ts.columns:
+        # fcs fit
+        G = df_fcs[column]
+        result_fcs = t_on_off_fromFCS(lag_time, G,
+                                      tmin=1e-5, tmax=1.0e0,
+                                      fitype='mono_exp')
+        df_fcs_fit.loc[column] = list(result_fcs.values())
+        # lifetime fit
+        time_ns = df_lt['t'].values
+        decay = df_lt[column].values
+        result_lt = LifeTimeFitTail(time_ns, decay,
+                                    offset=None, model='biexp')
+        [fit_res, time_ns_tail, decay_hist_tail] = result_lt
+        params = fit_res.params
+        fit_values = {k: v.value for k, v in params.items()}
+        fit_errs = {k: v.stderr for k, v in params.items()}
+        df_lt_fit.loc[column] = list(fit_values.values()) +\
+            list(fit_errs.values())  # append to rows
+    return df_fcs_fit, df_lt_fit
+
+#===============fitting functions=============
 
 def risetime_fit(t, k1, k2, A):
     return ((A * k1 * k2 / (k2 - k1)) * (np.exp(-k1 * t) - np.exp(-k2 * t)))

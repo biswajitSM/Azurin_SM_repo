@@ -241,8 +241,7 @@ def save_simulated_trace(ton1=0.016, ton2=0.002, toff1=0.250,
     return hdf5_tosave
 
 
-def save_simtrace_longtrace(FilePathHdf5,
-                            i_on_mu=3000, i_off_mu=200,
+def save_simtrace_longtrace(FilePathHdf5, TimeLimit=[None, None],
                             lifetime_on=3.8e-9, lifetime_off=0.6e-9,
                             rewrite=False):
     '''
@@ -255,9 +254,12 @@ def save_simtrace_longtrace(FilePathHdf5,
     date = datetime.datetime.today().strftime('%Y%m%d_%H%M')
     hdf5_tosave = os.path.join(FilePathHdf5[:-8] + 'simulated.hdf5')
     if not os.path.isfile(hdf5_tosave) or rewrite:
+        # get the average counts
         df_dig = digitize_photonstamps(file_path_hdf5=FilePathHdf5,
-                                    pars=(1, 0.01, 0.99, 2),
-                                    time_sect=100, cp_no=True)
+                                       pars=(1, 0.1, 0.9, 2),
+                                       time_lim=TimeLimit,
+                                       time_sect=100, cp_no=True,
+                                       countrate_cp_bool=True)
         df_on = df_dig[df_dig['state'] == 2].reset_index(drop=True)
         df_off = df_dig[df_dig['state'] == 1].reset_index(drop=True)
         time_left = df_on.groupby('cp_no').timestamps.min()
@@ -269,39 +271,32 @@ def save_simtrace_longtrace(FilePathHdf5,
         time_right = df_off.groupby('cp_no').timestamps.max()
         abstime_off = df_off.groupby('cp_no').timestamps.mean()
         offtimes = time_right - time_left
-        l = len(abstime_on) - 2
-        abstime_on = abstime_on.values[:l]
-        ontimes = ontimes.values[:l]
-        abstime_off = abstime_off.values[:l]
-        offtimes = offtimes.values[:l]
-
+        i_on_mu = df_on['countrate_cp'].mean()
+        i_off_mu = df_off['countrate_cp'].mean()
+        # get the average durations from FCS
+        h5 = h5py.File(FilePathHdf5, 'r')
+        unit = h5['photon_data']['timestamps_specs']['timestamps_unit'][...]
+        tcspc_unit = h5['photon_data']['nanotimes_specs']['tcspc_unit'][...]
+        timestamps = unit * h5['photon_data']['timestamps'][...]
+        nanotimes = tcspc_unit * h5['photon_data']['nanotimes'][...]
+        h5.close()
+        from LongTraceAnalysis import long_trace_byparts, stats_long_trace_byparts
         # create or open hdf5 file in write mode
         f_saveHDF5 = h5py.File(hdf5_tosave, "w")
         #save all the parameters used in the simulation
-        f_saveHDF5['parameters/ton1'] = np.average(ontimes)
+        ton1 = np.average(ontimes)
+        toff1 = np.average(offtimes)
+        f_saveHDF5['parameters/ton1'] = ton1
         f_saveHDF5['parameters/ton2'] = 0.002
-        f_saveHDF5['parameters/toff1'] = np.average(offtimes)
+        f_saveHDF5['parameters/toff1'] = toff1
         f_saveHDF5['parameters/toff2'] = 0.02
         f_saveHDF5['parameters/counts_on'] = i_on_mu
         f_saveHDF5['parameters/counts_off'] = i_off_mu
         #Simulate array of on and off times
-        out = simulate_on_off_times(ton1=np.average(ontimes), ton2=0.002,
-                                    toff1=np.average(offtimes), toff2=0.02,
+        out = simulate_on_off_times(ton1=ton1, ton2=0.002,
+                                    toff1=toff1, toff2=0.02,
                                     time_len=max(abstime_on), plotting=False)
         [ontimes_exp_1, ontimes_exp_rise, offtimes_exp_1, offtimes_exp_rise] = out
-        # # simulate for ontime_exp_rise and offtime_exp_rise;
-        # grp_rise = f_saveHDF5.create_group('onrise_offrise')
-        # grp_rise.create_dataset('ontimes_exp_rise', data=ontimes_exp_rise)
-        # grp_rise.create_dataset('offtimes_exp_rise', data=offtimes_exp_rise)
-        # out_ts = timestamps_from_onofftrace(ontimes_exp_rise, offtimes_exp_rise,
-        #                                     i_on_mu, i_off_mu, lifetime_on, lifetime_off)
-        # [timestamps, timestamps_marker, nanotimes] = out_ts
-        # grp_rise.create_dataset('timestamps', data=timestamps)
-        # grp_rise.create_dataset('nanotimes', data=nanotimes)
-        # grp_rise.create_dataset('timestamps_marker',
-        #                         data=timestamps_marker, dtype='int8')
-        # f_saveHDF5.flush()
-        # simulate for ontime_exp1 and offtime_exp_1
         grp_exp = f_saveHDF5.create_group('onexp_offexp')
         grp_exp.create_dataset('ontimes_exp', data=ontimes_exp_1)
         grp_exp.create_dataset('offtimes_exp', data=offtimes_exp_1)
