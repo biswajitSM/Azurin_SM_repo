@@ -1,0 +1,27 @@
+name: venvAzurin
+channels:
+  - defaults
+dependencies:
+  - pytables=3.4.4
+  - nb_conda=2.2.1=py37_0
+  - pip:
+    - asteval==0.9.13
+    - cycler==0.10.0
+    - cython==0.29
+    - future==0.17.1
+    - h5py==2.8.0
+    - kiwisolver==1.0.1
+    - llvmlite==0.25.0
+    - lmfit==0.9.11
+    - matplotlib==3.0.2
+    - numba==0.40.1
+    - pandas==0.23.4
+    - phconvert==0.8.2
+    - pyparsing==2.3.0
+    - pytz==2018.7
+    - scipy==1.1.0
+    - tables==3.4.4
+    - uncertainties==3.0.3
+    - PyYAML==3.12
+prefix: C:\Users\biswajitpradha\AppData\Local\Continuum\anaconda3\envs\venvAzurin
+

@@ -17,7 +17,7 @@ from ChangePointProcess import *
 mpl.rcParams["font.family"] = "sans-serif"
 mpl.rcParams["font.size"] = "12"
 # =========Get the pointnumber, datn, emplot, FCS files with their filepath in a "GIVEN FOLDER"=====
-foldername = r'/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data/201702_S101toS104/S101d14Feb17_60.5_635_A2_CuAzu655'
+foldername = r'/home/biswajit/Research/reports-PhD/AzurinSM-MS4/data/AzurinATTO655/201702_S101toS104/S101d14Feb17_60.5_635_A2_CuAzu655'
 
 def MetaFromPt3Hdf5(FilePathHdf5):
     FileNameHdf5 = os.path.basename(FilePathHdf5)
@@ -101,7 +101,20 @@ def CreateYamlForPt3Hdf5(FilePathHdf5, Rewrite=False):
     with open(FilePathYaml, 'w') as f:
         yaml.dump(dfyaml, f, default_flow_style=False)
     return dfyaml, FilePathYaml
-
+def InsertBackgroundInYamlFile(FilePathYaml):
+    AnalysisHdf5 = os.path.splitext(FilePathYaml)[0] + '.analysis.hdf5'
+    h5_analysis = h5py.File(AnalysisHdf5, 'r')
+    df = h5_analysis['changepoint']['cp_0.01_0.99_100s'][...]
+    df = pd.DataFrame(df, columns=['cp_index', 'cp_ts', 'cp_state', 'cp_countrate'])
+    mask = df['cp_state']==1
+    level_1 = df['cp_countrate'][mask]
+    Background = mean(level_1)
+    with open(FilePathYaml) as f:
+        dfyaml = yaml.load(f)
+    dfyaml['Background'] = Background #str(Background)
+    with open(FilePathYaml, 'w') as f:
+        yaml.dump(dfyaml, f, default_flow_style=False)    
+    h5_analysis.close()
 def CreateYamlFromPt3Hdf5Folderwise(folderpath):
     '''Run it once and catiously
     Especially once the datn file deleted, don't run it.
@@ -678,3 +691,13 @@ def fcs_folderwise(folderpath, t_fcsrange=[1e-6, 1], nbins=100,
     print("---TOTAL time took for the folder: %s seconds ---\n" %
           (time.time() - start_time))
     return
+
+if __name__ == "__main__":
+    folderpath = '/home/biswajit/Research/reports-PhD/AzurinSM-MS4/data/AzurinATTO655'
+    pt3Yaml_extension = ['.pt3.yaml']
+    for dirpath, dirname, filenames in os.walk(folderpath):
+        for filename in [f for f in filenames if
+                         f.endswith(tuple(pt3Yaml_extension))]:
+            FilePathYaml = os.path.join(dirpath, filename)
+            print(FilePathYaml)
+            InsertBackgroundInYamlFile(FilePathYaml)

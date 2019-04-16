@@ -4,6 +4,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from Analysis import *
 from ChangePointProcess import *
+from pylab import *
+matplotlib.rcParams['svg.fonttype'] = 'none'
+mpl.rcParams["font.family"] = "sans-serif"
+mpl.rcParams["font.size"] = "12"
+rc('axes', linewidth=1)
 
 #directories
 import os
@@ -22,49 +27,25 @@ warnings.filterwarnings("ignore")
 
 
 #list of folders and their directories CuAZUATTO655
-Analysis_dir = '/home/biswajit/Research/reports-PhD/AzurinSM-MS4/Azurin_SM_repo/Analysis'
+Analysis_dir = '/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/Azurin_SM_repo/Analysis'
 # GIVE the PATH of this FOLDER.
-data_dir = '/home/biswajit/Research/reports-PhD/AzurinSM-MS4/data'
+data_dir = '/home/biswajit/Research/Reports_ppt/reports/AzurinSM-MS4/data'
 
 # rest automatically created
-S129d28Feb18_590p_A1 = os.path.join(
-    data_dir, 'AzurinATTO647N/S129d28Feb18_590p_A1')
-S129d28Feb18_590p_A2 = os.path.join(
-    data_dir, 'AzurinATTO647N/S129d28Feb18_590p_A2')
-S129d29Feb18_590p_A3 = os.path.join(
-    data_dir, 'AzurinATTO647N/S129d29Feb18_590p_A3')
-S129d29Feb18_590p_A4 = os.path.join(
-    data_dir, 'AzurinATTO647N/S129d29Feb18_590p_A4')
-S129d29Feb18_590p_A5 = os.path.join(
-    data_dir, 'AzurinATTO647N/S129d29Feb18_590p_A5')
-S130d02MAr18_590p_A1 = os.path.join(
-    data_dir, 'AzurinATTO647N/S130d02MAr18_590p_A1')
-S130d02MAr18_590p_A1_2nd = os.path.join(
-    data_dir, 'AzurinATTO647N/S130d02MAr18_590p_A1_2nd')
-S130d02MAr18_590p_A1_3rd = os.path.join(
-    data_dir, 'AzurinATTO647N/S130d02MAr18_590p_A1_3rd')
-S130d02MAr18_590p_A1_4th = os.path.join(
-    data_dir, 'AzurinATTO647N/S130d02MAr18_590p_A1_4th')
-# Long time traces
-S125d26Feb18_longtime = os.path.join(
-    data_dir, 'AzurinATTO647N/20180223_longtime')
-S130d02MAr18_590p_A2_150mV_longtimes = os.path.join(
-    data_dir, 'AzurinATTO647N/S130d02MAr18_590p_A2_150mV_longtimes')
-S130d02MAr18_590p_A3_100mV_longtimes = os.path.join(
-    data_dir, 'AzurinATTO647N/S130d02MAr18_590p_A3_100mV_longtimes')
-
-allfolders = [
-    S129d28Feb18_590p_A1, S129d28Feb18_590p_A2, S129d29Feb18_590p_A3,
-    S129d29Feb18_590p_A4, S129d29Feb18_590p_A5,
-    S130d02MAr18_590p_A1, S130d02MAr18_590p_A1_2nd, S130d02MAr18_590p_A1_3rd, S130d02MAr18_590p_A1_4th,
-    S125d26Feb18_longtime, S130d02MAr18_590p_A2_150mV_longtimes, S130d02MAr18_590p_A3_100mV_longtimes,
-]
-S130d02MAr18_A1_all = [S130d02MAr18_590p_A1, S130d02MAr18_590p_A1_2nd,
-                       S130d02MAr18_590p_A1_3rd, S130d02MAr18_590p_A1_4th]
-S130d02MAr18_all = [S130d02MAr18_590p_A1, S130d02MAr18_590p_A1_2nd, S130d02MAr18_590p_A1_3rd, S130d02MAr18_590p_A1_4th,
-                    S130d02MAr18_590p_A2_150mV_longtimes, S130d02MAr18_590p_A3_100mV_longtimes]
-
-
+allfolders = [os.path.join(data_dir, 'AzurinATTO655/CuAzuATTO655/201702_S101toS104/S101d14Feb17'),
+              os.path.join(data_dir, 'AzurinATTO655/CuAzuATTO655/201702_S101toS104/S101d15Feb17'),
+              os.path.join(data_dir, 'AzurinATTO655/CuAzuATTO655/201702_S101toS104/S101d15Feb17_62.2_635_A2_CuAzu655_2nd'),
+              os.path.join(data_dir, 'AzurinATTO655/CuAzuATTO655/201702_S101toS104/S101d16Feb17'),
+              os.path.join(data_dir, 'AzurinATTO655/CuAzuATTO655/201702_S101toS104/S104d20Feb17'),
+              os.path.join(data_dir, 'AzurinATTO655/CuAzuATTO655/201702_S101toS104/S104d21Feb17'),
+              os.path.join(data_dir, 'AzurinATTO655/CuAzuATTO655/201702_S101toS104/S104d21Feb17_60.5_635_A2_CuAzu655'),
+              os.path.join(data_dir, 'AzurinATTO655/CuAzuATTO655/20160907_CuAzu655/S81d7Sept16_A2'),
+              os.path.join(data_dir, 'AzurinATTO655/CuAzuATTO655/20160907_CuAzu655/S81d7Sept16_A3'),
+              os.path.join(data_dir, 'AzurinATTO655/CuAzuATTO655/20160907_CuAzu655/S81d7Sept16_A5'),
+              os.path.join(data_dir, 'AzurinATTO655/CuAzuATTO655/20160910_CuAzu655/S83d10Sept16_A3'),
+              os.path.join(data_dir, 'AzurinATTO655/CuAzuATTO655/S105d15May17_longtime'),
+              os.path.join(data_dir, 'AzurinATTO655/CuAzuATTO655/S106d18May17_longtime'),
+              ]
 # Checking or creating temp_dir
 temp_dir = 'temp'
 temp_dir = os.path.join(parentdir, temp_dir)
@@ -124,8 +105,8 @@ def plot_substrate_conc():
 # fig.savefig('substrate_conc.svg', dpi=300, transparent=True)
 
 #Bright dark values
-def BrightDarkValuesAll(potential_list=np.array([0, 50, 75, 100, 125, 150, 175, 200]),
-                        folderlist=S130d02MAr18_all,
+def BrightDarkValuesAll(potential_list=np.array([50, 60, 75, 80, 90, 100]),
+                        folderlist=allfolders,
                         pars = (1, 0.01, 0.99, 2),
                         FileToSave = 'S130d02MAr18_all_0.01_0.99.xlsx',
                         Rewrite=False):
@@ -195,8 +176,8 @@ def BrightDarkValuesAll(potential_list=np.array([0, 50, 75, 100, 125, 150, 175, 
 
 # Extract Bright and dark times from the file or create
 os.chdir(parentdir)
-file_save = BrightDarkValuesAll(folderlist=S130d02MAr18_all, pars = (1, 0.01, 0.99, 2), FileToSave = 'S130d02MAr18_all_0.01_0.99.xlsx', Rewrite=False)
-# file_save = BrightDarkValuesAll(folderlist=S130d02MAr18_A1_all, pars = (1, 0.01, 0.99, 2), FileToSave = 'S130d02MAr18_A1_0.01_0.99.xlsx', Rewrite=False)
+# file_save = BrightDarkValuesAll(folderlist=allfolders, pars = (1, 0.01, 0.99, 2), FileToSave = 'ATTO655_all_0.01_0.99.xlsx', Rewrite=False)
+file_save = BrightDarkValuesAll(folderlist=allfolders, pars = (1, 0.1, 0.9, 2), FileToSave = 'ATTO655_all_0.1_0.9.xlsx', Rewrite=False)
 
 df_avg = pd.read_excel(file_save, sheet_name='Average')
 potential_list = df_avg['Potential'].values
@@ -213,8 +194,7 @@ ontimes = df_bright['100mV'].dropna().values
 # offtimes = df_dark['100mV'].dropna().values
 # df_avg
 
-file_save = BrightDarkValuesAll(folderlist=S130d02MAr18_all, pars = (1, 0.1, 0.9, 2), FileToSave = 'S130d02MAr18_all_0.1_0.9.xlsx', Rewrite=False)
-# file_save = BrightDarkValuesAll(folderlist=S130d02MAr18_A1_all, pars = (1, 0.1, 0.9, 2), FileToSave = 'S130d02MAr18_A1_0.1_0.9.xlsx', Rewrite=False)
+# file_save = BrightDarkValuesAll(folderlist=S130d02MAr18_all, pars = (1, 0.1, 0.9, 2), FileToSave = 'S130d02MAr18_all_0.1_0.9.xlsx', Rewrite=False)
 
 df_avg = pd.read_excel(file_save, sheet_name='Average')
 potential_list = df_avg['Potential'].values
@@ -301,9 +281,9 @@ nrows = 1
 ncols = 2
 ax00 = plt.subplot2grid((nrows, ncols), (0, 0))
 ax01 = plt.subplot2grid((nrows, ncols), (0, 1))
-waitime_hist_inset(ontimes[1:], ax00, bins=100, binrange=[0.02, 2], insetrange=[0, 0.1],
+waitime_hist_inset(ontimes[1:], ax00, bins=50, binrange=[0.01, 0.15], insetrange=[0, 0.01],
                    fit_func=streched_exp, PlotInset=False)
-waitime_hist_inset(offtimes, ax01, bins=100, binrange=[0.01, 10], insetrange=[0, 0.1],
+waitime_hist_inset(offtimes, ax01, bins=50, binrange=[0.05, 10], insetrange=[0, 0.1],
                    fit_func=streched_exp, PlotInset=False)
 ax00.set_xlabel('bright time/s')
 ax00.set_ylabel('#')
@@ -316,14 +296,14 @@ print('The figure saved in :' +
 plt.show()
 # bright time
 # dark time
-beta = 0.74
-k = 16.01
+beta = 0.53
+k = 694
 # (tau_0/beta)* gamma(1/beta)
 tau = ((1 / k) / beta) * scipy.special.gamma(beta)
 print(tau)
 # dark time
-beta = 0.41
-k = 20.35
+beta = 0.75
+k = 3
 # (tau_0/beta)* gamma(1/beta)
 tau = ((1 / k) / beta) * scipy.special.gamma(beta)
 print(tau)

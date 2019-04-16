@@ -251,7 +251,7 @@ def t_on_off_fromFCS(lag_time, Gn, tmin=1e-5, tmax=1.0e0,
         perr = np.sqrt(np.diag(pcov))
         A1 = monofit[0]; A1_err = perr[0]
         t_ac1 = monofit[1]; t_ac1_err = perr[1]
-        toff1 = A1*t_ac1*(1+A1); ton1 = t_ac1*(1+(1/A1))# check the formula
+        toff1 = t_ac1*(1+A1); ton1 = t_ac1*(1+(1/A1))# check the formula: A1*t_ac1*(1+A1); ton1 = t_ac1*(1+(1/A1))
         toff1_err = t_ac1_err*(1+A1); ton1_err = t_ac1_err*(1+(1/A1))
         #rounding figures
         Mylist = [ton1, ton1_err, toff1, toff1_err]

@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import scipy
 import pandas as pd
 import h5py
 import matplotlib as mpl
@@ -15,37 +16,38 @@ from pycorrelate import make_loglags, normalize_G, t_on_off_fromFCS
 from LifeTimeFluorescence import LifeTimeFitTail, BiExpLifetime
 from simulation import simulate_on_off_times, save_simtrace_longtrace
 
-
+SimulatedFCStimes = '/home/biswajit/Research/reports-PhD/AzurinSM-MS4/Azurin_SM_repo/Analysis/SimulatedFCSOnOffTimes.xlsx'
 class LongTraceClass(object):
     """docstring for LongTraceClass"""
     parameters = {"TimeLimit": [None, None],
-                  "BintimeForIntTrace": 5e-3,
+                  "BintimeForIntTrace": 5e-3, # in seconds
                   "BinsForBrightHist": 20,
-                  "RangeForBrightHist": [0.01, 2],
+                  "RangeForBrightHist": [0.01, 2], # in seconds
                   "BinsForDarkHist": 20,
-                  "RangeForDarkHist": [0.01, 10],
+                  "RangeForDarkHist": [0.01, 10], # in seconds
                   "PlotInsetForDurationHist": False,
-                  "InsetRangeBrightHist": [0, 0.05],
-                  "InsetRangeDarkHist": [0, 0.1],
+                  "InsetRangeBrightHist": [0, 0.05], # in seconds
+                  "InsetRangeDarkHist": [0, 0.1], # in seconds
                   "AveragingType": 'mean',  # 'rolling' or 'mean' or 'noAveraging'
                   "NumPointsForAveraging": 10,
                   "SimulationTimeLength": 100000,  # in seconds
                   "BinsForAvgBrightHist": 50,
                   "BinsForAvgDarkHist": 50,
-                  "Range2DHistBright": [0, 1],
-                  "Range2DHistDark": [0, 5],
-                  "RangeForMidPotentialHist": [0, 125],
+                  "Range2DHistBright": [0, 1], # in seconds
+                  "Range2DHistDark": [0, 5], # in seconds
+                  "RangeForMidPotentialHist": [0, 125], # in mV
                   "BinsForMidPotentialHist": 50,
-                  "LagTimeLimitCorrelation": [10, 1000],
+                  "LagTimeLimitCorrelation": [10, 1000], # in seconds
                   "ContrastLimitCorrelation": (None, None),
-                  "BintimeForCorrelation": 1e-2,
+                  "BintimeForCorrelation": 1e-2, # in seconds
                   "FigureSize": (12, 12),
                   "ChangePointParams": (1, 0.01, 0.99, 2),
                   "BinsFCS": 10,
-                  "RangeFCS": [-5, 2],
+                  "RangeFCS": [-5, 2], # exponent of 10 returns value in seconds
                   "BinsLifetime": 50,
-                  "RangeLifetime": [0, 8],
-                  "FigureTightLayout": False
+                  "RangeLifetime": [0, 8], # in nano-seconds
+                  "FigureTightLayout": False,
+                  "Background": 200, #counts per second
                  }
 
     def __init__(self, file_path_hdf5, SimulatedHDF5,
@@ -54,6 +56,7 @@ class LongTraceClass(object):
         print('Input file is {}'.format(os.path.basename(file_path_hdf5)))
         self.Simulation = Simulation
         self.file_path_hdf5 = file_path_hdf5
+        self.analysis_hdf5 = file_path_hdf5[:-4] + 'analysis.hdf5'
         # self.SimulatedHDF5 = SimulatedHDF5
         if self.Simulation:
             self.file_path_hdf5 = SimulatedHDF5
@@ -73,6 +76,7 @@ class LongTraceClass(object):
         tmax = dfyaml['TimeLimit']['MaxTime']
         self.TimeLimit = [tmin, tmax]
         self.AppliedPotential = dfyaml['Potential']['Value']  # Unit: mV
+        self.Background = dfyaml['Background']
         if self.Simulation:
             h5 = h5py.File(self.file_path_hdf5, 'r')
             self.timestamps = h5['onexp_offexp']['timestamps'][...]
@@ -163,19 +167,33 @@ class LongTraceClass(object):
         df_lt = self.df_lt
         df_fcs = self.df_fcs
         df_ip = self.df_ip
-        out = stats_long_trace_byparts(self.df_ts, self.df_lt,
-                                       self.df_fcs, self.df_ip)
+        if self.Simulation:
+            out = stats_long_trace_byparts(self.df_ts, self.df_lt,
+                                self.df_fcs, self.df_ip,
+                                bg=self.Background, from_cp_values=False)
+        else:
+            h5_analysis = h5py.File(self.analysis_hdf5, 'r')
+            df = h5_analysis['changepoint']['cp_0.01_0.99_100s'][...]
+            cp_values = pd.DataFrame(df, columns=['cp_index', 'cp_ts', 'cp_state', 'cp_countrate']) # a dataframe
+            h5_analysis.close()
+            out = stats_long_trace_byparts(self.df_ts, self.df_lt,
+                                        self.df_fcs, self.df_ip,
+                                        bg=self.Background,
+                                        from_cp_values=True, cp_values=cp_values)
         [self.df_fcs_fit, self.df_lt_fit] = out
         Potential = self.AppliedPotential
         tons = self.df_fcs_fit['ton1'].values.astype('float')
         toffs = self.df_fcs_fit['toff1'].values.astype('float')
         self.df_fcs_fit['E0'] = Potential - 59 * np.log10(toffs / tons)
         out = stats_long_trace_byparts(self.df_ts_sim, self.df_lt_sim,
-                                       self.df_fcs_sim, self.df_ip_sim)
+                                       self.df_fcs_sim, self.df_ip_sim,
+                                       self.Background)
         [self.df_fcs_fit_sim, self.df_lt_fit_sim] = out
         return
 
-    def PlotLongTraceByParts(self, RangeBrightTime, RangeDarkTime):
+    def PlotLongTraceByParts(self, RangeBrightTime, RangeDarkTime,
+                             SimulatedFCStimes=SimulatedFCStimes,
+                             indexRangeAveraging=[None, None]):
         try:
             print('looking for df_fcs_fit', len(self.df_fcs_fit))
         except:
@@ -251,19 +269,26 @@ class LongTraceClass(object):
         # plot 2D scatter
         x = self.df_fcs_fit['ton1'].values.astype('float')
         y = self.df_fcs_fit['toff1'].values.astype('float')
-        x_avg = np.round(np.average(x), 2)
+        x_avg = np.round(np.average(x[indexRangeAveraging[0]:indexRangeAveraging[1]]), 3)
         x_std = np.round(np.std(x), 2)
-        y_avg = np.round(np.average(y), 2)
+        y_avg = np.round(np.average(y[indexRangeAveraging[0]:indexRangeAveraging[1]]), 3)
         y_std = np.round(np.std(y), 2)
         print("Average bright time:{}; std:{}\n Average dark time:{}; std:{}".format(x_avg,x_std, y_avg, y_std))
-        xSim = self.df_fcs_fit_sim['ton1'].values.astype('float')
-        ySim = self.df_fcs_fit_sim['toff1'].values.astype('float')
+        # xSim = self.df_fcs_fit_sim['ton1'].values.astype('float')
+        # ySim = self.df_fcs_fit_sim['toff1'].values.astype('float')
         colorscatt = np.array(self.df_fcs_fit.index).astype('int')        
-        colorscattSim = np.array(self.df_fcs_fit.index).astype('int')
+        # colorscattSim = np.array(self.df_fcs_fit.index).astype('int')
         cmap = 'jet'
+        # simulated FCS times
+        df = pd.read_excel(SimulatedFCStimes)
+        xSim = df['ton1'].values
+        xSim = x_avg * xSim/np.average(xSim)
+        ySim = df['toff1'].values
+        ySim = y_avg * ySim/np.average(ySim)
+        cax = self.axis20.scatter(xSim, ySim, marker='o', c='k', alpha=0.2)
+        # Real FCS times
         self.axis20.scatter(x, y, marker='v', s=200, facecolors='none',
-                            c=colorscatt, edgecolor='k', cmap=cmap)
-        cax = self.axis20.scatter(xSim, ySim, marker='o', c='k')
+                            c=colorList, edgecolor='k', cmap=cmap) #colorscatt
         self.axis20.set_xlim(RangeBrightTime)
         self.axis20.set_ylim(RangeDarkTime)
         self.axis20.set_xlabel('Bright times/s')
@@ -473,7 +498,7 @@ class LongTraceClass(object):
         self.axis23.set_xlabel('#')
         self.axis23.set_ylabel('')
 
-        fit_report = strechexp_lmfit(waitimes=df_durations['ontimes'],
+        self.BrightStrechedFit = strechexp_lmfit(waitimes=df_durations['ontimes'],
                                      axis=self.axis30,
                                      bins=self.BinsForBrightHist,
                                      binrange=self.RangeForBrightHist,
@@ -484,7 +509,7 @@ class LongTraceClass(object):
         self.axis30.tick_params('x', direction='in', colors='b')
 
         axis30_up = plt.twiny(ax=self.axis30)
-        fit_report = strechexp_lmfit(waitimes=df_durations['offtimes'],
+        self.DarkStrechedFit = strechexp_lmfit(waitimes=df_durations['offtimes'],
                                      axis=axis30_up,
                                      bins=self.BinsForDarkHist,
                                      binrange=self.RangeForDarkHist,
@@ -508,7 +533,10 @@ class LongTraceClass(object):
         rad = 0.5 * (q95['ontimes'] - q05['ontimes'])
         print("Circle for Bright time; radius={}, centre={}".format(rad, cent))
         circle1 = plt.Circle((cent, cent), rad, fill=False,
-                             linestyle='--', edgecolor='yellow', linewidth=2)
+                             linestyle='-', edgecolor='white', linewidth=6)
+        self.axis31.add_artist(circle1)
+        circle1 = plt.Circle((cent, cent), rad, fill=False,
+                             linestyle='-', edgecolor='k', linewidth=2)
         self.axis31.add_artist(circle1)
 
         Plot2Ddurations(self.axis32, dfAverage,
@@ -522,9 +550,12 @@ class LongTraceClass(object):
         q95 = dfAverageSimulated.quantile(q=0.95)
         cent = 0.5 * (q05['offtimes'] + q95['offtimes'])
         rad = 0.5 * (q95['offtimes'] - q05['offtimes'])
-        print("Circle for Dark time; radius={}, centre={}".format(rad, cent))        
+        print("Circle for Dark time; radius={}, centre={}".format(rad, cent))
         circle1 = plt.Circle((cent, cent), rad, fill=False,
-                             linestyle='--', edgecolor='yellow', linewidth=2)
+                             linestyle='--', edgecolor='white', linewidth=6)
+        self.axis32.add_artist(circle1)
+        circle1 = plt.Circle((cent, cent), rad, fill=False,
+                             linestyle='--', edgecolor='k', linewidth=2)
         self.axis32.add_artist(circle1)
 
         out = PlotCorrelationBrightDark(self.axis33,
@@ -553,6 +584,10 @@ class LongTraceClass(object):
                       transform=axis.transAxes)
         if self.FigureTightLayout:
             self.FigureDuration.tight_layout()
+        FileToSave = 'temp.xlsx'
+        writer = pd.ExcelWriter(FileToSave)
+        df_durations.to_excel(writer, 'Average', index=False)
+        writer.save()
         return
 
     def Plot2Ddurations(self, RollMean=False,
@@ -772,6 +807,8 @@ def strechexp_lmfit(waitimes, axis, bins, binrange,
                   'A': result.params['A'].value,
                   'A_err': result.params['A'].stderr
                  }
+    tau = ((1 / fit_report['k']) / fit_report['b']) * scipy.special.gamma(fit_report['b'])
+    fit_report['tau'] = tau
     # print values
     print(fit_report)
     #plot as bar
@@ -787,7 +824,7 @@ def strechexp_lmfit(waitimes, axis, bins, binrange,
     axis.set_xlim(0, None)
     axis.set_ylim(1e0, None)
     axis.set_yscale('log')
-    return result
+    return fit_report
 
 
 def MidPointPotentialTimeTrace(axis, t_av_on, t_av_off,
@@ -1193,7 +1230,8 @@ def long_trace_byparts(timestamps, nanotimes, TimeLimit,
     return df_ts, df_lt, df_fcs, df_ip
 
 
-def stats_long_trace_byparts(df_ts, df_lt, df_fcs, df_ip):
+def stats_long_trace_byparts(df_ts, df_lt, df_fcs, df_ip, bg=200, from_cp_values=False, cp_values=None):
+    '''bg: background in counts per second'''
     lag_time = df_fcs.iloc[:, 0]
     cols_fcs = ['A1', 'A1_err', 't_ac1', 't_ac1_err',
                 'ton1', 'ton1_err', 'toff1', 'toff1_err']
@@ -1202,11 +1240,22 @@ def stats_long_trace_byparts(df_ts, df_lt, df_fcs, df_ip):
     cols_lt = cols_lt + [s + 'err' for s in cols_lt]
     df_lt_fit = pd.DataFrame(columns=cols_lt)
     for column in df_ts.columns:
+        c_f = float(column)
+        if from_cp_values:
+            df = cp_values[(cp_values['cp_ts'] >= c_f) & 
+                           (cp_values['cp_ts'] <= c_f+100) &
+                           (cp_values['cp_state'] == 1)]
+            bg = df['cp_countrate'].mean()
         # fcs fit
         G = df_fcs[column]
+        timestamps = df_ts[column]
+        signal = len(timestamps)/(np.max(timestamps) - np.min(timestamps))
+        signal = signal - bg
         result_fcs = t_on_off_fromFCS(lag_time, G,
                                       tmin=1e-5, tmax=1.0e0,
-                                      fitype='mono_exp')
+                                      fitype='mono_exp',
+                                      signal=signal, bg=bg,
+                                      bg_corr=True)
         df_fcs_fit.loc[column] = list(result_fcs.values())
         # lifetime fit
         time_ns = df_lt['t'].values
@@ -1219,6 +1268,7 @@ def stats_long_trace_byparts(df_ts, df_lt, df_fcs, df_ip):
         fit_errs = {k: v.stderr for k, v in params.items()}
         df_lt_fit.loc[column] = list(fit_values.values()) +\
             list(fit_errs.values())  # append to rows
+    print('signal: {} counts/second'.format(signal))
     return df_fcs_fit, df_lt_fit
 
 #===============fitting functions=============
